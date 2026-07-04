@@ -10,7 +10,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-html,body{overflow-x:hidden;overflow-x:clip;max-width:100%}
+html{overflow-x:hidden}
 body{font-family:var(--fa);color:var(--ink);background:var(--navy3);
   background-image:radial-gradient(120% 80% at 70% -10%,#0b2d55 0%,var(--navy2) 42%,var(--navy3) 100%);
   overflow-x:hidden;-webkit-font-smoothing:antialiased}
@@ -44,7 +44,7 @@ html.en .en-t{display:revert!important}
 .nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:16px var(--padx);transition:.35s}
 .nav.sc{background:rgba(5,17,32,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding-top:11px;padding-bottom:11px}
-.brand{display:flex;align-items:center;gap:8px;direction:ltr;font-family:var(--fe);font-weight:800;font-size:22px}
+.brand{display:inline-flex;align-items:center;gap:8px;direction:ltr;font-family:var(--fe);font-weight:800;font-size:22px}
 .brand svg{width:32px;height:32px}
 .brand-mark{height:30px;width:auto;flex:none}
 .brand b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -191,13 +191,13 @@ h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;back
 .sector p{font-size:13px;line-height:1.85;color:var(--muted);font-weight:300}
 
 /* ===== HOW (interactive stepper) ===== */
-.hgrid2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4.5vw,60px);align-items:center;max-width:1060px;margin:0 auto}
+.hgrid2{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(28px,5vw,64px);align-items:center;max-width:1180px;margin:0 auto}
 .hsteps{display:grid;gap:10px}
 .hstep{display:flex;gap:15px;align-items:flex-start;text-align:start;padding:15px 17px;border-radius:16px;border:1px solid transparent;
   background:transparent;cursor:pointer;transition:.3s;font-family:inherit;color:inherit;width:100%}
 .hstep:hover{background:rgba(120,190,240,.05)}
 .hstep.on{background:var(--panel);border-color:rgba(0,174,239,.4);box-shadow:0 18px 44px -22px rgba(0,174,239,.35)}
-.hnum{position:relative;flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+.hnum{position:relative;flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
   font-family:var(--fe);font-weight:800;font-size:14px;color:var(--cyan);
   border:1.5px solid rgba(0,174,239,.4);background:rgba(0,174,239,.07);transition:.3s}
 .hstep.on .hnum{color:#03131f;background:var(--grad);border-color:transparent;box-shadow:0 8px 22px -8px rgba(0,174,239,.7)}
@@ -205,12 +205,12 @@ h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;back
 .hprog circle{fill:none;stroke:var(--mint);stroke-width:2;stroke-linecap:round;stroke-dasharray:163;stroke-dashoffset:163}
 .hstep.on .hprog circle{animation:hprog 4.5s linear forwards}
 @keyframes hprog{to{stroke-dashoffset:0}}
-.hstep h3{font-size:15.5px;margin-bottom:4px;transition:.3s}
+.hstep h3{font-size:17px;margin-bottom:5px;transition:.3s}
 .hstep.on h3{color:var(--cyan)}
-.hstep p{font-size:12.5px;line-height:1.8;color:var(--muted);font-weight:300;max-height:0;opacity:0;overflow:hidden;transition:.45s ease}
+.hstep p{font-size:13.5px;line-height:1.85;color:var(--muted);font-weight:300;max-height:0;opacity:0;overflow:hidden;transition:.45s ease}
 .hstep.on p{max-height:130px;opacity:1}
 /* visual panel */
-.hvis{position:relative;aspect-ratio:1/.92;max-width:470px;width:100%;margin:0 auto;border-radius:24px;border:1px solid var(--brd);
+.hvis{position:relative;aspect-ratio:16/12;max-width:none;width:100%;margin:0;border-radius:24px;border:1px solid var(--brd);
   background:linear-gradient(160deg,rgba(10,34,62,.72),rgba(5,18,36,.88));overflow:hidden;backdrop-filter:blur(10px)}
 .hvis::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 46% at 50% 0%,rgba(0,174,239,.15),transparent 70%);pointer-events:none}
 .hvis .gridbg{position:absolute;inset:0;opacity:.14;
@@ -374,7 +374,7 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);background:r
   .toast{inset-inline-end:1%}
   .agrid,.rgrid{grid-template-columns:1fr;gap:26px}
   .hgrid2{grid-template-columns:1fr;gap:22px}
-  .hvis{order:-1;max-width:420px}
+  .hvis{order:-1;max-width:440px;margin-inline:auto;aspect-ratio:16/11}
   .secgrid{grid-template-columns:1fr;max-width:440px;margin-inline:auto}
   .stgrid{grid-template-columns:repeat(2,1fr)}
   .fgrid{grid-template-columns:1fr 1fr;gap:26px}
