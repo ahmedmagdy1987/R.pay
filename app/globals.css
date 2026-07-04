@@ -44,7 +44,7 @@ html.en .en-t{display:revert!important}
 .nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:16px var(--padx);transition:.35s}
 .nav.sc{background:rgba(5,17,32,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding-top:11px;padding-bottom:11px}
-.brand{display:flex;align-items:center;gap:9px;font-family:var(--fe);font-weight:800;font-size:22px}
+.brand{display:flex;align-items:center;gap:8px;direction:ltr;font-family:var(--fe);font-weight:800;font-size:22px}
 .brand svg{width:32px;height:32px}
 .brand-mark{height:30px;width:auto;flex:none}
 .brand b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -402,15 +402,14 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);background:r
   display:flex;flex-direction:column;align-items:center;gap:20px}
 .brands .lbl{font-family:var(--fe);font-weight:600;font-size:16px;letter-spacing:.01em;color:var(--ink)}
 .brands .lbl .en-t{font-size:14px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
-.marquee{position:relative;width:100%;max-width:1180px;display:flex;overflow:hidden;border-radius:18px;
+.marquee{position:relative;width:100%;max-width:1180px;display:flex;overflow:hidden;border-radius:18px;direction:ltr;
   background:linear-gradient(180deg,#ffffff,#eaf1fa);box-shadow:0 22px 55px -32px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.6);
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
   mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-.mtrack{flex:0 0 auto;min-width:100%;display:flex;align-items:center;justify-content:space-around;gap:40px;
-  padding:22px 30px;animation:marq 34s linear infinite}
+.mtrack{flex:0 0 auto;display:flex;align-items:center;gap:54px;padding:22px 34px;animation:marq 42s linear infinite}
 .marquee:hover .mtrack{animation-play-state:paused}
-@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-100%)}}
-.brandlogo{height:44px;width:auto;max-width:150px;object-fit:contain;flex:none;opacity:.88;transition:.25s}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.brandlogo{height:46px;width:auto;max-width:150px;object-fit:contain;flex:none;opacity:.9;transition:.25s}
 .brandlogo:hover{opacity:1;transform:translateY(-2px)}
 
 /* ===== VENDING SCROLL REVEAL ===== */
