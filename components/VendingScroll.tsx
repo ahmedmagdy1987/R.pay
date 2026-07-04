@@ -1,19 +1,19 @@
 "use client";
 import { useEffect, useRef } from "react";
-import {
-  VENDING_SPRITE, V_COUNT, V_COLS, V_FW, V_FH,
-} from "@/lib/assets/vending";
+import { VENDING_SPRITE, V_COUNT, V_COLS, V_FW, V_FH } from "@/lib/assets/vending";
 
 export default function VendingScroll() {
   const sectionRef = useRef<HTMLElement>(null);
+  const holdRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
+    const hold = holdRef.current;
     const canvas = canvasRef.current;
     const overlay = overlayRef.current;
-    if (!section || !canvas) return;
+    if (!section || !hold || !canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -40,29 +40,46 @@ export default function VendingScroll() {
       ctx.drawImage(sheet, sx, sy, V_FW, V_FH, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
     };
 
-    let active = true, ticking = false;
+    let ticking = false;
+    let pinned: string | null = null;
+    const setPin = (mode: "top" | "fixed" | "bottom") => {
+      if (pinned === mode) return;
+      pinned = mode;
+      if (mode === "fixed") {
+        hold.style.position = "fixed";
+        hold.style.top = "0";
+        hold.style.bottom = "auto";
+      } else {
+        hold.style.position = "absolute";
+        hold.style.top = mode === "top" ? "0" : "auto";
+        hold.style.bottom = mode === "bottom" ? "0" : "auto";
+      }
+    };
+
     const compute = () => {
       ticking = false;
-      if (!active) return;
       const rect = section.getBoundingClientRect();
-      const total = rect.height - window.innerHeight;
+      const vh = window.innerHeight;
+      if (rect.top <= 0 && rect.bottom >= vh) setPin("fixed");
+      else if (rect.bottom < vh) setPin("bottom");
+      else setPin("top");
+
+      const total = rect.height - vh;
       const p = Math.max(0, Math.min(1, -rect.top / (total || 1)));
       draw(Math.round(p * (V_COUNT - 1)));
       if (overlay) {
-        const o = p < 0.5 ? 1 : Math.max(0, 1 - (p - 0.5) / 0.35);
+        const o = p < 0.5 ? 1 : Math.max(0, 1 - (p - 0.5) / 0.32);
         overlay.style.opacity = o.toFixed(2);
       }
     };
     const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(compute); } };
     const onResize = () => { sizeCanvas(); compute(); };
 
-    const io = new IntersectionObserver((es) => { active = es[0].isIntersecting; }, { threshold: 0 });
-    io.observe(section);
     sizeCanvas();
+    compute();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
-      io.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
@@ -70,7 +87,7 @@ export default function VendingScroll() {
 
   return (
     <section className="vending" ref={sectionRef} id="showcase">
-      <div className="vstick">
+      <div className="vhold" ref={holdRef}>
         <canvas className="vcanvas" ref={canvasRef} />
         <div className="voverlay" ref={overlayRef}>
           <div className="vkicker">
