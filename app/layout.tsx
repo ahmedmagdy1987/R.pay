@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import LiquidBackground from "@/components/LiquidBackground";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
+import { FAVICON } from "@/lib/assets/brand";
 
 const bric = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
     "smart payments",
   ],
   metadataBase: new URL("https://www.rpay.sa"),
+  icons: { icon: FAVICON, shortcut: FAVICON, apple: FAVICON },
   openGraph: {
     title: "R Pay | حلول ذكية لمستقبل أفضل",
     description:

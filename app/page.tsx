@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import BrandsMarquee from "@/components/BrandsMarquee";
 import HowItWorks from "@/components/HowItWorks";
+import Menu from "@/components/Menu";
 import { DEVICE } from "@/lib/assets/device";
+import { R_MARK } from "@/lib/assets/brand";
 
 const VendingScroll = dynamic(() => import("@/components/VendingScroll"), {
   ssr: false,
@@ -11,6 +13,7 @@ const VendingScroll = dynamic(() => import("@/components/VendingScroll"), {
 
 export default function Page() {
   const [en, setEn] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const h = document.documentElement;
@@ -162,20 +165,12 @@ export default function Page() {
   return (
     <>
       {/* NAV */}
+      <Menu open={menuOpen} onClose={() => setMenuOpen(false)} />
       <header className="nav" id="nav">
         <a className="brand" href="#top">
-          <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="navGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#00AEEF" />
-                <stop offset="1" stopColor="#1FD3B8" />
-              </linearGradient>
-            </defs>
-            <rect x="2" y="2" width="36" height="36" rx="11" stroke="url(#navGrad)" strokeWidth="1.4" opacity=".55" />
-            <path d="M14 29V12h7.5a5 5 0 0 1 0 10H16" stroke="url(#navGrad)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M19 22l7 7" stroke="url(#navGrad)" strokeWidth="3" strokeLinecap="round" />
-          </svg>
-          <span><b>R</b>.Pay</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand-mark" src={R_MARK} alt="R.Pay" />
+          <span>Pay</span>
         </a>
         <nav className="nlinks">
           <a href="#features"><span className="ar-t">المزايا</span><span className="en-t">Features</span></a>
@@ -187,6 +182,7 @@ export default function Page() {
         <div className="nright">
           <button className="lang" onClick={() => setEn((v) => !v)}>{en ? "ع" : "EN"}</button>
           <a className="btn" href="#contact"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
+          <button className="burger" onClick={() => setMenuOpen(true)} aria-label="القائمة"><i /><i /><i /></button>
         </div>
       </header>
 
@@ -466,13 +462,9 @@ export default function Page() {
         <div className="fgrid">
           <div className="fbrand">
             <a className="brand" href="#top">
-              <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
-                <defs><linearGradient id="footGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#00AEEF" /><stop offset="1" stopColor="#1FD3B8" /></linearGradient></defs>
-                <rect x="2" y="2" width="36" height="36" rx="11" stroke="url(#footGrad)" strokeWidth="1.4" opacity=".55" />
-                <path d="M14 29V12h7.5a5 5 0 0 1 0 10H16" stroke="url(#footGrad)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M19 22l7 7" stroke="url(#footGrad)" strokeWidth="3" strokeLinecap="round" />
-              </svg>
-              <span><b>R</b>.Pay</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="brand-mark" src={R_MARK} alt="R.Pay" />
+              <span>Pay</span>
             </a>
             <p><span className="ar-t">نظام الدفع الذكي وإدارة العمليات الرائد في المملكة العربية السعودية لمشغّلي الخدمة الذاتية.</span><span className="en-t">Saudi Arabia&apos;s premier smart payment and operations management system for self-service operators.</span></p>
             <div className="socials">
@@ -484,10 +476,16 @@ export default function Page() {
           <div className="fcol">
             <h4><span className="ar-t">الشركة</span><span className="en-t">Company</span></h4>
             <a href="#about"><span className="ar-t">معلومات عنا</span><span className="en-t">About us</span></a>
-            <a href="#features"><span className="ar-t">المزايا</span><span className="en-t">Features</span></a>
-            <a href="#compare"><span className="ar-t">المقارنة</span><span className="en-t">Comparison</span></a>
-            <a href="https://wa.me/966550796555" target="_blank" rel="noopener noreferrer"><span className="ar-t">اتصل بنا</span><span className="en-t">Contact</span></a>
-            <span className="fi"><span className="ar-t">طريق الملك فهد، الرياض</span><span className="en-t">King Fahd Rd, Riyadh</span></span>
+            <a href="#"><span className="ar-t">الوظائف</span><span className="en-t">Careers</span></a>
+            <a href="#"><span className="ar-t">الشراكات</span><span className="en-t">Partnerships</span></a>
+            <a href="#contact"><span className="ar-t">اتصل بنا</span><span className="en-t">Contact</span></a>
+          </div>
+          <div className="fcol">
+            <h4><span className="ar-t">قانوني</span><span className="en-t">Legal</span></h4>
+            <a href="#"><span className="ar-t">سياسة الخصوصية</span><span className="en-t">Privacy Policy</span></a>
+            <a href="#"><span className="ar-t">شروط الخدمة</span><span className="en-t">Terms of Service</span></a>
+            <a href="#"><span className="ar-t">الأمان</span><span className="en-t">Security</span></a>
+            <a href="#"><span className="ar-t">الامتثال</span><span className="en-t">Compliance</span></a>
           </div>
           <div className="fcol">
             <h4><span className="ar-t">الحالة</span><span className="en-t">Status</span></h4>
@@ -496,6 +494,7 @@ export default function Page() {
               <div className="clock"><span><span className="ar-t">محلي</span><span className="en-t">Local</span></span><b id="clkL">--:--</b></div>
             </div>
             <span className="status"><i /><span className="ar-t">النظام يعمل</span><span className="en-t">System Operational</span></span>
+            <span className="fi" style={{ marginTop: "12px" }}><span className="ar-t">طريق الملك فهد، الرياض</span><span className="en-t">King Fahd Rd, Riyadh</span></span>
           </div>
         </div>
         <div className="fbot">
