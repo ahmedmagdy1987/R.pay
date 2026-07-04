@@ -1,46 +1,27 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { VENDING_SPRITE, V_COUNT, V_COLS, V_FW, V_FH } from "@/lib/assets/vending";
+import { VENDING_VIDEO } from "@/lib/assets/vending";
 
 export default function VendingScroll() {
   const sectionRef = useRef<HTMLElement>(null);
   const holdRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     const hold = holdRef.current;
-    const canvas = canvasRef.current;
+    const video = videoRef.current;
     const overlay = overlayRef.current;
-    if (!section || !hold || !canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!section || !hold || !video) return;
 
-    const sheet = new Image();
+    let dur = 0;
     let ready = false;
-    sheet.onload = () => { ready = true; sizeCanvas(); compute(); };
-    sheet.src = VENDING_SPRITE;
+    const onMeta = () => { dur = video.duration || 0; ready = true; compute(); };
+    video.addEventListener("loadedmetadata", onMeta);
+    video.addEventListener("loadeddata", onMeta);
+    try { video.pause(); } catch (e) {}
 
-    const sizeCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(canvas.clientWidth * dpr);
-      canvas.height = Math.floor(canvas.clientHeight * dpr);
-    };
-
-    const draw = (index: number) => {
-      if (!ready) return;
-      const i = Math.max(0, Math.min(V_COUNT - 1, index));
-      const sx = (i % V_COLS) * V_FW;
-      const sy = Math.floor(i / V_COLS) * V_FH;
-      const cw = canvas.width, ch = canvas.height;
-      const scale = Math.max(cw / V_FW, ch / V_FH);
-      const dw = V_FW * scale, dh = V_FH * scale;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(sheet, sx, sy, V_FW, V_FH, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
-    };
-
-    let ticking = false;
     let pinned: string | null = null;
     const setPin = (mode: "top" | "fixed" | "bottom") => {
       if (pinned === mode) return;
@@ -56,6 +37,8 @@ export default function VendingScroll() {
       }
     };
 
+    let ticking = false;
+    let lastT = -1;
     const compute = () => {
       ticking = false;
       const rect = section.getBoundingClientRect();
@@ -66,29 +49,43 @@ export default function VendingScroll() {
 
       const total = rect.height - vh;
       const p = Math.max(0, Math.min(1, -rect.top / (total || 1)));
-      draw(Math.round(p * (V_COUNT - 1)));
+
+      if (ready && dur) {
+        const t = p * (dur - 0.05);
+        if (Math.abs(t - lastT) > 0.02) {
+          lastT = t;
+          try { video.currentTime = t; } catch (e) {}
+        }
+      }
       if (overlay) {
-        const o = p < 0.5 ? 1 : Math.max(0, 1 - (p - 0.5) / 0.32);
+        const o = p < 0.14 ? 1 : Math.max(0, 1 - (p - 0.14) / 0.12);
         overlay.style.opacity = o.toFixed(2);
       }
     };
     const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(compute); } };
-    const onResize = () => { sizeCanvas(); compute(); };
 
-    sizeCanvas();
     compute();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", onScroll);
     return () => {
+      video.removeEventListener("loadedmetadata", onMeta);
+      video.removeEventListener("loadeddata", onMeta);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", onScroll);
     };
   }, []);
 
   return (
     <section className="vending" ref={sectionRef} id="showcase">
       <div className="vhold" ref={holdRef}>
-        <canvas className="vcanvas" ref={canvasRef} />
+        <video
+          className="vvideo"
+          ref={videoRef}
+          src={VENDING_VIDEO}
+          muted
+          playsInline
+          preload="auto"
+        />
         <div className="voverlay" ref={overlayRef}>
           <div className="vkicker">
             <span className="ar-t">تجربة الدفع</span>
@@ -98,10 +95,6 @@ export default function VendingScroll() {
             <span className="ar-t">لمسة واحدة، <em>وكل شيء يعمل</em></span>
             <span className="en-t">One tap, <em>everything works</em></span>
           </h2>
-          <p className="vsub">
-            <span className="ar-t">وحدة دفع مدمجة داخل كل جهاز تقبل البطاقات والمحافظ الرقمية، وتعرض كل عملية لحظيًا في لوحة التحكم.</span>
-            <span className="en-t">An embedded payment unit in every machine accepts cards and digital wallets, streaming every transaction live to your dashboard.</span>
-          </p>
         </div>
         <div className="vhint">
           <span className="ar-t">مرّر للأسفل</span>
