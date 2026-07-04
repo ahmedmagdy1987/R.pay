@@ -52,8 +52,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl" className={`${bric.variable} ${plex.variable}`}>
+    <html lang="ar" dir="rtl" className={`dark ${bric.variable} ${plex.variable}`}>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('rpay-theme');var d=document.documentElement;d.classList.remove('dark','light');d.classList.add(t==='light'?'light':'dark');}catch(e){}})();",
+          }}
+        />
         <LiquidBackground />
         <div className="scrim" />
         <div id="prog" />

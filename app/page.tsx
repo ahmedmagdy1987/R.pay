@@ -5,8 +5,8 @@ import BrandsMarquee from "@/components/BrandsMarquee";
 import HowItWorks from "@/components/HowItWorks";
 import Integration from "@/components/Integration";
 import Menu from "@/components/Menu";
-import { DEVICE } from "@/lib/assets/device";
 import { R_MARK } from "@/lib/assets/brand";
+import { HERO_VIDEO } from "@/lib/assets/hero";
 
 const VendingScroll = dynamic(() => import("@/components/VendingScroll"), {
   ssr: false,
@@ -15,6 +15,19 @@ const VendingScroll = dynamic(() => import("@/components/VendingScroll"), {
 export default function Page() {
   const [en, setEn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [light, setLight] = useState(false);
+
+  useEffect(() => {
+    setLight(document.documentElement.classList.contains("light"));
+  }, []);
+
+  const toggleTheme = () => {
+    const d = document.documentElement;
+    const isLight = d.classList.toggle("light");
+    d.classList.toggle("dark", !isLight);
+    setLight(isLight);
+    try { localStorage.setItem("rpay-theme", isLight ? "light" : "dark"); } catch (e) {}
+  };
 
   useEffect(() => {
     const h = document.documentElement;
@@ -181,6 +194,13 @@ export default function Page() {
           <a href="#compare"><span className="ar-t">المقارنة</span><span className="en-t">Compare</span></a>
         </nav>
         <div className="nright">
+          <button className="theme" onClick={toggleTheme} aria-label="theme">
+            {light ? (
+              <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" /></svg>
+            ) : (
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" /></svg>
+            )}
+          </button>
           <button className="lang" onClick={() => setEn((v) => !v)}>{en ? "ع" : "EN"}</button>
           <a className="btn" href="#contact"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
           <button className="burger" onClick={() => setMenuOpen(true)} aria-label="القائمة"><i /><i /><i /></button>
@@ -215,11 +235,10 @@ export default function Page() {
           </div>
           <div className="rv d2">
             <div className="stage">
-              <div className="dfloat"><div className="dtilt" id="tilt">
-                <div className="halo" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="device" src={DEVICE} alt="R.Pay payment terminal" />
-              </div></div>
+              <div className="vshow">
+                <span className="vglow" />
+                <video className="vshow-video" src={HERO_VIDEO} autoPlay muted loop playsInline preload="auto" />
+              </div>
               <div className="dash">
                 <div className="dhd">
                   <span className="t"><span className="ar-t">لوحة التحكم</span><span className="en-t">Dashboard</span></span>
