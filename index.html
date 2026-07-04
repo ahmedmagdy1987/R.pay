@@ -21,6 +21,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
+html,body{overflow-x:hidden;overflow-x:clip;max-width:100%}
 body{font-family:var(--fa);color:var(--ink);background:var(--navy3);
   background-image:radial-gradient(120% 80% at 70% -10%,#0b2d55 0%,var(--navy2) 42%,var(--navy3) 100%);
   overflow-x:hidden;-webkit-font-smoothing:antialiased}
@@ -832,7 +833,7 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);background:r
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -862,7 +863,7 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);background:r
     nav.classList.toggle('sc', scrollY>30);
     var h=document.documentElement.scrollHeight-innerHeight;
     prog.style.width=(h>0?(scrollY/h)*100:0)+'%';
-    if(cvs){ var k=Math.min(scrollY/(innerHeight*0.85),1); cvs.style.opacity=(1-k*0.82).toFixed(3); }
+    if(cvs){ var k=Math.min(scrollY/(innerHeight*0.85),1); cvs.style.opacity=(1-k*0.55).toFixed(3); }
   }
   addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
@@ -941,11 +942,6 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);background:r
   },{threshold:.15, rootMargin:'0px 0px -6% 0px'});
   document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
 
-  /* hero visibility for shader pause */
-  var heroVis=true;
-  var hio=new IntersectionObserver(function(es){ heroVis=es[0].isIntersecting; },{threshold:.02});
-  hio.observe(document.querySelector('.hero'));
-
   /* pointer */
   var pmx=0,pmy=0,lmx=0,lmy=0,lastPtr=0;
   addEventListener('pointermove', function(e){
@@ -1022,7 +1018,7 @@ footer{position:relative;z-index:5;border-top:1px solid var(--line);background:r
       pmx=Math.sin(t*0.00022)*0.55; pmy=Math.cos(t*0.00017)*0.4;
     }
     lmx+=(pmx-lmx)*0.06; lmy+=(pmy-lmy)*0.06;
-    if(renderer && uniforms && heroVis && !document.hidden){
+    if(renderer && uniforms && !document.hidden){
       uniforms.iTime.value=t*0.001; uniforms.iMouse.value.set(lmx,lmy);
       try{ renderer.render(scene,camera); }catch(e){}
     }
