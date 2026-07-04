@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import BrandsMarquee from "@/components/BrandsMarquee";
 import HowItWorks from "@/components/HowItWorks";
+import Integration from "@/components/Integration";
 import Menu from "@/components/Menu";
 import { DEVICE } from "@/lib/assets/device";
 import { R_MARK } from "@/lib/assets/brand";
@@ -175,7 +176,7 @@ export default function Page() {
         <nav className="nlinks">
           <a href="#features"><span className="ar-t">المزايا</span><span className="en-t">Features</span></a>
           <a href="#about"><span className="ar-t">عن ار باي</span><span className="en-t">About</span></a>
-          <a href="#sectors"><span className="ar-t">القطاعات</span><span className="en-t">Sectors</span></a>
+          <a href="#sectors"><span className="ar-t">التكامل</span><span className="en-t">Integration</span></a>
           <a href="#how"><span className="ar-t">كيف يعمل</span><span className="en-t">How it works</span></a>
           <a href="#compare"><span className="ar-t">المقارنة</span><span className="en-t">Compare</span></a>
         </nav>
@@ -347,31 +348,7 @@ export default function Page() {
         </div>
       </section>
 
-      {/* SECTORS */}
-      <section id="sectors">
-        <div className="wrap">
-          <div className="khead rv"><i /><span><span className="ar-t">القطاعات</span><span className="en-t">Sectors</span></span><i /></div>
-          <h2 className="stitle rv d1"><span className="ar-t">ثلاثة قطاعات، <em>نظام واحد</em></span><span className="en-t">Three sectors, <em>one system</em></span></h2>
-          <p className="ssub rv d2"><span className="ar-t">حلول تقنية ذكية لقطاع الأجهزة والخدمات الذاتية.</span><span className="en-t">Smart tech solutions for the self-service and device sector.</span></p>
-          <div className="secgrid">
-            <div className="sector rv"><span className="glow" />
-              <div className="sic"><svg viewBox="0 0 24 24"><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01" /><path d="M17.3 5H6.7a4.7 4.7 0 0 0-4.6 5.6l1 5.3A2.6 2.6 0 0 0 7.7 17l1.5-2h5.6l1.5 2a2.6 2.6 0 0 0 4.6-1.1l1-5.3A4.7 4.7 0 0 0 17.3 5Z" /></svg></div>
-              <h3><span className="ar-t">ألعاب الأركيد</span><span className="en-t">Arcade Games</span></h3>
-              <p><span className="ar-t">خبرة تشغيلية عميقة لأكبر مشغّل لمكائن ألعاب الأركيد في المنطقة.</span><span className="en-t">Deep operational expertise from the region largest arcade operator.</span></p>
-            </div>
-            <div className="sector rv d1"><span className="glow" />
-              <div className="sic"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M8 6h4v5H8zM14 6h2M14 9h2M8 15h8M8 18h5" /></svg></div>
-              <h3><span className="ar-t">آلات البيع الذاتي</span><span className="en-t">Vending Machines</span></h3>
-              <p><span className="ar-t">حلول ذكية لقطاع الخدمة الذاتية مع دفع إلكتروني متكامل.</span><span className="en-t">Smart self-service solutions with fully integrated e-payment.</span></p>
-            </div>
-            <div className="sector rv d2"><span className="glow" />
-              <div className="sic"><svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v7a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8ZM7 2v2M11 2v2M15 2v2" /></svg></div>
-              <h3><span className="ar-t">آلات القهوة</span><span className="en-t">Coffee Machines</span></h3>
-              <p><span className="ar-t">تحكم كامل ومتابعة تشغيلية فورية من خلال نظام موحّد.</span><span className="en-t">Full control and instant operational monitoring in one system.</span></p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Integration />
 
       <HowItWorks />
 

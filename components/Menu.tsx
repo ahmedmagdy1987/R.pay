@@ -4,7 +4,7 @@ import { R_MARK } from "@/lib/assets/brand";
 
 const ITEMS = [
   { n: "01", ar: "المنصة", en: "Platform", href: "#features" },
-  { n: "02", ar: "الحلول", en: "Solutions", href: "#sectors" },
+  { n: "02", ar: "التكامل", en: "Integration", href: "#sectors" },
   { n: "03", ar: "كيف يعمل", en: "How it works", href: "#how" },
   { n: "04", ar: "الشركة", en: "Company", href: "#about" },
   { n: "05", ar: "تواصل معنا", en: "Contact", href: "#contact" },
