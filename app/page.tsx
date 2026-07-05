@@ -5,7 +5,7 @@ import HowItWorks from "@/components/HowItWorks";
 import Integration from "@/components/Integration";
 import Menu from "@/components/Menu";
 import { R_MARK } from "@/lib/assets/brand";
-import { HERO_POSTER } from "@/lib/assets/hero";
+import { HERO_POSTER, HERO_VIDEO } from "@/lib/assets/hero";
 
 export default function Page() {
   const [en, setEn] = useState(false);
@@ -140,11 +140,11 @@ export default function Page() {
       c.appendChild(nEl);
     });
 
-    // pointer: spotlight + device tilt
-    const tilt = document.getElementById("tilt");
+    // custom cursor glow + card spotlight
+    const cursor = document.querySelector<HTMLElement>(".cursor");
     const onPointer = (e: PointerEvent) => {
-      const cards = document.querySelectorAll<HTMLElement>(".card,.sector");
-      cards.forEach((c) => {
+      if (cursor) cursor.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
+      document.querySelectorAll<HTMLElement>(".card,.sector,.mcard").forEach((c) => {
         const r = c.getBoundingClientRect();
         if (
           e.clientX >= r.left && e.clientX <= r.right &&
@@ -154,13 +154,23 @@ export default function Page() {
           c.style.setProperty("--my", e.clientY - r.top + "px");
         }
       });
-      if (fine && tilt && !reduced) {
-        const nx = (e.clientX / window.innerWidth) * 2 - 1;
-        const ny = -((e.clientY / window.innerHeight) * 2 - 1);
-        tilt.style.transform = `rotateY(${nx * 10}deg) rotateX(${-ny * 7}deg)`;
-      }
     };
     if (fine) window.addEventListener("pointermove", onPointer, { passive: true });
+
+    // magnetic buttons
+    const mags: { el: HTMLElement; mm: (e: MouseEvent) => void; ml: () => void }[] = [];
+    if (fine && !reduced) {
+      document.querySelectorAll<HTMLElement>(".btn").forEach((b) => {
+        const mm = (e: MouseEvent) => {
+          const r = b.getBoundingClientRect();
+          b.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.25}px,${(e.clientY - r.top - r.height / 2) * 0.4}px)`;
+        };
+        const ml = () => { b.style.transform = ""; };
+        b.addEventListener("mousemove", mm);
+        b.addEventListener("mouseleave", ml);
+        mags.push({ el: b, mm, ml });
+      });
+    }
 
     return () => {
       clearInterval(clockInt);
@@ -168,11 +178,13 @@ export default function Page() {
       sio.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", onPointer);
+      mags.forEach((m) => { m.el.removeEventListener("mousemove", m.mm); m.el.removeEventListener("mouseleave", m.ml); });
     };
   }, []);
 
   return (
     <>
+      <div className="cursor" aria-hidden="true" />
       {/* NAV */}
       <Menu open={menuOpen} onClose={() => setMenuOpen(false)} />
       <header className="nav" id="nav">
@@ -206,6 +218,7 @@ export default function Page() {
       <section className="hero" id="top">
         <video className="hero-bg" poster={HERO_POSTER} autoPlay muted loop playsInline preload="auto" aria-hidden="true">
           <source src="/hero.mp4" type="video/mp4" />
+          <source src={HERO_VIDEO} type="video/mp4" />
         </video>
         <div className="hero-scrim" />
         <div className="hero-inner">
