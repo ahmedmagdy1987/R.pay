@@ -1,16 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import BrandsMarquee from "@/components/BrandsMarquee";
 import HowItWorks from "@/components/HowItWorks";
 import Integration from "@/components/Integration";
 import Menu from "@/components/Menu";
 import { R_MARK } from "@/lib/assets/brand";
-import { HERO_VIDEO } from "@/lib/assets/hero";
-
-const VendingScroll = dynamic(() => import("@/components/VendingScroll"), {
-  ssr: false,
-});
+import { HERO_POSTER } from "@/lib/assets/hero";
 
 export default function Page() {
   const [en, setEn] = useState(false);
@@ -207,72 +202,37 @@ export default function Page() {
         </div>
       </header>
 
-      {/* HERO */}
+      {/* HERO (full-bleed cinematic) */}
       <section className="hero" id="top">
-        <div className="hgrid">
-          <div>
-            <div className="kicker rv"><span className="pulse" />
-              <span className="ar-t">نظام دفع ذكي · منصة تحكّم موحّدة</span>
-              <span className="en-t">Smart Payments · Unified Control</span>
-            </div>
-            <h1 className="rv d1">
-              <span className="ar-t">حلول <em>ذكية</em><br />لمستقبل أفضل</span>
-              <span className="en-t"><em>Results</em> That<br />Speak.</span>
-            </h1>
-            <p className="hsub rv d2">
-              <span className="ar-t">نظام دفع شامل ومنصّة تحكّم لحظية لأجهزة الخدمة الذاتية، من ماكينة واحدة إلى شبكة كاملة.</span>
-              <span className="en-t">A complete payment suite and real-time control platform for self-service devices, from one machine to a whole network.</span>
-            </p>
-            <div className="hcta rv d3">
-              <a className="btn" href="#contact"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
-              <a className="btn ghost" href="#showcase"><span className="ar-t">اكتشف المنصة</span><span className="en-t">Explore the Platform</span></a>
-            </div>
-            <div className="pays rv d4">
-              <span className="lb"><span className="ar-t">طرق الدفع</span><span className="en-t">Payments</span></span>
-              <span className="pay">mada</span><span className="pay">VISA</span><span className="pay">Mastercard</span>
-              <span className="pay">Apple Pay</span><span className="pay">stc pay</span><span className="pay">GCCNET</span>
-            </div>
+        <video className="hero-bg" poster={HERO_POSTER} autoPlay muted loop playsInline preload="auto" aria-hidden="true">
+          <source src="/hero.mp4" type="video/mp4" />
+        </video>
+        <div className="hero-scrim" />
+        <div className="hero-inner">
+          <div className="kicker rv"><span className="pulse" />
+            <span className="ar-t">نظام دفع ذكي · منصة تحكّم موحّدة</span>
+            <span className="en-t">Smart Payments · Unified Control</span>
           </div>
-          <div className="rv d2">
-            <div className="stage">
-              <div className="vshow">
-                <span className="vglow" />
-                <video className="vshow-video" src={HERO_VIDEO} autoPlay muted loop playsInline preload="auto" />
-              </div>
-              <div className="dash">
-                <div className="dhd">
-                  <span className="t"><span className="ar-t">لوحة التحكم</span><span className="en-t">Dashboard</span></span>
-                  <span className="live"><i /><span className="ar-t">مباشر</span><span className="en-t">LIVE</span></span>
-                </div>
-                <div className="dlbl"><span className="ar-t">إجمالي المشتريات</span><span className="en-t">Total purchases</span></div>
-                <div className="dval"><span className="num" data-t="465255">0</span></div>
-                <svg className="spark" viewBox="0 0 240 34" preserveAspectRatio="none">
-                  <defs><linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#00AEEF" /><stop offset="1" stopColor="#00AEEF" stopOpacity="0" />
-                  </linearGradient></defs>
-                  <path className="f" d="M0,30 L0,22 C24,26 36,10 60,14 C84,18 96,4 120,9 C150,15 168,2 192,7 C210,11 224,6 240,10 L240,34 L0,34 Z" fill="url(#sparkGrad)" />
-                  <path className="l" d="M0,22 C24,26 36,10 60,14 C84,18 96,4 120,9 C150,15 168,2 192,7 C210,11 224,6 240,10" />
-                </svg>
-                <div className="dgrid">
-                  <div className="mini"><div className="a"><span className="ar-t">الأرباح</span><span className="en-t">Profit</span></div><div className="b"><span className="num" data-t="162839">0</span></div></div>
-                  <div className="mini"><div className="a"><span className="ar-t">متصل</span><span className="en-t">Online</span></div><div className="b"><span className="num" data-t="90">0</span>/97</div></div>
-                  <div className="mini"><div className="a"><span className="ar-t">الهدايا</span><span className="en-t">Gifts</span></div><div className="b"><span className="num" data-t="9434">0</span></div></div>
-                </div>
-              </div>
-              <div className="toast">
-                <span className="ic"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" /></svg></span>
-                <div>
-                  <div className="tt"><span className="ar-t">دفعة ناجحة</span><span className="en-t">Payment approved</span></div>
-                  <div className="ts">SAR 15.00 · mada</div>
-                </div>
-              </div>
-            </div>
+          <h1 className="hero-title rv d1">
+            <span className="ar-t">حلول <em>ذكية</em> لمستقبل أفضل</span>
+            <span className="en-t"><em>Results</em> That Speak.</span>
+          </h1>
+          <p className="hero-lead rv d2">
+            <span className="ar-t">نظام دفع شامل ومنصّة تحكّم لحظية لأجهزة الخدمة الذاتية، من ماكينة واحدة إلى شبكة كاملة.</span>
+            <span className="en-t">A complete payment suite and real-time control platform for self-service devices, from one machine to a whole network.</span>
+          </p>
+          <div className="hcta rv d3">
+            <a className="btn" href="#contact"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
+            <a className="btn ghost" href="#features"><span className="ar-t">اكتشف المنصة</span><span className="en-t">Explore the Platform</span></a>
           </div>
         </div>
+        <a className="hero-cue" href="#features" aria-label="scroll">
+          <span className="ar-t">مرّر للأسفل</span><span className="en-t">Scroll</span>
+          <span className="m"><i /></span>
+        </a>
       </section>
 
       <BrandsMarquee />
-      <VendingScroll />
 
       {/* STATS */}
       <section className="stats">
