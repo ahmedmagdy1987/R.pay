@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import BrandsMarquee from "@/components/BrandsMarquee";
+import HeroVisual from "@/components/HeroVisual";
 import HowItWorks from "@/components/HowItWorks";
 import Integration from "@/components/Integration";
 import Menu from "@/components/Menu";
 import { R_MARK } from "@/lib/assets/brand";
-import { HERO_POSTER, HERO_VIDEO } from "@/lib/assets/hero";
 
 export default function Page() {
   const [en, setEn] = useState(false);
@@ -214,28 +214,38 @@ export default function Page() {
         </div>
       </header>
 
-      {/* HERO (full-bleed cinematic) */}
+      {/* HERO (custom animated visual system — no video) */}
       <section className="hero" id="top">
-        <video className="hero-bg" poster={HERO_POSTER} autoPlay muted loop playsInline preload="auto" aria-hidden="true">
-          <source src={HERO_VIDEO} type="video/mp4" />
-        </video>
-        <div className="hero-scrim" />
-        <div className="hero-inner">
-          <div className="kicker rv"><span className="pulse" />
-            <span className="ar-t">نظام دفع ذكي · منصة تحكّم موحّدة</span>
-            <span className="en-t">Smart Payments · Unified Control</span>
+        <div className="hero-aura" aria-hidden="true" />
+        <div className="hero-grid" aria-hidden="true" />
+        <div className="hgrid">
+          <div className="hero-copy">
+            <div className="kicker rv"><span className="pulse" />
+              <span className="ar-t">نظام دفع ذكي · منصة تحكّم موحّدة</span>
+              <span className="en-t">Smart Payments · Unified Control</span>
+            </div>
+            <h1 className="hero-title rv d1">
+              <span className="ar-t"><em>ادفع. راقب. تحكّم.</em><br />منصة واحدة لكل أجهزتك</span>
+              <span className="en-t"><em>Pay. Monitor. Control.</em><br />One platform for every machine</span>
+            </h1>
+            <p className="hero-lead rv d2">
+              <span className="ar-t">نظام دفع شامل ومنصّة تحكّم لحظية لأجهزة الخدمة الذاتية، من ماكينة واحدة إلى شبكة كاملة.</span>
+              <span className="en-t">A complete payment suite and real-time control platform for self-service devices, from one machine to a whole network.</span>
+            </p>
+            <div className="hcta rv d3">
+              <a className="btn" href="#contact"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
+              <a className="btn ghost" href="#features"><span className="ar-t">اكتشف المنصة</span><span className="en-t">Explore the Platform</span></a>
+            </div>
+            <div className="pays rv d4">
+              <span className="lb"><span className="ar-t">وسائل الدفع المدعومة</span><span className="en-t">Supported payments</span></span>
+              <span className="pay">مدى mada</span>
+              <span className="pay">Visa</span>
+              <span className="pay">Mastercard</span>
+              <span className="pay">Apple Pay</span>
+            </div>
           </div>
-          <h1 className="hero-title rv d1">
-            <span className="ar-t">حلول <em>ذكية</em> لمستقبل أفضل</span>
-            <span className="en-t"><em>Results</em> That Speak.</span>
-          </h1>
-          <p className="hero-lead rv d2">
-            <span className="ar-t">نظام دفع شامل ومنصّة تحكّم لحظية لأجهزة الخدمة الذاتية، من ماكينة واحدة إلى شبكة كاملة.</span>
-            <span className="en-t">A complete payment suite and real-time control platform for self-service devices, from one machine to a whole network.</span>
-          </p>
-          <div className="hcta rv d3">
-            <a className="btn" href="#contact"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
-            <a className="btn ghost" href="#features"><span className="ar-t">اكتشف المنصة</span><span className="en-t">Explore the Platform</span></a>
+          <div className="hero-vis rv d2">
+            <HeroVisual />
           </div>
         </div>
         <a className="hero-cue" href="#features" aria-label="scroll">
@@ -417,6 +427,7 @@ export default function Page() {
       <section className="cta" id="contact">
         <div className="wrap">
           <div className="ctabox rv">
+            <span className="cta-orbit" aria-hidden="true"><i /></span>
             <h2><span className="ar-t">انضم إلينا وابدأ البيع الذاتي الآن<br />بكل سهولة</span><span className="en-t">Join us and start self-selling now<br />with ease</span></h2>
             <p><span className="ar-t">انضم إلى المنصة الرائدة للقياس عن بُعد والمدفوعات الرقمية في منطقة الشرق الأوسط وشمال إفريقيا، وحوّل عمليات الخدمة الذاتية الخاصة بك اليوم.</span><span className="en-t">Join the leading platform for scalable telemetry and digital payments in the MENA region. Transform your self-service operations today.</span></p>
             <a className="btn" href="https://wa.me/966550796555" target="_blank" rel="noopener noreferrer"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
