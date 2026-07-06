@@ -34,13 +34,15 @@ export default function Menu({ open, onClose }: { open: boolean; onClose: () => 
   }, [open]);
 
   // While open: move focus to the close button (keyboard users land inside the
-  // dialog instead of behind it) and close on Escape.
+  // dialog instead of behind it) and close on Escape. The focus is deferred:
+  // .menu transitions visibility hidden→visible, and at the first frame the
+  // node is still unfocusable, so an immediate focus() silently no-ops.
   useEffect(() => {
     if (!open) return;
-    closeRef.current?.focus();
+    const t = setTimeout(() => closeRef.current?.focus(), 60);
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => { clearTimeout(t); window.removeEventListener("keydown", onKey); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
