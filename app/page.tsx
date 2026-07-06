@@ -237,11 +237,11 @@ export default function Page() {
               <a className="btn ghost" href="#features"><span className="ar-t">اكتشف المنصة</span><span className="en-t">Explore the Platform</span></a>
             </div>
             <div className="pays rv d4">
-              <span className="lb"><span className="ar-t">وسائل الدفع المدعومة</span><span className="en-t">Supported payments</span></span>
-              <span className="pay">مدى mada</span>
-              <span className="pay">Visa</span>
-              <span className="pay">Mastercard</span>
-              <span className="pay">Apple Pay</span>
+              <span className="lb"><span className="ar-t">منصة موثوقة</span><span className="en-t">Trusted platform</span></span>
+              <span className="pay"><span className="ar-t">دفع آمن</span><span className="en-t">Secure checkout</span></span>
+              <span className="pay"><span className="ar-t">موافقة فورية</span><span className="en-t">Instant approval</span></span>
+              <span className="pay"><span className="ar-t">مراقبة مباشرة</span><span className="en-t">Live monitoring</span></span>
+              <span className="pay"><span className="ar-t">دفع متعدد القنوات</span><span className="en-t">Multi-channel payments</span></span>
             </div>
           </div>
           <div className="hero-vis rv d2">
