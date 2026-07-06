@@ -30,7 +30,7 @@ export default function Integration() {
           <i /><span><span className="ar-t">نظام موحّد</span><span className="en-t">Unified System</span></span><i />
         </div>
         <h2 className="stitle rv d1">
-          <span className="ar-t">تكامل <em>ار باي</em></span>
+          <span className="ar-t">تكامل <em>آر باي</em></span>
           <span className="en-t">R Pay <em>Integration</em></span>
         </h2>
         <div className="integ-en rv d1" aria-hidden="true">

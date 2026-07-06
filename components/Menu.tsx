@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { R_MARK } from "@/lib/assets/brand";
 
 const ITEMS = [
@@ -13,6 +13,7 @@ const ITEMS = [
 export default function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [r, setR] = useState("--:--");
   const [l, setL] = useState("--:--");
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -32,12 +33,29 @@ export default function Menu({ open, onClose }: { open: boolean; onClose: () => 
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
+  // While open: move focus to the close button (keyboard users land inside the
+  // dialog instead of behind it) and close on Escape.
+  useEffect(() => {
+    if (!open) return;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   return (
-    <div className={`menu${open ? " open" : ""}`} role="dialog" aria-hidden={!open}>
+    <div
+      className={`menu${open ? " open" : ""}`}
+      role="dialog"
+      aria-modal={open}
+      aria-hidden={!open}
+      aria-label="القائمة الرئيسية / Main menu"
+    >
       <div className="menu-top">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="menu-logo" src={R_MARK} alt="R.Pay" />
-        <button className="menu-close" onClick={onClose} aria-label="إغلاق">
+        <button className="menu-close" ref={closeRef} onClick={onClose} aria-label="إغلاق / Close">
           <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
       </div>

@@ -140,20 +140,27 @@ export default function Page() {
       c.appendChild(nEl);
     });
 
-    // custom cursor glow + card spotlight
+    // custom cursor glow + card spotlight. The spotlight targets are static
+    // after mount, so query them ONCE and do the rect work at most once per
+    // frame — re-querying and measuring on every raw pointermove was the most
+    // expensive per-event work on the page.
     const cursor = document.querySelector<HTMLElement>(".cursor");
-    const onPointer = (e: PointerEvent) => {
-      if (cursor) cursor.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
-      document.querySelectorAll<HTMLElement>(".card,.sector,.mcard").forEach((c) => {
+    const spots = Array.from(document.querySelectorAll<HTMLElement>(".card,.mcard"));
+    let spotX = 0, spotY = 0, spotRaf = 0;
+    const applySpots = () => {
+      spotRaf = 0;
+      spots.forEach((c) => {
         const r = c.getBoundingClientRect();
-        if (
-          e.clientX >= r.left && e.clientX <= r.right &&
-          e.clientY >= r.top && e.clientY <= r.bottom
-        ) {
-          c.style.setProperty("--mx", e.clientX - r.left + "px");
-          c.style.setProperty("--my", e.clientY - r.top + "px");
+        if (spotX >= r.left && spotX <= r.right && spotY >= r.top && spotY <= r.bottom) {
+          c.style.setProperty("--mx", spotX - r.left + "px");
+          c.style.setProperty("--my", spotY - r.top + "px");
         }
       });
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (cursor) cursor.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
+      spotX = e.clientX; spotY = e.clientY;
+      if (!spotRaf) spotRaf = requestAnimationFrame(applySpots);
     };
     if (fine) window.addEventListener("pointermove", onPointer, { passive: true });
 
@@ -178,6 +185,7 @@ export default function Page() {
       sio.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", onPointer);
+      if (spotRaf) cancelAnimationFrame(spotRaf);
       mags.forEach((m) => { m.el.removeEventListener("mousemove", m.mm); m.el.removeEventListener("mouseleave", m.ml); });
     };
   }, []);
@@ -195,13 +203,19 @@ export default function Page() {
         </a>
         <nav className="nlinks">
           <a href="#features"><span className="ar-t">المزايا</span><span className="en-t">Features</span></a>
-          <a href="#about"><span className="ar-t">عن ار باي</span><span className="en-t">About</span></a>
+          <a href="#about"><span className="ar-t">عن آر باي</span><span className="en-t">About</span></a>
           <a href="#sectors"><span className="ar-t">التكامل</span><span className="en-t">Integration</span></a>
           <a href="#how"><span className="ar-t">كيف يعمل</span><span className="en-t">How it works</span></a>
           <a href="#compare"><span className="ar-t">المقارنة</span><span className="en-t">Compare</span></a>
         </nav>
         <div className="nright">
-          <button className="theme" onClick={toggleTheme} aria-label="theme">
+          <button
+            className="theme"
+            onClick={toggleTheme}
+            aria-label={en
+              ? (light ? "Switch to dark theme" : "Switch to light theme")
+              : (light ? "التبديل إلى الوضع الداكن" : "التبديل إلى الوضع الفاتح")}
+          >
             {light ? (
               <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" /></svg>
             ) : (
@@ -271,7 +285,7 @@ export default function Page() {
       {/* FEATURES */}
       <section id="features">
         <div className="wrap">
-          <div className="khead rv"><i /><span><span className="ar-t">مزايا ار باي</span><span className="en-t">R Pay Features</span></span><i /></div>
+          <div className="khead rv"><i /><span><span className="ar-t">مزايا آر باي</span><span className="en-t">R Pay Features</span></span><i /></div>
           <h2 className="stitle rv d1"><span className="ar-t">كل ما تحتاجه <em>في نظام واحد</em></span><span className="en-t">Everything you need, <em>in one system</em></span></h2>
           <p className="ssub rv d2"><span className="ar-t">تخلّص من الأعمال الروتينية واحصل على رؤية واضحة لما يهم، نظام شامل لإدارة عملياتك بسلاسة وكفاءة.</span><span className="en-t">Eliminate the busywork and gain a clear picture of what matters, one suite to run your operations smoothly.</span></p>
           <div className="bento">
@@ -282,7 +296,7 @@ export default function Page() {
             </div>
             <div className="card rv d1">
               <div className="fic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg></div>
-              <h3><span className="ar-t">استرجاع تلقائي</span><span className="en-t">Auto cashback</span></h3>
+              <h3><span className="ar-t">استرجاع تلقائي</span><span className="en-t">Auto refunds</span></h3>
               <p><span className="ar-t">عند فشل الدفع يُعاد المبلغ تلقائيًا دون تدخل بشري.</span><span className="en-t">Failed payments are refunded automatically.</span></p>
             </div>
             <div className="card rv d2">
@@ -323,12 +337,12 @@ export default function Page() {
       <section id="about">
         <div className="wrap">
           <div className="khead rv"><i /><span><span className="ar-t">قصتنا</span><span className="en-t">Our Story</span></span><i /></div>
-          <h2 className="stitle rv d1"><span className="ar-t">عن <em>ار باي</em></span><span className="en-t">About <em>R Pay</em></span></h2>
+          <h2 className="stitle rv d1"><span className="ar-t">عن <em>آر باي</em></span><span className="en-t">About <em>R Pay</em></span></h2>
           <p className="ssub rv d2"><span className="ar-t">شركة سعودية تقود التحوّل الذكي لقطاع الأجهزة والخدمات الذاتية.</span><span className="en-t">A Saudi company leading the smart transformation of the self-service sector.</span></p>
           <div className="agrid">
             <div className="atext rv">
               <p className="lead"><span className="ar-t">نظام موحّد يجمع الدفع الإلكتروني والمراقبة التشغيلية في منصة واحدة.</span><span className="en-t">One unified system bringing e-payment and operational control together.</span></p>
-              <p><span className="ar-t">ار باي شركة سعودية تقدّم حلولاً تقنية ذكية لقطاع الأجهزة والخدمات الذاتية، تتيح للمشغلين التحكم الكامل ومتابعة عملياتهم في الوقت الفعلي، لتعزيز الكفاءة التشغيلية وتقديم تجربة سلسة وآمنة للمستخدم ودعم نمو الأعمال بمرونة.</span><span className="en-t">R Pay is a Saudi company offering smart tech solutions for the self-service and device sector, enabling operators to manage and monitor operations in real time, boosting efficiency and delivering a smooth, secure user experience.</span></p>
+              <p><span className="ar-t">آر باي شركة سعودية تقدّم حلولاً تقنية ذكية لقطاع الأجهزة والخدمات الذاتية، تتيح للمشغلين التحكم الكامل ومتابعة عملياتهم في الوقت الفعلي، لتعزيز الكفاءة التشغيلية وتقديم تجربة سلسة وآمنة للمستخدم ودعم نمو الأعمال بمرونة.</span><span className="en-t">R Pay is a Saudi company offering smart tech solutions for the self-service and device sector, enabling operators to manage and monitor operations in real time, boosting efficiency and delivering a smooth, secure user experience.</span></p>
               <div className="lead-badge rv d1"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M17 4H7v6a5 5 0 0 0 10 0V4Z" /><path d="M7 6H4a2 2 0 0 0 2 5M17 6h3a2 2 0 0 1-2 5" /></svg>
                 <span className="ar-t">أكبر مشغّل لمكائن ألعاب الأركيد في المنطقة</span><span className="en-t">The largest arcade-machine operator in the region</span></div>
               <div className="clients rv d2">
@@ -384,14 +398,14 @@ export default function Page() {
       <section id="compare">
         <div className="wrap">
           <div className="khead rv"><i /><span><span className="ar-t">المقارنة</span><span className="en-t">Comparison</span></span><i /></div>
-          <h2 className="stitle rv d1"><span className="ar-t">لماذا <em>ار باي</em>؟</span><span className="en-t">Why <em>R Pay</em>?</span></h2>
+          <h2 className="stitle rv d1"><span className="ar-t">لماذا <em>آر باي</em>؟</span><span className="en-t">Why <em>R Pay</em>?</span></h2>
           <p className="ssub rv d2"><span className="ar-t">مقارنة مباشرة مع الحلول الأخرى في السوق.</span><span className="en-t">A head-to-head look at the alternatives.</span></p>
           <div className="cmp rv d1">
             <table>
               <thead><tr>
                 <th><span className="ar-t">الميزة</span><span className="en-t">Feature</span></th>
                 <th className="rcol">R.Pay</th>
-                <th><span className="ar-t">الآخرون</span><span className="en-t">Others</span><br /><small style={{ opacity: .55, fontSize: "10px" }}>SurePay · Geidea</small></th>
+                <th><span className="ar-t">الآخرون</span><span className="en-t">Others</span><br /><small style={{ color: "var(--muted)", fontSize: "11px" }}>SurePay · Geidea</small></th>
               </tr></thead>
               <tbody>
                 {[
@@ -428,7 +442,7 @@ export default function Page() {
         <div className="wrap">
           <div className="ctabox rv">
             <span className="cta-orbit" aria-hidden="true"><i /></span>
-            <h2><span className="ar-t">انضم إلينا وابدأ البيع الذاتي الآن<br />بكل سهولة</span><span className="en-t">Join us and start self-selling now<br />with ease</span></h2>
+            <h2><span className="ar-t">انضم إلينا وابدأ البيع الذاتي الآن<br />بكل سهولة</span><span className="en-t">Join us and start self-service sales now<br />with ease</span></h2>
             <p><span className="ar-t">انضم إلى المنصة الرائدة للقياس عن بُعد والمدفوعات الرقمية في منطقة الشرق الأوسط وشمال إفريقيا، وحوّل عمليات الخدمة الذاتية الخاصة بك اليوم.</span><span className="en-t">Join the leading platform for scalable telemetry and digital payments in the MENA region. Transform your self-service operations today.</span></p>
             <a className="btn" href="https://wa.me/966550796555" target="_blank" rel="noopener noreferrer"><span className="ar-t">ابدأ الآن</span><span className="en-t">Get Started</span></a>
             <span className="ctamail"><span className="ar-t">استفسارات:</span><span className="en-t">Inquiries:</span> <b>hello@rpay.sa</b></span>

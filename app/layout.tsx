@@ -24,12 +24,16 @@ export const metadata: Metadata = {
   keywords: [
     "R Pay",
     "ار باي",
+    "آر باي",
     "self-service payments",
     "vending machines",
     "Saudi Arabia",
     "smart payments",
   ],
-  metadataBase: new URL("https://www.rpay.sa"),
+  // Resolves every relative metadata URL (og:image, og:url). Defaults to the
+  // live deployment; set NEXT_PUBLIC_SITE_URL=https://www.rpay.sa in Vercel
+  // once that domain actually hosts THIS app (today it serves a different site).
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://r-pay-orcin.vercel.app"),
   icons: { icon: FAVICON, shortcut: FAVICON, apple: FAVICON },
   openGraph: {
     title: "R Pay | حلول ذكية لمستقبل أفضل",
@@ -37,6 +41,23 @@ export const metadata: Metadata = {
       "نظام دفع ذكي ومنصة تحكم موحدة لأجهزة الخدمة الذاتية في السعودية.",
     type: "website",
     locale: "ar_SA",
+    alternateLocale: "en_US",
+    siteName: "R Pay",
+    url: "/",
+    images: [
+      {
+        url: "/assets/hero-poster.webp",
+        width: 1600,
+        height: 759,
+        alt: "R Pay smart self-service payment terminal",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "R Pay | حلول ذكية لمستقبل أفضل",
+    description:
+      "نظام دفع ذكي ومنصة تحكم موحدة لأجهزة الخدمة الذاتية في السعودية.",
   },
 };
 

@@ -20,7 +20,7 @@ const STEPS = [
   {
     n: "03",
     ar: "الاسترجاع النقدي التلقائي",
-    en: "Automatic Cashback",
+    en: "Automatic Refunds",
     arP: "عند فشل الدفع أو حدوث خلل يُعاد المبلغ تلقائيًا دون تدخل بشري، وتُسجَّل الحالة في لوحة التحكم.",
     enP: "On a failed payment the amount is refunded automatically with no human intervention, and the incident is logged.",
   },
@@ -105,16 +105,18 @@ export default function HowItWorks() {
                     <circle cx="28" cy="28" r="26" />
                   </svg>
                 </span>
-                <div>
-                  <h3>
+                {/* spans, not h3/p/div: a <button> allows only phrasing content,
+                    and headings inside buttons pollute screen-reader heading nav */}
+                <span className="hstep-tx">
+                  <span className="hstep-h">
                     <span className="ar-t">{s.ar}</span>
                     <span className="en-t">{s.en}</span>
-                  </h3>
-                  <p>
+                  </span>
+                  <span className="hstep-p">
                     <span className="ar-t">{s.arP}</span>
                     <span className="en-t">{s.enP}</span>
-                  </p>
-                </div>
+                  </span>
+                </span>
               </button>
             ))}
           </div>

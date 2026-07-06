@@ -40,14 +40,28 @@ html.light{
 html{scroll-behavior:smooth}
 html{overflow-x:hidden}
 body{font-family:var(--fa);color:var(--ink);background:var(--bg);
-  background-image:var(--bg-grad);background-attachment:fixed;
   overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background-color .4s,color .4s}
+/* The page gradient lives on a composited fixed layer instead of
+   background-attachment:fixed (scroll-jank on mobile; ignored by iOS Safari). */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--bg-grad)}
 html.en body{font-family:var(--fe)}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
 .en-t{display:none!important}
 html.en .ar-t{display:none!important}
 html.en .en-t{display:revert!important}
+/* Arabic never takes Latin tracking — letter-spacing severs cursive joining.
+   Parents (khead, hero-cue, fcol h4, clocks, …) may set tracking for their
+   Latin microcopy; the Arabic span always resets it. The .integ-en block swaps
+   scripts (Latin echo in AR mode, Arabic echo in EN mode), so it gets the
+   mirrored pair of exceptions. */
+.ar-t{letter-spacing:normal}
+.integ-en .ar-t{letter-spacing:.06em}
+html.en .integ-en .en-t{letter-spacing:normal}
+/* Keyboard focus: one theme-aware ring for every interactive element (the UA
+   default ring is inconsistent and near-invisible on the gradient pills). */
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+html.light :focus-visible{outline-color:var(--blue)}
 ::selection{background:var(--cyan);color:#02121f}
 
 /* ===== background ===== */
@@ -251,7 +265,7 @@ html.light .hv-device img{filter:drop-shadow(0 30px 48px rgba(20,50,90,.32))}
 .stat+.stat{border-inline-start:1px solid var(--line)}
 .stat::after{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:46px;height:2px;
   border-radius:0 0 3px 3px;background:var(--grad);opacity:.9;box-shadow:0 0 14px rgba(0,174,239,.55)}
-.stat b{display:block;font-family:var(--fe);font-weight:800;font-size:clamp(2.2rem,5vw,3.2rem);
+.stat b{display:block;font-family:var(--fe);font-weight:800;font-size:clamp(2.2rem,4.2vw,3.2rem);
   background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.15;margin-bottom:8px}
 .stat b span{font-size:inherit}
 .stat>span{font-size:14px;color:var(--muted);font-weight:500}
@@ -330,10 +344,11 @@ html.light .hv-device img{filter:drop-shadow(0 30px 48px rgba(20,50,90,.32))}
 .hprog circle{fill:none;stroke:var(--mint);stroke-width:2;stroke-linecap:round;stroke-dasharray:163;stroke-dashoffset:163}
 .hstep.on .hprog circle{animation:hprog 4.5s linear forwards}
 @keyframes hprog{to{stroke-dashoffset:0}}
-.hstep h3{font-size:17px;margin-bottom:5px;transition:.3s}
-.hstep.on h3{color:var(--cyan)}
-.hstep p{font-size:13.5px;line-height:1.85;color:var(--muted);font-weight:300;max-height:0;opacity:0;overflow:hidden;transition:.45s ease}
-.hstep.on p{max-height:130px;opacity:1}
+.hstep-tx{display:block;flex:1;min-width:0}
+.hstep .hstep-h{display:block;font-size:17px;font-weight:600;margin-bottom:5px;transition:.3s}
+.hstep.on .hstep-h{color:var(--cyan)}
+.hstep .hstep-p{display:block;font-size:13.5px;line-height:1.85;color:var(--muted);font-weight:300;max-height:0;opacity:0;overflow:hidden;transition:.45s ease}
+.hstep.on .hstep-p{max-height:130px;opacity:1}
 /* visual panel */
 .hvis{position:relative;aspect-ratio:16/12;max-width:none;width:100%;margin:0;border-radius:24px;border:1px solid var(--brd);
   background:var(--panel-2);overflow:hidden;backdrop-filter:blur(10px)}
@@ -541,10 +556,11 @@ footer::before{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;p
   .hv-mini>span{padding:6px 6px;font-size:8.5px}
   .hv-okw{top:11%}
   .hv-ok{font-size:11px;padding:8px 11px}
-  /* keep the geofence chip clear of the fixed WhatsApp button near the fold:
-     move it to the upper third, opposite the approved-payment chip */
-  .hv-geow{bottom:auto;top:32%}
+  /* keep the geofence chip clear of the fixed WhatsApp button near the fold
+     AND below the payment card (card bottom ≈ top:8% + 98px ≈ 42% at 320px) */
+  .hv-geow{bottom:auto;top:47%}
   .hv-geo{font-size:10.5px;padding:8px 11px}
+  .stat b{font-size:clamp(1.35rem,7vw,2.6rem)}
   .hnum{width:40px;height:40px;font-size:12px}
   .hstep{padding:12px 13px;gap:12px}
   .nav .btn{display:none}
