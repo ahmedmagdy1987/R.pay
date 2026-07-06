@@ -217,7 +217,6 @@ export default function Page() {
       {/* HERO (full-bleed cinematic) */}
       <section className="hero" id="top">
         <video className="hero-bg" poster={HERO_POSTER} autoPlay muted loop playsInline preload="auto" aria-hidden="true">
-          <source src="/hero.mp4" type="video/mp4" />
           <source src={HERO_VIDEO} type="video/mp4" />
         </video>
         <div className="hero-scrim" />
