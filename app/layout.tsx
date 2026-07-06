@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
-import LiquidBackground from "@/components/LiquidBackground";
-import WhatsAppWidget from "@/components/WhatsAppWidget";
 import { FAVICON } from "@/lib/assets/brand";
 
 const bric = Bricolage_Grotesque({
@@ -18,9 +16,9 @@ const plex = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "R Pay | حلول ذكية لمستقبل أفضل · Smart Self-Service Payments",
+  title: "R.Pay — Interactive Concepts | مفاهيم آر باي",
   description:
-    "R Pay شركة سعودية تقدم نظام دفع ذكي ومنصة تحكم موحدة لأجهزة الخدمة الذاتية. Smart payments and unified control for vending, arcade and coffee machines.",
+    "استعرض اتجاهات تصميم متعددة للصفحة الرئيسية لآر باي. Explore multiple R.Pay homepage concept directions from one premium selection hub.",
   keywords: [
     "R Pay",
     "ار باي",
@@ -29,16 +27,15 @@ export const metadata: Metadata = {
     "vending machines",
     "Saudi Arabia",
     "smart payments",
+    "concept hub",
   ],
-  // Resolves every relative metadata URL (og:image, og:url). Defaults to the
-  // live deployment; set NEXT_PUBLIC_SITE_URL=https://www.rpay.sa in Vercel
-  // once that domain actually hosts THIS app (today it serves a different site).
+  // Resolves every relative metadata URL (og:image, og:url).
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://r-pay-orcin.vercel.app"),
   icons: { icon: FAVICON, shortcut: FAVICON, apple: FAVICON },
   openGraph: {
-    title: "R Pay | حلول ذكية لمستقبل أفضل",
+    title: "R.Pay — Interactive Concepts",
     description:
-      "نظام دفع ذكي ومنصة تحكم موحدة لأجهزة الخدمة الذاتية في السعودية.",
+      "Explore multiple R.Pay homepage concept directions from one premium selection hub.",
     type: "website",
     locale: "ar_SA",
     alternateLocale: "en_US",
@@ -55,9 +52,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "R Pay | حلول ذكية لمستقبل أفضل",
+    title: "R.Pay — Interactive Concepts",
     description:
-      "نظام دفع ذكي ومنصة تحكم موحدة لأجهزة الخدمة الذاتية في السعودية.",
+      "Explore multiple R.Pay homepage concept directions from one premium selection hub.",
   },
 };
 
@@ -75,17 +72,14 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={`dark ${bric.variable} ${plex.variable}`} suppressHydrationWarning>
       <body>
+        {/* Restore stored theme before first paint (themed routes read html.light/.dark) */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               "(function(){try{var t=localStorage.getItem('rpay-theme');var d=document.documentElement;d.classList.remove('dark','light');d.classList.add(t==='light'?'light':'dark');}catch(e){}})();",
           }}
         />
-        <LiquidBackground />
-        <div className="scrim" />
-        <div id="prog" />
         {children}
-        <WhatsAppWidget phone="966550796555" />
       </body>
     </html>
   );

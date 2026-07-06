@@ -1,0 +1,51 @@
+/* ============================================================================
+   R.Pay — Concept 04 · Coming Next (placeholder)
+   ========================================================================== */
+
+html.light{
+  --bg:#eef3fb;
+  --bg-grad:radial-gradient(120% 90% at 50% -10%,#ffffff 0%,#eef3fb 46%,#dfe9f6 100%);
+  --ink:#0b2138; --muted:#51677d;
+  --line:rgba(18,58,105,.14);
+  --card:rgba(255,255,255,.78);
+}
+:root,html.dark{ --card:rgba(9,24,44,.55); }
+
+.cs{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:64px var(--padx)}
+.cs-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.cs-glow::before{content:"";position:absolute;width:60vw;height:60vw;top:-18vw;left:50%;transform:translateX(-50%);
+  border-radius:50%;filter:blur(90px);opacity:.5;
+  background:radial-gradient(circle,rgba(0,174,239,.32),rgba(31,211,184,.14) 45%,transparent 68%)}
+
+.cs-tools{position:fixed;top:clamp(16px,4vw,32px);inset-inline-end:var(--padx);z-index:20;display:inline-flex;gap:10px}
+.cs-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);
+  color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:.25s;font-family:var(--fe);font-weight:700;font-size:13px;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.cs-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.cs-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.cs-badge{display:inline-flex;align-items:center;gap:9px;font-family:var(--fe);font-weight:600;font-size:11px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  padding:9px 16px;border:1px solid var(--line);border-radius:999px;background:var(--card);margin-bottom:34px}
+.cs-badge i{width:7px;height:7px;border-radius:50%;background:#f0b23a;box-shadow:0 0 10px #f0b23a;flex:none}
+html.en .cs-badge .ar-t{letter-spacing:.2em}
+
+.cs-mark{width:96px;height:96px;margin:0 auto 32px;border-radius:26px;display:grid;place-items:center;
+  border:1.5px dashed rgba(130,200,255,.42);color:var(--cyan);position:relative}
+.cs-mark::before{content:"";position:absolute;inset:-8px;border-radius:32px;border:1px solid var(--line);
+  animation:csPulse 3.2s ease-in-out infinite}
+@keyframes csPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:1}}
+.cs-mark svg{width:42px;height:42px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+@media(prefers-reduced-motion:reduce){.cs-mark::before{animation:none}}
+
+.cs-title{font-family:var(--fe);font-weight:800;letter-spacing:-.02em;line-height:1.05;
+  font-size:clamp(2.4rem,6.5vw,4.6rem);margin-bottom:20px}
+.cs-title em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 30px rgba(0,174,239,.3))}
+.cs-sub{color:var(--muted);font-size:clamp(1rem,1.5vw,1.2rem);line-height:1.85;max-width:52ch;margin:0 auto;font-weight:300}
+
+.cs-home{margin-top:40px;display:inline-flex;align-items:center;gap:9px;font-family:var(--fe);font-weight:600;font-size:14px;
+  color:var(--ink);padding:12px 22px;border-radius:999px;border:1px solid var(--line);background:var(--card);transition:.25s}
+.cs-home:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-2px)}
+.cs-home svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
