@@ -54,6 +54,17 @@ const CONCEPTS: Concept[] = [
   },
   {
     num: "04",
+    href: "/concepts/pulse",
+    img: "/assets/machine-arcade.webp",
+    status: "live",
+    statusAr: "جديد", statusEn: "New",
+    eyebrowAr: "بصري · تفاعلي", eyebrowEn: "Visual · Interactive",
+    titleAr: "تجربة النبض", titleEn: "Pulse Experience",
+    descAr: "صفحة بصرية تفاعلية بأقل نص ممكن: محاكي دفع حي، رادار الشبكة، وإحصائيات تنبض أمامك.",
+    descEn: "A visual-first, interactive page with minimal text: a live tap-to-pay simulator, network radar, and stats that pulse before you.",
+  },
+  {
+    num: "05",
     href: "/concepts/coming-soon",
     img: null,
     status: "soon",
