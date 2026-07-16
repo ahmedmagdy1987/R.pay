@@ -351,7 +351,7 @@ export default function Pulse() {
           </div>
 
           {/* TAP LAB — one solid panel: device on top, live dashboard below */}
-          <div className={`lab hud rv d2 ph-${phase}`}>
+          <div className={`lab hud ph-${phase}`}>
             <span className="lab-tag"><i /><span className="ar-t">محاكاة مباشرة</span><span className="en-t">Live simulation</span></span>
             <button
               type="button"
