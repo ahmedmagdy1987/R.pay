@@ -6,10 +6,11 @@ import { ARCADE, VENDING, COFFEE } from "@/lib/assets/machines";
 import { DEVICE } from "@/lib/assets/device";
 
 /* ─────────────────────────────────────────────────────────────
-   Concept 04 · PULSE — «النبض»
-   A visual-first, interaction-led landing. Same brand palette
-   and the same real R.Pay data, told through motion instead of
-   paragraphs. Signature: the tap-to-pay simulator in the hero.
+   Concept 04 · PULSE — «النبض» (v2, HUD identity)
+   Visual-first, same brand palette, same real R.Pay data.
+   v2 rebuild: flow-based layout (no fragile absolutes),
+   grid instead of horizontal rail, true-circle radar,
+   HUD corner-bracket card language, larger type.
    ───────────────────────────────────────────────────────────── */
 
 const VERBS = [
@@ -72,9 +73,9 @@ const OS = [
     ic: <><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6M12 20V9M2 7l10-4 10 4-10 4L2 7Z" /></>,
   },
   {
-    ar: "الفروع والمستخدمون والصلاحيات", en: "Branches, users and access",
-    arP: "إدارة مرنة مع تنبيهات فورية للأعطال والمخزون.",
-    enP: "Flexible management with instant fault and stock alerts.",
+    ar: "الفروع والمستخدمون", en: "Branches and users",
+    arP: "صلاحيات مرنة مع تنبيهات فورية للأعطال والمخزون.",
+    enP: "Flexible access with instant fault and stock alerts.",
     ic: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
   },
 ];
@@ -175,8 +176,8 @@ export default function Pulse() {
     }
     setPhase("tap");
     timers.current.push(setTimeout(() => setPhase("ok"), 950));
-    timers.current.push(setTimeout(() => setPhase("fly"), 1750));
-    timers.current.push(setTimeout(() => { setPhase("land"); setTx((t) => t + 1); }, 2600));
+    timers.current.push(setTimeout(() => setPhase("fly"), 1800));
+    timers.current.push(setTimeout(() => { setPhase("land"); setTx((t) => t + 1); }, 2550));
     timers.current.push(setTimeout(() => { setPhase("idle"); busy.current = false; }, 3250));
   }, []);
 
@@ -187,12 +188,12 @@ export default function Pulse() {
     const hero = document.getElementById("top");
     let heroIO: IntersectionObserver | null = null;
     if (hero) {
-      heroIO = new IntersectionObserver((es) => { heroSeen.current = es[0].isIntersecting; }, { threshold: 0.3 });
+      heroIO = new IntersectionObserver((es) => { heroSeen.current = es[0].isIntersecting; }, { threshold: 0.25 });
       heroIO.observe(hero);
     }
     const auto = setInterval(() => {
       if (heroSeen.current && !document.hidden && !reduced.current) runTap();
-    }, 5200);
+    }, 5600);
     const first = setTimeout(() => { if (!reduced.current) runTap(); }, 1200);
 
     /* monument verb rotation */
@@ -230,7 +231,7 @@ export default function Pulse() {
           }
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -6% 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -5% 0px" }
     );
     document.querySelectorAll<HTMLElement>(".rv").forEach((el) => io.observe(el));
 
@@ -246,17 +247,6 @@ export default function Pulse() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-
-    /* platform rail progress */
-    const rail = document.getElementById("prail");
-    const bar = document.getElementById("prailbar");
-    const onRail = () => {
-      if (!rail || !bar) return;
-      const max = rail.scrollWidth - rail.clientWidth;
-      bar.style.width = (max > 0 ? (Math.abs(rail.scrollLeft) / max) * 100 : 100) + "%";
-    };
-    rail?.addEventListener("scroll", onRail, { passive: true });
-    onRail();
 
     /* footer clocks */
     const clkR = document.getElementById("pclkR");
@@ -281,7 +271,6 @@ export default function Pulse() {
       t.forEach(clearTimeout);
       heroIO?.disconnect(); io.disconnect();
       window.removeEventListener("scroll", onScroll);
-      rail?.removeEventListener("scroll", onRail);
     };
   }, [runTap]);
 
@@ -289,9 +278,9 @@ export default function Pulse() {
 
   return (
     <main className="pl" id="top">
-      {/* fixed deep-space backdrop (concept is intentionally dark-only) */}
+      {/* fixed deep-space + blueprint-grid backdrop (dark-only concept) */}
       <div className="pl-bg" aria-hidden="true" />
-      <div className="pl-stars" aria-hidden="true" />
+      <div className="pl-grid" aria-hidden="true" />
 
       <a className="p-back" href="/" aria-label="All concepts">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6" /><rect x="14" y="3" width="7" height="7" rx="1.6" /><rect x="3" y="14" width="7" height="7" rx="1.6" /><rect x="14" y="14" width="7" height="7" rx="1.6" /></svg>
@@ -361,36 +350,28 @@ export default function Pulse() {
             </div>
           </div>
 
-          {/* TAP LAB — press the terminal */}
-          <div className="ph-lab rv d2">
+          {/* TAP LAB — one solid panel: device on top, live dashboard below */}
+          <div className={`lab hud rv d2 ph-${phase}`}>
+            <span className="lab-tag"><i /><span className="ar-t">محاكاة مباشرة</span><span className="en-t">Live simulation</span></span>
             <button
               type="button"
-              className={`taplab ph-${phase}`}
+              className="tapzone"
               onClick={runTap}
               aria-label={en ? "Run a demo payment" : "شغّل دفعة تجريبية"}
             >
-              <span className="tl-halo" aria-hidden="true" />
               <span className="tl-ring r1" aria-hidden="true" />
               <span className="tl-ring r2" aria-hidden="true" />
               <span className="tl-ring r3" aria-hidden="true" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="tl-dev" src={DEVICE} alt="" draggable={false} />
-              <span className="tl-card" aria-hidden="true">
-                <i className="tc-chip" /><i className="tc-wave" />
-              </span>
-              <span className="tl-ok" aria-hidden="true">
-                <i>✓</i>
-                <span className="ar-t">دفعة ناجحة · SAR 15.00</span>
-                <span className="en-t">Approved · SAR 15.00</span>
-              </span>
-              <span className="tl-fly" aria-hidden="true" dir="ltr">+ SAR 15.00</span>
-              <span className="tl-hint" aria-hidden="true">
-                <span className="ar-t">اضغط الجهاز</span><span className="en-t">Tap the device</span>
-              </span>
+              <span className="tl-card" aria-hidden="true"><i className="tc-chip" /><i className="tc-wave" /></span>
             </button>
-
-            {/* live mini-dashboard the payment lands into */}
-            <div className={`tl-dash ph-${phase}`} aria-live="off">
+            <div className="tl-status" aria-hidden="true">
+              <span className="tl-hint"><span className="ar-t">اضغط الجهاز لتجربة الدفع</span><span className="en-t">Tap the device to pay</span></span>
+              <span className="tl-ok"><i>✓</i><span className="ar-t">دفعة ناجحة · SAR 15.00</span><span className="en-t">Approved · SAR 15.00</span></span>
+            </div>
+            <span className="tl-fly" aria-hidden="true" dir="ltr">+ SAR 15.00</span>
+            <div className="tl-dash" aria-live="off">
               <span className="td-top"><i className="td-live" />
                 <span className="ar-t">لوحة التحكم · مباشر</span><span className="en-t">Dashboard · Live</span>
               </span>
@@ -415,14 +396,14 @@ export default function Pulse() {
           <path d="M0 60h180l20-28 22 56 24-70 26 84 22-42h130l18-24 20 48 22-60 24 72 20-36h150l20-30 22 60 24-74 26 88 22-44h140l18-22 20 44 22-56 24 68 20-34h160" />
         </svg>
         <div className="pstats">
-          <div className="pst"><b dir="ltr"><span className="num" data-t="465255">0</span>+</b><span><span className="ar-t">عملية دفع</span><span className="en-t">Transactions</span></span></div>
-          <div className="pst"><b dir="ltr"><span className="num" data-t="97">0</span></b><span><span className="ar-t">ماكينة مُدارة</span><span className="en-t">Machines managed</span></span></div>
-          <div className="pst"><b dir="ltr"><span className="num" data-t="9">0</span></b><span><span className="ar-t">فروع</span><span className="en-t">Branches</span></span></div>
-          <div className="pst"><b dir="ltr"><span className="num" data-t="9434">0</span></b><span><span className="ar-t">هدية مُسلَّمة</span><span className="en-t">Gifts delivered</span></span></div>
+          <div className="pst hud"><b dir="ltr"><span className="num" data-t="465255">0</span>+</b><span><span className="ar-t">عملية دفع</span><span className="en-t">Transactions</span></span></div>
+          <div className="pst hud"><b dir="ltr"><span className="num" data-t="97">0</span></b><span><span className="ar-t">ماكينة مُدارة</span><span className="en-t">Machines managed</span></span></div>
+          <div className="pst hud"><b dir="ltr"><span className="num" data-t="9">0</span></b><span><span className="ar-t">فروع</span><span className="en-t">Branches</span></span></div>
+          <div className="pst hud"><b dir="ltr"><span className="num" data-t="9434">0</span></b><span><span className="ar-t">هدية مُسلَّمة</span><span className="en-t">Gifts delivered</span></span></div>
         </div>
       </section>
 
-      {/* ── SCENE 03 · SECTORS TRIPTYCH ── */}
+      {/* ── SCENE 03 · SECTORS ── */}
       <section className="psect" id="sectors">
         <div className="phead rv">
           <span className="peye"><span className="ar-t">نظام موحّد</span><span className="en-t">Unified system</span></span>
@@ -431,10 +412,12 @@ export default function Pulse() {
         <div className="trip rv d1">
           {SECTORS.map((s) => (
             <a className="tpanel" href="#contact" key={s.sub}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.img} alt={s.en} loading="lazy" />
-              <span className="tp-scrim" aria-hidden="true" />
-              <span className="tp-sub">{s.sub}</span>
+              <span className="tp-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={s.img} alt={s.en} loading="lazy" />
+                <span className="tp-scrim" aria-hidden="true" />
+                <span className="tp-sub">{s.sub}</span>
+              </span>
               <span className="tp-body">
                 <b><span className="ar-t">{s.ar}</span><span className="en-t">{s.en}</span></b>
                 <small><span className="ar-t">{s.arP}</span><span className="en-t">{s.enP}</span></small>
@@ -444,27 +427,28 @@ export default function Pulse() {
         </div>
       </section>
 
-      {/* ── SCENE 04 · PLATFORM RAIL ── */}
+      {/* ── SCENE 04 · PLATFORM GRID ── */}
       <section className="pos" id="platform">
         <div className="phead rv">
           <span className="peye"><span className="ar-t">المنصة</span><span className="en-t">The platform</span></span>
           <h2><span className="ar-t">ثمانية أنظمة، <em>لوحة واحدة</em></span><span className="en-t">Eight systems, <em>one dashboard</em></span></h2>
           <p className="psub">
-            <span className="ar-t">اسحب لاستكشاف كل ما يعمل خلف كل لمسة.</span>
-            <span className="en-t">Drag to explore everything working behind every tap.</span>
+            <span className="ar-t">كل ما يعمل خلف كل لمسة، في نظرة واحدة.</span>
+            <span className="en-t">Everything working behind every tap, at a glance.</span>
           </p>
         </div>
-        <div className="rail rv d1" id="prail" tabIndex={0} aria-label={en ? "Platform capabilities" : "قدرات المنصة"}>
+        <div className="osgrid rv d1">
           {OS.map((f, i) => (
-            <article className="tile" key={i}>
-              <span className="tnum" dir="ltr">{i < 9 ? "0" + (i + 1) : i + 1}</span>
-              <span className="tic" aria-hidden="true"><svg viewBox="0 0 24 24">{f.ic}</svg></span>
+            <article className="tile hud" key={i}>
+              <span className="trow">
+                <span className="tic" aria-hidden="true"><svg viewBox="0 0 24 24">{f.ic}</svg></span>
+                <span className="tnum" dir="ltr">{i < 9 ? "0" + (i + 1) : i + 1}</span>
+              </span>
               <h3><span className="ar-t">{f.ar}</span><span className="en-t">{f.en}</span></h3>
               <p><span className="ar-t">{f.arP}</span><span className="en-t">{f.enP}</span></p>
             </article>
           ))}
         </div>
-        <div className="railtrack" aria-hidden="true"><i id="prailbar" /></div>
       </section>
 
       {/* ── SCENE 05 · LIVE NETWORK ── */}
@@ -474,22 +458,26 @@ export default function Pulse() {
           <h2><span className="ar-t">شبكة تعمل، <em>وأنت تراها</em></span><span className="en-t">A network at work, <em>in plain sight</em></span></h2>
         </div>
         <div className="ngrid">
-          <div className="ndemo rv d1" aria-hidden="true">
-            <div className="nr r1" /><div className="nr r2" /><div className="nr r3" /><div className="nr r4" />
-            <div className="ncross" /><div className="nsweep" />
-            <div className="nfence" /><div className="ndev" />
-            <div className="nalert">
-              <span className="na-dot" />
-              <span>
-                <b><span className="ar-t">تنبيه: خرج الجهاز عن النطاق</span><span className="en-t">Alert: device left the zone</span></b>
-                <span className="ar-t">تم الإغلاق تلقائيًا</span><span className="en-t">Auto-shutdown engaged</span>
-              </span>
+          <div className="nwrap rv d1">
+            <div className="radar" aria-hidden="true">
+              <i className="ring a" /><i className="ring b" /><i className="ring c" />
+              <span className="cross" />
+              <span className="sweep" />
+              <span className="fence" />
+              <span className="dev" />
+              <div className="nalert">
+                <span className="na-dot" />
+                <span>
+                  <b><span className="ar-t">تنبيه: خرج الجهاز عن النطاق</span><span className="en-t">Alert: device left the zone</span></b>
+                  <span className="ar-t">تم الإغلاق تلقائيًا</span><span className="en-t">Auto-shutdown engaged</span>
+                </span>
+              </div>
             </div>
-            <div className="nfeed" key={feedIx} dir="ltr">
-              <i className="nf-ok">✓</i>
+            <div className="nfeed hud" key={feedIx}>
+              <i className="nf-ok" aria-hidden="true">✓</i>
               <span className="nf-city"><span className="ar-t">{feed.cityAr}</span><span className="en-t">{feed.cityEn}</span></span>
-              <b>SAR {feed.amt}</b>
-              <small>{feed.m}</small>
+              <b dir="ltr">SAR {feed.amt}</b>
+              <small dir="ltr">{feed.m}</small>
             </div>
           </div>
           <div className="ncopy rv d2">
@@ -506,12 +494,12 @@ export default function Pulse() {
               <span>Saffori Land</span><span>Sparky&apos;s</span><span>VR Games Zone</span>
             </div>
             <div className="nmv">
-              <div className="nmvc">
+              <div className="nmvc hud">
                 <b><span className="ar-t">مهمتنا</span><span className="en-t">Mission</span></b>
                 <span className="ar-t">تمكين المشغلين من تعزيز الكفاءة وتقديم تجربة سلسة وآمنة، ودعم نمو الأعمال بمرونة.</span>
                 <span className="en-t">Empower operators to boost efficiency, deliver a smooth secure experience and grow flexibly.</span>
               </div>
-              <div className="nmvc">
+              <div className="nmvc hud">
                 <b><span className="ar-t">رؤيتنا</span><span className="en-t">Vision</span></b>
                 <span className="ar-t">أن نكون المنصة التقنية الرائدة لإدارة الأجهزة الذاتية في المملكة والمنطقة.</span>
                 <span className="en-t">To be the leading platform for self-service devices in the Kingdom and the region.</span>
@@ -521,7 +509,7 @@ export default function Pulse() {
         </div>
       </section>
 
-      {/* ── SCENE 06 · FLOW DECK ── */}
+      {/* ── SCENE 06 · FLOW ── */}
       <section className="pflow" id="flow">
         <div className="phead rv">
           <span className="peye"><span className="ar-t">كيف يعمل</span><span className="en-t">How it works</span></span>
@@ -529,7 +517,7 @@ export default function Pulse() {
         </div>
         <div className="deck">
           {FLOW.map((s, i) => (
-            <article className="dcard" key={i} style={{ "--i": i } as CSSProperties}>
+            <article className="dcard hud rv" key={i} style={{ "--i": i } as CSSProperties}>
               <span className="dnum" dir="ltr">0{i + 1}</span>
               <span className="dic" aria-hidden="true"><svg viewBox="0 0 24 24">{s.ic}</svg></span>
               <div className="dtx">
@@ -547,7 +535,7 @@ export default function Pulse() {
           <span className="peye"><span className="ar-t">المقارنة</span><span className="en-t">Comparison</span></span>
           <h2><span className="ar-t">لماذا <em>آر باي</em>؟</span><span className="en-t">Why <em>R.Pay</em>?</span></h2>
         </div>
-        <div className="score rv d1">
+        <div className="score hud rv d1">
           <div className="sc-head" dir="ltr">
             <b className="sc-r">R.Pay</b>
             <span className="sc-vs">VS</span>
@@ -626,7 +614,7 @@ export default function Pulse() {
             <a href="#"><span className="ar-t">الأمان</span><span className="en-t">Security</span></a>
             <a href="#"><span className="ar-t">الامتثال</span><span className="en-t">Compliance</span></a>
           </div>
-          <div className="pf-col">
+          <div className="pf-col pf-status-col">
             <h4><span className="ar-t">الحالة</span><span className="en-t">Status</span></h4>
             <div className="pf-clocks">
               <div><span><span className="ar-t">الرياض</span><span className="en-t">Riyadh</span></span><b id="pclkR" dir="ltr">--:--</b></div>
