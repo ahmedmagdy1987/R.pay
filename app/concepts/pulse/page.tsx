@@ -235,6 +235,30 @@ export default function Pulse() {
     );
     document.querySelectorAll<HTMLElement>(".rv").forEach((el) => io.observe(el));
 
+    /* 3D press-tilt on sector cards (pointer devices only) */
+    const canTilt = window.matchMedia("(hover:hover) and (pointer:fine)").matches && !reduced.current;
+    const tiltEls: [HTMLElement, (e: MouseEvent) => void, () => void][] = [];
+    if (canTilt) {
+      document.querySelectorAll<HTMLElement>(".tpanel").forEach((el) => {
+        const move = (e: MouseEvent) => {
+          const r = el.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          el.style.setProperty("--ry", (px * 9).toFixed(2) + "deg");
+          el.style.setProperty("--rx", (-py * 9).toFixed(2) + "deg");
+          el.style.setProperty("--tz", "1");
+        };
+        const leave = () => {
+          el.style.setProperty("--ry", "0deg");
+          el.style.setProperty("--rx", "0deg");
+          el.style.setProperty("--tz", "0");
+        };
+        el.addEventListener("mousemove", move);
+        el.addEventListener("mouseleave", leave);
+        tiltEls.push([el, move, leave]);
+      });
+    }
+
     /* nav shadow + top progress */
     const nav = document.getElementById("pnav");
     const prog = document.getElementById("pprog");
@@ -270,6 +294,10 @@ export default function Pulse() {
       clearTimeout(first);
       t.forEach(clearTimeout);
       heroIO?.disconnect(); io.disconnect();
+      tiltEls.forEach(([el, move, leave]) => {
+        el.removeEventListener("mousemove", move);
+        el.removeEventListener("mouseleave", leave);
+      });
       window.removeEventListener("scroll", onScroll);
     };
   }, [runTap]);
@@ -543,7 +571,7 @@ export default function Pulse() {
           </div>
           <ul className="sc-list">
             {WHY.map((w, i) => (
-              <li className="rv" key={i} style={{ transitionDelay: `${i * 0.05}s` }}>
+              <li className="rv" key={i} style={{ transitionDelay: `${i * 0.05}s`, "--md": `${0.1 + i * 0.06}s` } as CSSProperties}>
                 <span className="sc-lb"><span className="ar-t">{w.ar}</span><span className="en-t">{w.en}</span></span>
                 <span className="sc-marks" dir="ltr">
                   <i className="yes"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" /></svg></i>
