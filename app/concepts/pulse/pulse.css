@@ -283,24 +283,30 @@ html[dir="rtl"] .brands .mtrack{animation-name:plmarq-r}
 .tpanel{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);
   border-radius:18px;overflow:hidden;border:1px solid var(--line);
   background:var(--panel);will-change:transform;
-  transform:perspective(950px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))
-            translateY(calc(var(--tz,0)*-5px));
-  transition:transform .18s ease-out,border-color .35s,box-shadow .35s}
+  transform:perspective(1000px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))
+            translateY(calc(var(--tz,0)*-4px));
+  transition:transform .28s cubic-bezier(.22,.61,.36,1),
+             border-color .35s,box-shadow .35s}
 .tpanel:hover{border-color:rgba(0,190,230,.45);
   box-shadow:0 24px 55px rgba(2,10,24,.55)}
-.tp-media{position:relative;height:300px;padding:20px;flex:none;
+/* soft light that follows the cursor */
+.tpanel::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),
+             rgba(0,195,240,.09),transparent 70%);
+  opacity:var(--tz,0);transition:opacity .35s}
+.tp-media{position:relative;height:295px;padding:0;flex:none;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(70% 62% at 50% 55%,rgba(0,160,230,.16),rgba(5,14,27,.35) 75%);
+  background:radial-gradient(62% 55% at 50% 52%,rgba(0,160,230,.15),transparent 78%);
   border-bottom:1px solid rgba(126,196,255,.10)}
-.tp-media img{max-width:100%;max-height:100%;width:auto;height:auto;
-  object-fit:contain;filter:drop-shadow(0 16px 28px rgba(0,0,0,.5));
+/* image enlarged + its own edges feathered away — no sharp frame, less dead space */
+.tp-media img{height:126%;width:auto;max-width:none;object-fit:contain;
+  -webkit-mask-image:radial-gradient(64% 58% at 50% 50%,#000 46%,transparent 80%);
+          mask-image:radial-gradient(64% 58% at 50% 50%,#000 46%,transparent 80%);
+  filter:drop-shadow(0 16px 28px rgba(0,0,0,.5));
   transition:transform .5s cubic-bezier(.4,0,.2,1)}
-.tpanel:hover .tp-media img{transform:scale(1.04)}
-/* vignette: melts the raw image edges into the card background */
-.tp-media::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(105% 100% at 50% 50%,transparent 52%,rgba(6,15,29,.92) 98%)}
+.tpanel:hover .tp-media img{transform:scale(1.03)}
 .tp-scrim{display:none}
-.tp-sub{position:absolute;top:12px;inset-inline-start:12px;z-index:2;padding:6px 12px;
+.tp-sub{position:absolute;top:12px;inset-inline-start:12px;z-index:3;padding:6px 12px;
   border-radius:999px;background:rgba(5,13,26,.7);border:1px solid var(--line);
   font-size:.68rem;font-weight:800;letter-spacing:1.5px;color:#bfe2ff;
   backdrop-filter:blur(6px)}
@@ -346,29 +352,38 @@ html[dir="rtl"] .brands .mtrack{animation-name:plmarq-r}
 .radar .cross::after{top:50%;left:4%;right:4%;height:1px}
 .radar .sweep{position:absolute;inset:0;border-radius:50%;
   background:conic-gradient(from 0deg,rgba(31,211,184,.30) 0deg,rgba(31,211,184,.08) 46deg,transparent 72deg);
-  animation:sweepSpin 4.6s linear infinite}
+  animation:sweepSpin 4.5s linear infinite}
 @keyframes sweepSpin{to{transform:rotate(360deg)}}
 .radar .fence{position:absolute;left:61%;top:35%;width:27%;aspect-ratio:1/1;
   border:1.5px dashed rgba(31,211,184,.65);border-radius:50%;
   transform:translate(-50%,-50%);animation:fenceState 9s infinite}
-@keyframes fenceState{0%,42%{border-color:rgba(31,211,184,.65)}
-  47%,62%{border-color:rgba(255,93,115,.9)}
-  70%,100%{border-color:rgba(31,211,184,.65)}}
+/* detection happens at ~56% (5.04s) when the beam angle crosses the escaped dot */
+@keyframes fenceState{0%,55%{border-color:rgba(31,211,184,.65)}
+  56%,80%{border-color:rgba(255,93,115,.9)}
+  88%,100%{border-color:rgba(31,211,184,.65)}}
 .radar .dev{position:absolute;left:61%;top:35%;width:13px;height:13px;border-radius:50%;
   background:var(--pm);box-shadow:0 0 14px var(--pm);
-  transform:translate(-50%,-50%);animation:devPath 9s infinite}
-@keyframes devPath{0%,40%{left:61%;top:35%;background:var(--pm);box-shadow:0 0 14px var(--pm)}
-  47%{left:83%;top:15%;background:var(--alert);box-shadow:0 0 14px var(--alert)}
-  62%{left:83%;top:15%;background:var(--alert);box-shadow:0 0 14px var(--alert)}
-  70%,100%{left:61%;top:35%;background:var(--pm);box-shadow:0 0 14px var(--pm)}}
+  transform:translate(-50%,-50%);
+  animation:devPath 9s cubic-bezier(.45,.05,.55,.95) infinite}
+/* patrol drift → escape while UNDETECTED (still mint) → beam pass paints it red → return */
+@keyframes devPath{
+  0%{left:61%;top:35%;background:var(--pm);box-shadow:0 0 14px var(--pm)}
+  14%{left:64%;top:38%;background:var(--pm);box-shadow:0 0 14px var(--pm)}
+  27%{left:59%;top:33%;background:var(--pm);box-shadow:0 0 14px var(--pm)}
+  38%{left:61%;top:35%;background:var(--pm);box-shadow:0 0 14px var(--pm)}
+  46%,55%{left:83%;top:15%;background:var(--pm);box-shadow:0 0 12px var(--pm)}
+  56%{left:83%;top:15%;background:var(--alert);
+      box-shadow:0 0 4px var(--alert),0 0 26px var(--alert)}
+  78%{left:83%;top:15%;background:var(--alert);box-shadow:0 0 16px var(--alert)}
+  86%,100%{left:61%;top:35%;background:var(--pm);box-shadow:0 0 14px var(--pm)}}
 .nalert{position:absolute;top:8%;left:50%;transform:translate(-50%,-8px);
   display:flex;align-items:center;gap:10px;width:max-content;max-width:86%;
   padding:10px 15px;border-radius:13px;background:rgba(30,9,17,.88);
   border:1px solid rgba(255,93,115,.55);opacity:0;z-index:4;
   animation:alertState 9s infinite;backdrop-filter:blur(6px)}
-@keyframes alertState{0%,44%{opacity:0;transform:translate(-50%,-8px)}
-  48%,62%{opacity:1;transform:translate(-50%,0)}
-  68%,100%{opacity:0;transform:translate(-50%,-8px)}}
+@keyframes alertState{0%,55%{opacity:0;transform:translate(-50%,-8px)}
+  58%,78%{opacity:1;transform:translate(-50%,0)}
+  85%,100%{opacity:0;transform:translate(-50%,-8px)}}
 .na-dot{width:9px;height:9px;border-radius:50%;background:var(--alert);
   box-shadow:0 0 10px var(--alert);flex:none;animation:pdotp 1s infinite}
 .nalert b{display:block;font-size:.82rem;color:#ffd9df;font-weight:800;line-height:1.4}

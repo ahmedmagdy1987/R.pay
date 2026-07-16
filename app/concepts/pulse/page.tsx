@@ -244,8 +244,10 @@ export default function Pulse() {
           const r = el.getBoundingClientRect();
           const px = (e.clientX - r.left) / r.width - 0.5;
           const py = (e.clientY - r.top) / r.height - 0.5;
-          el.style.setProperty("--ry", (px * 9).toFixed(2) + "deg");
-          el.style.setProperty("--rx", (-py * 9).toFixed(2) + "deg");
+          el.style.setProperty("--ry", (px * 6.5).toFixed(2) + "deg");
+          el.style.setProperty("--rx", (-py * 6.5).toFixed(2) + "deg");
+          el.style.setProperty("--mx", ((px + 0.5) * 100).toFixed(1) + "%");
+          el.style.setProperty("--my", ((py + 0.5) * 100).toFixed(1) + "%");
           el.style.setProperty("--tz", "1");
         };
         const leave = () => {
