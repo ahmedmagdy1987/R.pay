@@ -65,6 +65,17 @@ const CONCEPTS: Concept[] = [
   },
   {
     num: "05",
+    href: "/concepts/cinema",
+    img: "/assets/device-terminal.webp",
+    status: "live",
+    statusAr: "جديد", statusEn: "New",
+    eyebrowAr: "سينمائي · فيديو", eyebrowEn: "Cinematic · Film",
+    titleAr: "تجربة سينما", titleEn: "Cinema Experience",
+    descAr: "هيرو فيلم سينمائي مولَّد بالذكاء الاصطناعي، وقصة آر باي كاملة في شريط كروت أفقي واحد.",
+    descEn: "An AI-generated cinematic hero film, with the whole R.Pay story on a single horizontal reel.",
+  },
+  {
+    num: "06",
     href: "/concepts/coming-soon",
     img: null,
     status: "soon",

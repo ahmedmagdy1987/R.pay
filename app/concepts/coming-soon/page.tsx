@@ -45,7 +45,7 @@ export default function ComingSoon() {
       </div>
 
       <span className="cs-badge">
-        <i /><span className="ar-t">المفهوم الخامس · قريبًا</span><span className="en-t">Concept 05 · Coming soon</span>
+        <i /><span className="ar-t">المفهوم السادس · قريبًا</span><span className="en-t">Concept 06 · Coming soon</span>
       </span>
 
       <div className="cs-mark" aria-hidden="true">
