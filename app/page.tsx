@@ -85,6 +85,17 @@ const CONCEPTS: Concept[] = [
     descAr: "اتجاه جديد كليًا لآر باي قيد التصميم حاليًا، سيُضاف كمفهوم مستقل في المرحلة القادمة.",
     descEn: "A brand-new R.Pay direction currently in design, arriving as its own concept in the next phase.",
   },
+  {
+    num: "07",
+    href: "/concepts/flow",
+    img: "/assets/flow/film-poster.webp",
+    status: "live",
+    statusAr: "جديد", statusEn: "New",
+    eyebrowAr: "سينمائي · تمرير", eyebrowEn: "Cinematic · Scroll",
+    titleAr: "الدرج", titleEn: "The Drop",
+    descAr: "سقطة واحدة متواصلة: من اللمسة إلى الدرج. الاسكرول هو السقوط.",
+    descEn: "One continuous fall, from tap to tray. The scroll is the drop.",
+  },
 ];
 
 export default function Hub() {

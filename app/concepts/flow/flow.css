@@ -1,3 +1,10 @@
+/* ---- self-hosted faces (Arabic+Latin subsets, OFL, /public/fonts) ---- */
+@font-face { font-family: 'Readex Pro'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/readex-pro-400.woff2') format('woff2'); }
+@font-face { font-family: 'Readex Pro'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/readex-pro-600.woff2') format('woff2'); }
+@font-face { font-family: 'Readex Pro'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/readex-pro-700.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/plex-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/plex-mono-500.woff2') format('woff2'); }
+
 /* ============================================================
    R.Pay Concept 07 · "The Drop" / «الدرج»
    Route-scoped stylesheet. ALL tokens live under .flow so nothing
@@ -21,9 +28,9 @@
   --line:  rgba(126, 196, 255, .14);
 
   /* fonts (variables injected by next/font in layout.tsx) */
-  --fd: var(--font-readex), var(--font-plex), sans-serif;   /* display */
+  --fd: 'Readex Pro', var(--font-plex), sans-serif;          /* display */
   --fb: var(--font-plex), sans-serif;                        /* body    */
-  --fm: var(--font-plexmono), monospace;                     /* machine */
+  --fm: 'IBM Plex Mono', ui-monospace, monospace;            /* machine */
 
   position: relative;
   background: var(--void);
@@ -236,7 +243,11 @@ html[dir="ltr"] .flow .preload .hair { transform: translateX(-50%); }
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(75% 60% at 50% 45%, transparent, rgba(5, 7, 10, .55) 78%);
+  /* BUG-1 fix: the film is atmosphere; the words must always win.
+     Radial (darkest behind the headline block) + linear (edges/base). */
+  background:
+    radial-gradient(80% 62% at 50% 46%, rgba(5, 7, 10, .62), rgba(5, 7, 10, .78) 88%),
+    linear-gradient(180deg, rgba(5, 7, 10, .72), rgba(5, 7, 10, .40) 30%, rgba(5, 7, 10, .40) 70%, rgba(5, 7, 10, .85));
 }
 .flow .hero-nav {
   position: absolute;
@@ -374,4 +385,267 @@ html[dir="ltr"] .flow .preload .hair { transform: translateX(-50%); }
 .flow .sticky-cta .cta-warm { flex: 1; }
 @media (max-width: 820px) {
   .flow .sticky-cta { display: flex; }
+}
+
+/* ============================================================
+   WhatsAppWidget (shared component; styles are per-route by design)
+   BUG-2 fix: unstyled here, its viewBox-only SVG rendered as a giant
+   black shape and the RTL tip overflowed the inline edge.
+   ============================================================ */
+.flow .wa {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  inset-inline-start: 20px;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.flow .wa-btn {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2fe07a, #1db954);
+  box-shadow: 0 10px 28px rgba(37, 211, 102, .38);
+  transition-property: transform;
+}
+.flow .wa-btn:hover { transform: translateY(-2px); }
+.flow .wa-btn svg { width: 27px; height: 27px; fill: #fff; }
+.flow .wa-tip {
+  order: 2;
+  opacity: 0;
+  transform: scale(.96);
+  pointer-events: none;
+  padding: 9px 14px;
+  border-radius: 11px;
+  background: rgba(4, 8, 12, .92);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: .82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: min(60vw, 280px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition-property: opacity, transform;
+}
+@media (hover: hover) {
+  .flow .wa:hover .wa-tip { opacity: 1; transform: none; }
+}
+/* <=820px the sticky bar carries the WhatsApp entry point; the floating
+   widget hides so a secondary never sits beside a primary CTA. */
+@media (max-width: 820px) {
+  .flow .wa { display: none; }
+}
+
+/* ============================================================
+   BrandsMarquee (shared component) — dark-route port.
+   The logo strip keeps its light card (the logos are drawn for it);
+   header label suppressed per spec: the names do the work.
+   ============================================================ */
+.flow .brands { display: grid; justify-items: center; margin-top: 2.6rem; }
+.flow .brands .lbl { display: none; }
+.flow .marquee {
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 16px;
+  direction: ltr;
+  background: linear-gradient(180deg, #ffffff, #eaf1fa);
+  box-shadow: 0 22px 55px -32px rgba(0, 0, 0, .8), inset 0 0 0 1px rgba(255, 255, 255, .5);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.flow .mtrack {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 54px;
+  padding: 20px 34px;
+  animation: flowmarq 42s linear infinite;
+}
+.flow .marquee:hover .mtrack { animation-play-state: paused; }
+@keyframes flowmarq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.flow .brandlogo {
+  height: 42px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  flex: none;
+  opacity: .55;
+  transition-property: opacity, transform;
+}
+.flow .brandlogo:hover { opacity: 1; transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .flow .mtrack { animation: none; } }
+
+/* ============================================================
+   ACT II engine layers
+   ============================================================ */
+.flow .drop .hold { background: var(--void); }
+.flow .drop canvas { z-index: 0; }
+.flow .dp-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  transition-property: opacity;
+}
+.flow .drop .beat { z-index: 2; text-shadow: 0 2px 24px rgba(5, 7, 10, .8); }
+.flow .drop .traylight { z-index: 2; }
+.flow .drop .tray-cta { z-index: 3; pointer-events: none; }
+.flow .drop .tray-cta.on { pointer-events: auto; }
+
+/* ---- <=820px stills rail (the sequence is never fetched here) ---- */
+.flow .drop-m { padding: clamp(3rem, 8vh, 5rem) 0; }
+.flow .drop-m-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 1.25rem 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+.flow .drop-m-card {
+  flex: 0 0 84%;
+  scroll-snap-align: center;
+  margin: 0;
+  display: grid;
+  gap: .9rem;
+  justify-items: start;
+}
+.flow .drop-m-card img {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  display: block;
+}
+.flow .drop-m-cap { display: block; }
+.flow .drop-m-card figcaption { display: grid; gap: .35rem; }
+
+/* ---- prefers-reduced-motion: single final frame ---- */
+.flow .drop-static {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.flow .drop-static img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.flow .drop-static .beat { position: absolute; inset-inline: 0; top: 14vh; text-align: center; }
+.flow .drop-static .traylight {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 45vh;
+  pointer-events: none;
+  background: radial-gradient(60% 80% at 50% 100%, rgba(255, 182, 92, .32), transparent 70%);
+}
+.flow .drop-static .tray-cta { position: absolute; inset-inline: 0; bottom: 12vh; display: grid; justify-items: center; opacity: 1; transform: none; }
+
+/* ============================================================
+   ACT III — machine rail
+   ============================================================ */
+.flow .rail-track {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 clamp(1.25rem, 6vw, 4rem) 1.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+.flow .rail-card {
+  flex: 0 0 min(340px, 78vw);
+  scroll-snap-align: center;
+  background: var(--steel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.4rem 1.4rem 1.5rem;
+  display: grid;
+  gap: .9rem;
+  justify-items: start;
+}
+.flow .rail-card img { width: 100%; height: 210px; object-fit: contain; }
+.flow .rail-num { margin: 0; display: flex; align-items: baseline; gap: .7rem; }
+.flow .rail-unit { color: var(--mute); }
+.flow .rail-line { margin: 0; color: var(--mute); }
+.flow .rail-link {
+  color: var(--mute);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2px;
+  transition-property: color, border-color;
+}
+.flow .rail-link:hover { color: var(--ink); border-color: var(--cyan); }
+
+/* ============================================================
+   ACT IV — network
+   ============================================================ */
+.flow .net-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 820px) { .flow .net-grid { grid-template-columns: repeat(2, 1fr); } }
+.flow .net-stat { display: grid; gap: .55rem; justify-items: center; }
+.flow .net-stat .led { font-size: clamp(1.4rem, 3.2vw, 2.2rem); min-width: 4.5ch; text-align: center; }
+.flow .net-stat .t-meta { color: var(--mute); }
+.flow .net-cta { margin-top: 2.4rem; }
+
+/* ============================================================
+   ACT V — control (DOM ops-panel stands in for a product shot)
+   ============================================================ */
+.flow .control { display: grid; justify-items: center; gap: 1rem; }
+.flow .control h2 { margin: 0; }
+.flow .ctrl-line { margin: 0 0 1.4rem; color: var(--mute); max-width: 44ch; }
+.flow .ctrl-shot {
+  width: min(560px, 92vw);
+  background: var(--steel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px -40px rgba(0, 0, 0, .9);
+  text-align: start;
+}
+.flow .ctrl-bar {
+  display: flex;
+  gap: 6px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.flow .ctrl-bar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(126, 196, 255, .22); }
+.flow .ctrl-rows { display: grid; }
+.flow .ctrl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .95rem 1.1rem;
+}
+.flow .ctrl-row + .ctrl-row { border-top: 1px solid var(--line); }
+.flow .ctrl-row .t-meta { color: var(--mute); }
+
+/* ============================================================
+   ACT VI — close
+   ============================================================ */
+.flow .close-inner { display: grid; gap: 2rem; justify-items: center; padding: 1.25rem; }
+.flow .close h2 { margin: 0; }
+.flow .cta-xl {
+  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+  padding: 1.1em 2.6em;
 }
