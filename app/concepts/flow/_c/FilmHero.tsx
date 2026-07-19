@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { R_MARK } from "@/lib/assets/brand";
 
-const WIDE = "/assets/flow/film-wide.mp4";
-const TALL = "/assets/flow/film-tall.mp4";
+const WIDE = "/assets/flow/film-hero-wide.mp4";
+const TALL = "/assets/flow/film-hero-tall.mp4";
 const POSTER = "/assets/flow/film-poster.webp";
+const POSTER_TALL = "/assets/flow/film-poster-tall.webp";
 
 /** ACT I — THE TAP.
  *  LCP is the headline TEXT: text renders immediately, the film fades in
@@ -16,11 +18,12 @@ const POSTER = "/assets/flow/film-poster.webp";
 export default function FilmHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string | null>(null);
+  const [poster, setPoster] = useState(POSTER);
   const [on, setOn] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 820px)");
-    const pick = () => setSrc(mq.matches ? TALL : WIDE);
+    const pick = () => { setSrc(mq.matches ? TALL : WIDE); setPoster(mq.matches ? POSTER_TALL : POSTER); };
     pick();
     // Source is chosen once per visit; live swap mid-play is not worth the jank.
   }, []);
@@ -39,8 +42,9 @@ export default function FilmHero() {
           ref={videoRef}
           className={on ? "on" : undefined}
           src={src}
-          poster={POSTER}
+          poster={poster}
           autoPlay
+          loop
           muted
           playsInline
           preload="auto"
@@ -50,7 +54,11 @@ export default function FilmHero() {
       <div className="veil" aria-hidden="true" />
 
       <nav className="hero-nav">
-        <a className="brand" href="/">R.Pay</a>
+        <a className="brand" href="/" aria-label="R.Pay">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={R_MARK} alt="" />
+            <span>Pay</span>
+          </a>
         <div className="side">
           <button className="lang" onClick={toggleLang} aria-label="Toggle language">
             <span className="ar-t">EN</span>

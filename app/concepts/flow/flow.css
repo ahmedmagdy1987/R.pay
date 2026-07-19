@@ -98,14 +98,15 @@
   font-family: var(--fd);
   font-weight: 700;
   font-size: clamp(3rem, 9vw, 7.5rem);
-  line-height: .92;
+  line-height: 1.24;
+  padding-block: .06em;
   letter-spacing: -.02em;
 }
 .flow .t-beat {
   font-family: var(--fd);
   font-weight: 600;
   font-size: clamp(1.6rem, 4.5vw, 3rem);
-  line-height: 1.15;
+  line-height: 1.45;
 }
 .flow .t-body {
   font-family: var(--fb);
@@ -272,7 +273,7 @@ html[dir="ltr"] .flow .preload .hair { transform: translateX(-50%); }
   cursor: pointer;
 }
 .flow .hero-nav .lang:hover { color: var(--ink); }
-.flow .hero h1 { margin: 0 0 .6rem; }
+.flow .hero h1 { margin: 0 0 1.15rem; }
 .flow .hero .sub { color: var(--mute); max-width: 34ch; margin: 0 0 2rem; }
 .flow .hero .ctas { display: flex; flex-wrap: wrap; gap: .9rem; justify-content: center; margin-bottom: 2.6rem; }
 .flow .hero .pays {
@@ -527,7 +528,7 @@ html[dir="ltr"] .flow .preload .hair { transform: translateX(-50%); }
   border: 1px solid var(--line);
   display: block;
 }
-.flow .drop-m-cap { display: block; }
+.flow .drop-m-cap { display: block; font-size: clamp(1.05rem, 4.4vw, 1.5rem); line-height: 1.5; }
 .flow .drop-m-card figcaption { display: grid; gap: .35rem; }
 
 /* ---- prefers-reduced-motion: single final frame ---- */
@@ -648,4 +649,29 @@ html[dir="ltr"] .flow .preload .hair { transform: translateX(-50%); }
 .flow .cta-xl {
   font-size: clamp(1.2rem, 2.4vw, 1.6rem);
   padding: 1.1em 2.6em;
+}
+
+
+/* ── FIX PASS ─────────────────────────────────────────────────────── */
+.flow .hero-nav .brand { display:flex; align-items:center; gap:.5rem; }
+.flow .hero-nav .brand img { width:26px; height:26px; object-fit:contain; }
+
+/* Footer — every other concept has one; this route had none. */
+.flow .foot{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;
+  padding:2.2rem clamp(1.25rem,5vw,4rem);border-top:1px solid var(--line);color:var(--mute);
+  font-family:var(--fm);font-size:.74rem;letter-spacing:.06em}
+.flow .foot .fmark{font-family:var(--fd);font-weight:700;font-size:1rem;color:var(--ink);opacity:.5}
+
+/* Scroll-reveal — the "craft" layer. One law: 400ms, same easing, 12px rise. */
+.flow [data-rise]{opacity:0;transform:translateY(12px);
+  transition:opacity .4s cubic-bezier(.22,1,.36,1),transform .4s cubic-bezier(.22,1,.36,1)}
+.flow [data-rise].in{opacity:1;transform:none}
+
+/* Terminal breathes under the hero copy so the still never looks frozen. */
+@keyframes rp-breathe{0%,100%{opacity:.94;transform:scale(1)}50%{opacity:1;transform:scale(1.012)}}
+.flow .hero video{animation:rp-breathe 7s ease-in-out infinite}
+
+@media (prefers-reduced-motion: reduce){
+  .flow [data-rise]{opacity:1;transform:none;transition:none}
+  .flow .hero video{animation:none}
 }

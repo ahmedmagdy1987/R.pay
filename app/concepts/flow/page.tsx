@@ -25,9 +25,23 @@ export default function FlowPage() {
     draw();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+
+    // Scroll-reveal: one law — 400ms, 12px rise, same easing everywhere.
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => e.isIntersecting && e.target.classList.add("in")),
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.05 }
+    );
+    document
+      .querySelectorAll(".flow .act:not(.hero) h2, .flow .act:not(.hero) p, .flow .rail-card, .flow .foot")
+      .forEach((el, i) => {
+        el.setAttribute("data-rise", "");
+        (el as HTMLElement).style.transitionDelay = `${Math.min(i % 4, 3) * 60}ms`;
+        io.observe(el);
+      });
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      io.disconnect();
     };
   }, []);
 
@@ -87,6 +101,14 @@ export default function FlowPage() {
           </a>
         </div>
       </section>
+
+      <footer className="foot">
+        <span>
+          <span className="ar-t">© 2026 شركة آر باي السعودية · جميع الحقوق محفوظة</span>
+          <span className="en-t">© 2026 R.Pay Saudi Arabia · All rights reserved</span>
+        </span>
+        <span className="fmark">R.PAY</span>
+      </footer>
 
       <StickyCTA />
     </main>
