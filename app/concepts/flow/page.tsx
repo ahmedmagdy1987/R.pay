@@ -27,21 +27,53 @@ export default function FlowPage() {
     window.addEventListener("resize", onScroll);
 
     // Scroll-reveal: one law — 400ms, 12px rise, same easing everywhere.
-    const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && e.target.classList.add("in")),
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.05 }
+    // `.reveals` is added by JS, so [data-rise] only ever hides on a browser
+    // that is actually going to run the observer. No JS => nothing disappears.
+    document.querySelector(".flow")?.classList.add("reveals");
+
+    const targets = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".flow .act:not(.hero) h2, .flow .act:not(.hero) > p, .flow .rail-card," +
+          ".flow .drop-m-card, .flow .net-stat, .flow .ctrl-shot, .flow .foot"
+      )
     );
-    document
-      .querySelectorAll(".flow .act:not(.hero) h2, .flow .act:not(.hero) p, .flow .rail-card, .flow .foot")
-      .forEach((el, i) => {
-        el.setAttribute("data-rise", "");
-        (el as HTMLElement).style.transitionDelay = `${Math.min(i % 4, 3) * 60}ms`;
-        io.observe(el);
+    targets.forEach((el, i) => {
+      el.setAttribute("data-rise", "");
+      // Network sets its own per-stat delay; don't stomp it.
+      if (!el.style.transitionDelay) el.style.transitionDelay = `${Math.min(i % 4, 3) * 60}ms`;
+    });
+
+    const reveal = (es: IntersectionObserverEntry[], obs: IntersectionObserver) =>
+      es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        obs.unobserve(e.target); // the page settles; nothing replays on scroll-back
       });
+    // The -12% bottom margin gives content a beat before it rises, but it makes
+    // intersection IMPOSSIBLE for anything anchored to the very bottom of the
+    // page: the footer's top never clears the shrunken root, so it stayed at
+    // opacity 0 forever. The tail therefore gets its own zero-margin observer.
+    const ioMain = new IntersectionObserver(reveal, {
+      rootMargin: "0px 0px -12% 0px",
+      threshold: 0.05,
+    });
+    const ioTail = new IntersectionObserver(reveal, { threshold: 0.01 });
+    targets.forEach((el) => (el.classList.contains("foot") ? ioTail : ioMain).observe(el));
+
+    // Belt and braces: at the very bottom of the page nothing may still be hidden.
+    const sweep = () => {
+      if (document.documentElement.scrollHeight - window.scrollY - window.innerHeight > 4) return;
+      targets.forEach((el) => el.classList.add("in"));
+      window.removeEventListener("scroll", sweep);
+    };
+    window.addEventListener("scroll", sweep, { passive: true });
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      io.disconnect();
+      window.removeEventListener("scroll", sweep);
+      ioMain.disconnect();
+      ioTail.disconnect();
     };
   }, []);
 

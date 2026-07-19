@@ -12,6 +12,8 @@ const STATS = [
   { v: 9, ar: "فروع", en: "branches" },
 ];
 
+const fmt = (n: number) => n.toLocaleString("en-US");
+
 export default function Network() {
   const gridRef = useRef<HTMLDivElement>(null);
   const done = useRef(false);
@@ -24,28 +26,39 @@ export default function Network() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const paint = (k: number) =>
-      leds.forEach((el, i) => { el.textContent = Math.round(finals[i] * k).toLocaleString("en-US"); });
+      leds.forEach((el, i) => { el.textContent = fmt(Math.round(finals[i] * k)); });
 
-    const run = () => {
-      if (done.current) return;
-      done.current = true;
-      if (reduce) { paint(1); return; }
-      const t0 = performance.now();
-      const tick = (t: number) => {
-        const k = Math.min(1, (t - t0) / 400);
-        // the motion-law curve, applied to the count itself
-        const e = 1 - Math.pow(1 - k, 3);
-        paint(e);
-        if (k < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-
+    /* The FINAL values are what the server renders (see the JSX below), so a
+       browser that never runs this effect — or an IntersectionObserver that
+       never fires — degrades to correct numbers instead of a row of zeros.
+       We only zero them out here, on the client, once we know the animation
+       is actually going to run. */
     const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && run()),
+      (es) => es.forEach((e) => {
+        if (!e.isIntersecting || done.current) return;
+        done.current = true;
+        io.disconnect();
+        if (reduce) { paint(1); return; }
+        const t0 = performance.now();
+        const tick = (t: number) => {
+          const k = Math.min(1, (t - t0) / 400);
+          paint(1 - Math.pow(1 - k, 3)); // the motion-law curve, on the count itself
+          if (k < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }),
       { threshold: 0.35 }
     );
-    io.observe(grid);
+
+    // Only arm the count-up if the grid starts off-screen; if it is already in
+    // view at mount there is nothing to reveal and the finals simply stand.
+    const r = grid.getBoundingClientRect();
+    if (r.top > window.innerHeight * 0.9) {
+      paint(0);
+      io.observe(grid);
+    } else {
+      done.current = true;
+    }
     return () => io.disconnect();
   }, []);
 
@@ -53,8 +66,8 @@ export default function Network() {
     <section className="act network" id="network" aria-label="Network">
       <div className="net-grid" ref={gridRef}>
         {STATS.map((s, i) => (
-          <div className="net-stat" key={i}>
-            <span className="led">0</span>
+          <div className="net-stat" key={i} style={{ transitionDelay: `${i * 70}ms` }}>
+            <span className="led">{fmt(s.v)}</span>
             <span className="t-meta">
               <span className="ar-t">{s.ar}</span>
               <span className="en-t">{s.en}</span>

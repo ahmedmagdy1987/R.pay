@@ -10,11 +10,14 @@ const POSTER_TALL = "/assets/flow/film-poster-tall.webp";
 /** ACT I — THE TAP.
  *  LCP is the headline TEXT: text renders immediately, the film fades in
  *  behind it once it can play.
- *  SPEC CHANGE (deliberate): NO loop attribute. The film plays its six
- *  seconds once and rests on its final frame — the can in warm amber light
- *  under the headline. Looping would snap from a 2s freeze back to the
- *  terminal, which reads as broken.
- *  film-tall.mp4 is genuinely wired: <820px viewports load the 9:16 cut. */
+ *
+ *  THE HERO MUST NOT SPOIL THE FALL. It plays film-hero-{wide,tall}.mp4 —
+ *  a 2.5s push-in on the terminal ONLY, ending before the camera enters the
+ *  machine. The coil, the fall and the tray belong exclusively to Act II's
+ *  scroll sequence; showing them here made the film read as playing twice.
+ *  These cuts are built to loop seamlessly, so `loop` is correct now (the
+ *  older 6s film-{wide,tall}.mp4 could not loop and has been deleted).
+ *  film-hero-tall.mp4 is genuinely wired: <820px viewports load the 9:16 cut. */
 export default function FilmHero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string | null>(null);

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "shoot": "node scripts/shoot.mjs",
+    "moments": "node scripts/moments.mjs"
   },
   "dependencies": {
     "next": "^14.2.35",
@@ -19,6 +21,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "@types/three": "0.149.0",
+    "playwright": "^1.61.1",
     "typescript": "5.4.5"
   }
 }

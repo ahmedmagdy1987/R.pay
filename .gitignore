@@ -11,3 +11,5 @@ yarn-error.log*
 next-env.d.ts
 # 4K HEVC source — not a web asset
 public/assets/flow/master.mp4
+shots/
+shots-*/

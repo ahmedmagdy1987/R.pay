@@ -249,31 +249,38 @@ const CAPS = [
   { ar: "وصلت.", en: "Delivered." },
 ];
 
+/* A horizontal rail cannot be made to look premium at 390px — at 84% width the
+   neighbouring stills bleed off both edges and their captions get sliced
+   mid-word, which reads broken rather than designed. So the fall is STACKED on
+   mobile: one full-bleed still per screen, its caption beneath it, generous
+   rhythm between beats. Same four beats, same order, no scrub, no snap rail. */
 function MobileRail() {
   return (
     <section className="act drop-m" id="fall" aria-label="The drop">
-      <div className="drop-m-rail">
-        {M_CARDS.map((c, ci) => (
-          <figure className="drop-m-card" key={ci}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.img} alt="" loading={ci === 0 ? "eager" : "lazy"} />
-            <figcaption>
-              {c.cap.map((k) => (
-                <span key={k} className="t-beat drop-m-cap">
-                  <span className="ar-t">{CAPS[k].ar}</span>
-                  <span className="en-t">{CAPS[k].en}</span>
-                </span>
-              ))}
-            </figcaption>
-            {ci === 2 && (
-              <a className="cta-warm" href="#demo">
+      {M_CARDS.map((c, ci) => (
+        <figure className={`drop-m-card${ci === 2 ? " last" : ""}`} key={ci}>
+          <span className="t-meta drop-m-idx">{String(ci + 1).padStart(2, "0")}</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={c.img} alt="" loading={ci === 0 ? "eager" : "lazy"} />
+          <figcaption>
+            {c.cap.map((k) => (
+              <span key={k} className="t-beat drop-m-cap">
+                <span className="ar-t">{CAPS[k].ar}</span>
+                <span className="en-t">{CAPS[k].en}</span>
+              </span>
+            ))}
+          </figcaption>
+          {ci === 2 && (
+            <>
+              <div className="drop-m-glow" aria-hidden="true" />
+              <a className="cta-warm drop-m-cta" href="#demo">
                 <span className="ar-t">احجز عرض تجريبي</span>
                 <span className="en-t">Book a demo</span>
               </a>
-            )}
-          </figure>
-        ))}
-      </div>
+            </>
+          )}
+        </figure>
+      ))}
     </section>
   );
 }
