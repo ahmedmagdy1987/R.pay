@@ -57,6 +57,9 @@ export default function FleetCards() {
         </h2>
       </header>
 
+      {/* Static reveal wrapper: its className never changes, so the reveal
+          system's imperative `in` class survives React re-renders. */}
+      <div className="cards-reveal">
       <div className={`fleet-row cards-row active-${active}`} role="list">
         {/* Card 1 — the fleet (dominant visual) */}
         <article
@@ -150,6 +153,7 @@ export default function FleetCards() {
             </li>
           </ul>
         </article>
+      </div>
       </div>
     </section>
   );

@@ -59,6 +59,9 @@ export default function MachineCards() {
         </h2>
       </header>
 
+      {/* Static reveal wrapper — see FleetCards: React-managed classNames
+          must never carry the reveal system's imperative `in` class. */}
+      <div className="cards-reveal">
       <div className={`machine-row cards-row active-${active}`} role="list">
         {CARDS.map((c) => (
           <article
@@ -95,6 +98,7 @@ export default function MachineCards() {
             </div>
           </article>
         ))}
+      </div>
       </div>
     </section>
   );

@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef } from "react";
-import BrandsMarquee from "@/components/BrandsMarquee";
 import { R_MARK } from "@/lib/assets/brand";
 import HeroFilm from "./_c/HeroFilm";
+import TrustBand from "./_c/TrustBand";
 import TapToAction from "./_c/TapToAction";
 import FleetCards from "./_c/FleetCards";
 import ControlRoom from "./_c/ControlRoom";
@@ -40,14 +40,20 @@ export default function OneTapPage() {
 
     // Scroll-reveal — one law: 400ms, 12px rise. `.reveals` is added by JS so
     // [data-rise] only ever hides when the observer will actually run.
-    // NOTE: the page's LAST element (.foot) is rise-exempt in CSS — its
+    // NOTE 1: the page's LAST element (.foot) is rise-exempt in CSS — its
     // pre-reveal translateY extended the scrollable area by 12px and
     // resurrected the double-scrollbar bug.
+    // NOTE 2: reveal targets must NEVER be elements whose className React
+    // rewrites on state change (.fcard/.mcard toggle `is-active`): React
+    // reconciles the class attribute from its VDOM and silently wipes the
+    // observer's imperative `in` class, snapping the card back to
+    // opacity 0 — the "disappearing cards" bug. Card rows therefore reveal
+    // via their static .cards-reveal wrapper only.
     document.querySelector(".onetap")?.classList.add("reveals");
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(
         ".onetap .act:not(.hero):not(.control) .act-head, .onetap .action-stage," +
-          " .onetap .fcard, .onetap .mcard, .onetap .stat, .onetap .close-inner, .onetap .foot"
+          " .onetap .cards-reveal, .onetap .trust-tray, .onetap .stat, .onetap .close-inner, .onetap .foot"
       )
     );
     targets.forEach((el, i) => {
@@ -109,12 +115,16 @@ export default function OneTapPage() {
   return (
     <main ref={mainRef}>
       <HeroFilm />
+
+      {/* EARLY TRUST — proof lands right after the first impression. */}
+      <TrustBand />
+
       <TapToAction />
       <FleetCards />
       <ControlRoom />
       <MachineCards />
 
-      {/* PROOF — a compact band: the verified numbers, then the names. */}
+      {/* PROOF — the verified numbers, compact, right before the ask. */}
       <section className="act proof" aria-label="Proof">
         <div className="stats" role="list">
           {STATS.map((s, i) => (
@@ -127,10 +137,10 @@ export default function OneTapPage() {
             </div>
           ))}
         </div>
-        <BrandsMarquee />
       </section>
 
-      {/* THE CLOSE — a branded final act; the ask, uncontested. */}
+      {/* THE CLOSE — the final act: the ask, then the product at rest.
+          The terminal detail closes the loop with the hero's object. */}
       <section className="act close" id="demo" aria-label="Book a live demo">
         <div className="close-light" aria-hidden="true" />
         <div className="close-inner">
@@ -152,6 +162,17 @@ export default function OneTapPage() {
             <span className="en-t">On WhatsApp — Arabic or English.</span>
           </p>
         </div>
+        {/* The product, resting — fades into the footer. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className="close-terminal"
+          src="/assets/concept-08/close-terminal.webp"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          width={960}
+          height={866}
+        />
       </section>
 
       {/* FUNCTIONAL FOOTER — compact, verified content only. */}

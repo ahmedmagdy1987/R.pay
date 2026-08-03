@@ -112,6 +112,55 @@ for (const [name, w, h] of VIEWPORTS) {
   await page.close();
 }
 
+/* ---------- 3a. Card-interaction regression (the disappearing-card bug):
+   hovering/focusing a card re-renders React-managed classNames; if any
+   reveal class lives on those elements it gets wiped and cards vanish.
+   Assert every card stays visible through hover, leave, keyboard focus,
+   language switch and resize, in BOTH card sections. ---------- */
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(`${BASE}/concepts/one-tap`, { waitUntil: "networkidle", timeout: 45000 });
+  const assertCards = async (scope, label) => {
+    const bad = await page.evaluate((sel) =>
+      [...document.querySelectorAll(sel)]
+        .map((el, i) => ({ i, op: parseFloat(getComputedStyle(el).opacity), w: el.offsetWidth, h: el.offsetHeight }))
+        .filter((c) => c.op < 0.9 || c.w < 60 || c.h < 100), scope);
+    bad.forEach((c) => note(`[cards ${label}] card #${c.i} invisible/collapsed (opacity ${c.op}, ${c.w}x${c.h})`));
+  };
+  for (const [anchor, cardSel, name] of [["#fleet", ".fcard", "fleet"], ["#machines", ".mcard", "machines"]]) {
+    await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: "center" }), anchor);
+    await page.waitForTimeout(900);
+    await assertCards(cardSel, `${name} initial`);
+    const count = await page.locator(cardSel).count();
+    for (let i = 0; i < count; i++) {
+      await page.hover(`${cardSel} >> nth=${i}`);
+      await page.waitForTimeout(500);
+      await assertCards(cardSel, `${name} hover#${i}`);
+    }
+    await page.mouse.move(10, 10); // leave
+    await page.waitForTimeout(500);
+    await assertCards(cardSel, `${name} after-leave`);
+    await page.focus(`${cardSel} >> nth=1`);
+    await page.waitForTimeout(500);
+    await assertCards(cardSel, `${name} keyboard-focus`);
+  }
+  // Language switch + resize must not orphan any card state.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click(".onetap .lang");
+  await page.waitForTimeout(600);
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await page.waitForTimeout(600);
+  for (const [anchor, cardSel, name] of [["#fleet", ".fcard", "fleet"], ["#machines", ".mcard", "machines"]]) {
+    await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: "center" }), anchor);
+    await page.waitForTimeout(900);
+    await page.hover(`${cardSel} >> nth=2`);
+    await page.waitForTimeout(500);
+    await assertCards(cardSel, `${name} post-lang+resize`);
+  }
+  await page.screenshot({ path: `${OUT}/ot-cards-interaction.png` });
+  await page.close();
+}
+
 /* ---------- 3b. Scrollbar regression DURING media load (the original bug's
    exact reproduction: throttled network, probe while the films stream) ---------- */
 {

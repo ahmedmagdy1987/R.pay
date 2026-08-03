@@ -1,4 +1,11 @@
-# CONCEPT 08 — VISUAL SYSTEM (v2, refinement pass 2026-08-03)
+# CONCEPT 08 — VISUAL SYSTEM (v3, second refinement pass 2026-08-04)
+
+## v3 changes (persuasion-arc restructure + interaction hardening)
+
+- **Page order** now follows impact → CTA → trust → story → visibility → control → use cases → numbers → ask: Hero → **Early trust band** («شركاؤنا وعملاؤنا» directly after the hero: eyebrow + verified proof line + compact framed logo tray — social proof, not a logo dump) → Tap-to-Action → Fleet → Control Room → Machine Cards → verified stats → Close → Footer. Logos moved from the pre-close band to the second beat; the stats stay just before the ask (belief peaks → ask lands).
+- **The close is a scene**: headline → uncontested CTA → **the product at rest** (clean-terminal detail, masked fade, soft cyan halo) handing off into a footer that is surface-integrated (gradient lift, no hard rule). The hero's object opens the story; the same object closes it.
+- **Fleet cards hardened**: expanded data cards keep a 480px readable measure; the contracted image card clamps its line and yields its chips so nothing clips; card heights harmonized.
+- **Engineering rule (hard, documented in page.tsx):** the reveal system's imperative `in` class may only live on **static-className wrappers** (`.cards-reveal`), never on elements whose className React rewrites on state change — React reconciliation silently wipes imperative classes and the element snaps back to its hidden pre-reveal state (the "disappearing cards" bug). A hover/focus/leave/language/resize interaction regression in `qa-onetap.mjs` guards this permanently.
 
 **Route:** `/concepts/one-tap` · **Root class:** `.onetap` · **Mode:** dark-only (deliberate)
 **Title:** «لمسة واحدة. تحكّم كامل.» / **One Tap. Total Control.**

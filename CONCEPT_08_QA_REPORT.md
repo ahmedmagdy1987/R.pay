@@ -1,5 +1,17 @@
 # CONCEPT 08 — QA REPORT
 
+## SECOND REFINEMENT PASS (v3, 2026-08-04)
+
+### The disappearing-card bug — exact root cause
+
+The scroll-reveal system adds its `in` class **imperatively** (`el.classList.add("in")`) and then unobserves the element. `.fcard`/`.mcard` classNames are **React-managed and change on hover/focus** (`is-active` toggling). On the first interaction, React re-renders and reconciles the `class` attribute from its virtual DOM — which never contained `in` — silently wiping it. With `[data-rise]` still present, the card snaps back to `opacity: 0; translateY(12px)` permanently (the observer is gone), so one hover could blank most of the section into black. Reproduced deterministically in Playwright (opacity 1 → 0 on exactly the re-rendered cards) before fixing. **Fix:** reveal targets may only be static-className elements — card rows now reveal via a `.cards-reveal` wrapper; `.fcard`/`.mcard` never carry reveal state. **Regression:** the harness hovers every card in both sections and asserts opacity/size through hover, mouse-leave, keyboard focus, language switch and resize; state verified by DOM probe (default: fleet 592px active / hover: target 644px active, all others visible).
+
+### Structural changes verified
+
+Early trust band after the hero (verified logos + canonical proof line, framed tray, AR/EN) · stats-only pre-close proof · close act with the clean-terminal product detail fading into an integrated footer · fleet measure/clamp polish. Full harness re-run: all 9 routes, 8 viewports, AR/EN, reduced-motion, video-blocked, during-load scrollbar probe, CTA + keyboard audits — only `cinema`'s pre-existing hot-link failure repo-wide. Evidence: `refine2/` and `refine2-final/`, curated in `docs/concept-08-refinement-2/`.
+
+---
+
 ## REFINEMENT PASS (v2, 2026-08-03)
 
 **Scope:** hero text-artifact elimination, double-scrollbar root fix, fleet/control/machines rebuilds, density audit, CTA hierarchy, functional footer, unified system.

@@ -374,6 +374,34 @@
 html[dir="rtl"] .onetap .down { transform: translateX(50%); }
 
 /* ============================================================
+   EARLY TRUST — «شركاؤنا وعملاؤنا» as a composed proof band.
+   Compact: the page's second beat is proof, not a logo dump.
+   ============================================================ */
+.onetap .trust { padding-block: calc(var(--gap-act) * .42) calc(var(--gap-act) * .38); }
+.onetap .trust-inner { max-width: var(--w-content); margin-inline: auto; }
+.onetap .trust-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+.onetap .trust-head .eyebrow { margin-bottom: 0; }
+.onetap .trust-line { max-width: 58ch; font-size: .95rem; line-height: 1.8; }
+/* The tray: the light strip framed as a deliberate object — hairline
+   frame, dark inset shoulder, tighter logo scale. */
+.onetap .trust-tray {
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: rgba(10, 18, 32, .55);
+  padding: 10px;
+}
+.onetap .trust-tray .marquee { border-radius: calc(var(--r) - 8px); }
+.onetap .trust-tray .brandlogo { height: 34px; }
+.onetap .trust-tray .mtrack { padding: 16px 30px; gap: 48px; }
+
+/* ============================================================
    ACT II — TAP TO ACTION
    ============================================================ */
 .onetap .action-stage {
@@ -501,7 +529,16 @@ html[dir="rtl"] .onetap .down { transform: translateX(50%); }
   display: block;
 }
 .onetap .fcard-line { max-width: 30ch; }
-.onetap .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
+/* Contracted image card: the number carries it — the supporting line
+   clamps and the chips yield so nothing clips over the artwork. */
+.onetap .fcard.image:not(.is-active) .fcard-line {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.onetap .fcard.image:not(.is-active) .chips { opacity: 0; }
+.onetap .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; transition-property: opacity; }
 .onetap .chip {
   padding: .3rem .8rem;
   border-radius: 999px;
@@ -548,9 +585,13 @@ html[dir="rtl"] .onetap .down { transform: translateX(50%); }
   list-style: none;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
+  flex: 1;
   gap: .9rem;
-  margin-top: .4rem;
-  margin-bottom: auto;
+  /* The card widens when active; its content keeps a readable measure. */
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
 }
 .onetap .pay-steps li {
   display: flex;
@@ -579,10 +620,14 @@ html[dir="rtl"] .onetap .down { transform: translateX(50%); }
   list-style: none;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
+  flex: 1;
   gap: .8rem;
-  margin-top: .4rem;
-  margin-bottom: auto;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
 }
+.onetap .fcard-top { width: 100%; max-width: 480px; margin-inline: auto; }
 .onetap .health-rows li {
   display: flex;
   align-items: center;
@@ -876,11 +921,13 @@ html[dir="rtl"] .onetap .control.on .ctrl-runner { animation-name: runner-rtl; }
    ============================================================ */
 .onetap .close {
   position: relative;
-  min-height: clamp(460px, 64vh, 640px);
+  min-height: clamp(500px, 68vh, 700px);
   display: grid;
-  place-items: center;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
   text-align: center;
   overflow: hidden;
+  padding-bottom: 0; /* the terminal detail hands off directly to the footer */
 }
 /* Ambient R.Pay light: one horizon hairline + soft rise. No blobs. */
 .onetap .close-light {
@@ -904,9 +951,23 @@ html[dir="rtl"] .onetap .control.on .ctrl-runner { animation-name: runner-rtl; }
   height: 180px;
   background: radial-gradient(60% 100% at 50% 0%, rgba(53, 224, 212, .08), transparent 70%);
 }
-.onetap .close-inner { position: relative; z-index: 2; display: grid; justify-items: center; gap: 1.5rem; padding-block: clamp(2.5rem, 7vh, 4rem); }
+.onetap .close-inner { position: relative; z-index: 2; display: grid; justify-items: center; align-content: center; gap: 1.5rem; padding-block: clamp(2.5rem, 7vh, 4rem) 1.5rem; }
 .onetap .close .t-display { font-size: clamp(2.2rem, 5.4vw, 4.6rem); }
 .onetap .close-note { display: block; }
+/* The product at rest: the hero's object returns to close the story.
+   Masked fade + soft cyan halo; hands off visually into the footer. */
+.onetap .close-terminal {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(400px, 56vw);
+  height: auto;
+  margin-top: .5rem;
+  opacity: .92;
+  -webkit-mask-image: linear-gradient(180deg, #000 52%, transparent 97%);
+  mask-image: linear-gradient(180deg, #000 52%, transparent 97%);
+  filter: drop-shadow(0 0 44px rgba(53, 224, 212, .14));
+}
 
 /* ============================================================
    FUNCTIONAL FOOTER — compact, verified content only.
@@ -914,9 +975,10 @@ html[dir="rtl"] .onetap .control.on .ctrl-runner { animation-name: runner-rtl; }
 .onetap .foot {
   position: relative;
   z-index: 2;
-  border-top: 1px solid var(--line);
   padding: clamp(1.8rem, 4vw, 2.6rem) var(--padx) 1.4rem;
   color: var(--mute);
+  /* Integrated with the close: a soft surface lift instead of a hard rule. */
+  background: linear-gradient(180deg, rgba(10, 18, 32, 0), rgba(10, 18, 32, .55) 30%, rgba(10, 18, 32, .55));
 }
 .onetap .foot-main {
   display: grid;
@@ -1083,6 +1145,8 @@ html[dir="rtl"] .onetap .control.on .ctrl-runner { animation-name: runner-rtl; }
   /* No hover on touch: every card shows its full content. */
   .onetap .mcard-more { grid-template-rows: 1fr; opacity: 1; }
   .onetap .cards-row > article { flex-grow: 0 !important; }
+  .onetap .fcard.image .chips { opacity: 1 !important; }
+  .onetap .fcard.image .fcard-line { display: block; overflow: visible; }
 
   /* Control walkthrough: no sticky theatre on mobile — one composed
      panel, steps as a row, state 3 pinned by the component. */
