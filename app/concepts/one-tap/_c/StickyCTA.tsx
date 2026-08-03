@@ -9,7 +9,7 @@ export default function StickyCTA() {
 
   useEffect(() => {
     let ticking = false;
-    const RIVALS = ".onetap .net-cta, .onetap .close .cta-warm";
+    const RIVALS = ".onetap .close .cta-warm";
     const rivalAdjacent = () => {
       const vh = window.innerHeight;
       for (const el of document.querySelectorAll<HTMLElement>(RIVALS)) {

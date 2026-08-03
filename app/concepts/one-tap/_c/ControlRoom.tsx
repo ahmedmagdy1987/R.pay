@@ -1,130 +1,169 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-/** Illustrative ops figures — the panel carries a visible «محاكاة مباشرة /
- *  Live simulation» label (pulse-concept precedent). The only real number
- *  on this screen is the fleet size, 97. No real dashboard screenshot
- *  exists in this repo, and none is faked here: this surface is honestly
- *  DOM-built in the machine's own LED vernacular. */
-const KPIS = [
-  { v: 12408, label: { ar: "مبيعات اليوم", en: "Sales today" } },
-  { v: 97, of: 97, label: { ar: "ماكينات نشطة", en: "Machines online" } },
-  { v: 0, label: { ar: "تنبيهات مفتوحة", en: "Open alerts" } },
+/** ACT IV — THE CONTROL ROOM, rebuilt as a sticky product walkthrough.
+ *  The dashboard fills the screen (≈80vw, max 1320px) and transitions
+ *  through three states as the visitor scrolls the 240vh section:
+ *    1 — a payment arrives   2 — fleet status updates   3 — one view.
+ *  Everything simulated carries the «محاكاة مباشرة» disclosure; the only
+ *  real figure is the canonical 97. LED windows are digits/Latin only.
+ *  No dashboard screenshot exists in this repo and none is faked — this
+ *  surface is honestly DOM-built. Reduced motion pins state 3. */
+
+const STEPS = [
+  { ar: "دفعة تصل", en: "A payment arrives" },
+  { ar: "الحالة تتحدّث", en: "Status updates" },
+  { ar: "رؤية واحدة", en: "One view" },
 ];
 
-/* Feed rows: mono windows are DIGITS/LATIN ONLY (Plex Mono has no Arabic). */
 const FEED = [
-  { id: "M-014", amt: "15.00" },
   { id: "M-062", amt: "8.50" },
+  { id: "M-014", amt: "15.00" },
   { id: "M-029", amt: "22.00" },
   { id: "M-081", amt: "4.00" },
+  { id: "M-047", amt: "12.00" },
 ];
 
-const fmt = (n: number) => n.toLocaleString("en-US");
+/* Illustrative per-branch bars (9 branches is canon; heights are not). */
+const BARS = [62, 84, 45, 91, 70, 56, 78, 38, 66];
 
-/** ACT IV — THE CONTROL ROOM. The payoff of the whole story: the tap the
- *  visitor just watched, landing on the operator's surface. Counters run
- *  once on intersect (SSR renders finals — no-JS shows truth, not zeros). */
 export default function ControlRoom() {
   const secRef = useRef<HTMLElement>(null);
+  const [state, setState] = useState(1);
   const [on, setOn] = useState(false);
-  const [row, setRow] = useState(0);
-  const armed = useRef(false);
 
   useEffect(() => {
     const sec = secRef.current;
     if (!sec) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const leds = Array.from(sec.querySelectorAll<HTMLElement>(".kpi .led b"));
-    const finals = KPIS.map((k) => k.v);
-    const paint = (k: number) =>
-      leds.forEach((el, i) => { el.textContent = fmt(Math.round(finals[i] * k)); });
-
-    const io = new IntersectionObserver(
-      (es) =>
-        es.forEach((e) => {
-          if (!e.isIntersecting || armed.current) return;
-          armed.current = true;
-          io.disconnect();
-          setOn(true);
-          if (reduce) { paint(1); return; }
-          const t0 = performance.now();
-          const tick = (t: number) => {
-            const k = Math.min(1, (t - t0) / 400);
-            paint(1 - Math.pow(1 - k, 3));
-            if (k < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-        }),
-      { threshold: 0.35 }
-    );
-
-    const r = sec.getBoundingClientRect();
-    if (r.top > window.innerHeight * 0.9) { paint(0); io.observe(sec); }
-    else { armed.current = true; setOn(true); }
-    return () => io.disconnect();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setState(3);
+      setOn(true);
+      return;
+    }
+    let ticking = false;
+    const compute = () => {
+      ticking = false;
+      const r = sec.getBoundingClientRect();
+      const vh = window.innerHeight;
+      if (r.top < vh && r.bottom > 0) setOn(true);
+      const total = r.height - vh;
+      if (total <= 0) { setState(3); return; }
+      const p = Math.max(0, Math.min(1, -r.top / total));
+      setState(p < 0.34 ? 1 : p < 0.67 ? 2 : 3);
+    };
+    const onScroll = () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(compute); }
+    };
+    compute();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
-  // The feed breathes: one new highlighted row every 2.4s while visible.
-  useEffect(() => {
-    if (!on) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = setInterval(() => setRow((v) => (v + 1) % FEED.length), 2400);
-    return () => clearInterval(t);
-  }, [on]);
-
   return (
-    <section className={`act control${on ? " on" : ""}`} id="control" ref={secRef} aria-label="The control room">
-      <header className="act-head">
-        <h2 className="t-beat">
-          <span className="ar-t">وفي الطرف الآخر… أنت.</span>
-          <span className="en-t">And on the other side… you.</span>
-        </h2>
-        <p className="t-body act-lead">
-          <span className="ar-t">اللمسة التي شاهدتها قبل قليل — تصل هنا في اللحظة نفسها: كل ماكينة، وكل عملية، في لوحة واحدة.</span>
-          <span className="en-t">The tap you just watched lands here in the same moment: every machine, every transaction, one surface.</span>
-        </p>
-      </header>
+    <section
+      className={`act control s${state}${on ? " on" : ""}`}
+      id="control"
+      ref={secRef}
+      aria-label="The control room"
+    >
+      <div className="ctrl-stick">
+        <div className="ctrl-frame">
+          {/* Title integrated with the surface, not floating far above. */}
+          <header className="ctrl-head">
+            <div>
+              <p className="t-meta eyebrow">
+                <span className="ar-t">غرفة التحكّم</span>
+                <span className="en-t">The control room</span>
+              </p>
+              <h2 className="t-beat">
+                <span className="ar-t">وفي الطرف الآخر… أنت.</span>
+                <span className="en-t">And on the other side… you.</span>
+              </h2>
+            </div>
+            <ol className="ctrl-steps" aria-label="Walkthrough">
+              {STEPS.map((s, i) => (
+                <li key={i} className={`t-meta${state >= i + 1 ? " done" : ""}${state === i + 1 ? " now" : ""}`}>
+                  <i />
+                  <span className="ar-t">{s.ar}</span>
+                  <span className="en-t">{s.en}</span>
+                </li>
+              ))}
+            </ol>
+          </header>
 
-      <div className="ctrl-shell" role="img" aria-label="R.Pay operations panel — live simulation">
-        <div className="ctrl-runner" aria-hidden="true" />
-        <div className="ctrl-bar">
-          <span className="dots" aria-hidden="true"><i /><i /><i /></span>
-          <span className="t-meta ctrl-title">
-            <span className="ar-t">منصّة التحكّم</span>
-            <span className="en-t">Control platform</span>
-          </span>
-          <span className="sim t-meta">
-            <i />
-            <span className="ar-t">محاكاة مباشرة</span>
-            <span className="en-t">Live simulation</span>
-          </span>
-        </div>
-
-        <div className="ctrl-grid">
-          {KPIS.map((k, i) => (
-            <div className="kpi" key={i}>
-              <span className="led"><b>{fmt(k.v)}</b>{k.of ? <em>/{k.of}</em> : null}</span>
-              <span className="t-meta">
-                <span className="ar-t">{k.label.ar}</span>
-                <span className="en-t">{k.label.en}</span>
+          <div className="ctrl-shell" role="img" aria-label="R.Pay operations surface — live simulation">
+            <div className="ctrl-runner" aria-hidden="true" />
+            <div className="ctrl-bar">
+              <span className="dots" aria-hidden="true"><i /><i /><i /></span>
+              <span className="t-meta ctrl-title">
+                <span className="ar-t">منصّة التحكّم</span>
+                <span className="en-t">Control platform</span>
+              </span>
+              <span className="sim t-meta">
+                <i />
+                <span className="ar-t">محاكاة مباشرة</span>
+                <span className="en-t">Live simulation</span>
               </span>
             </div>
-          ))}
 
-          <div className="feed" aria-hidden="true">
-            <span className="t-meta feed-title">
-              <span className="ar-t">آخر العمليات</span>
-              <span className="en-t">Latest payments</span>
-            </span>
-            {FEED.map((f, i) => (
-              <div className={`feed-row${row === i ? " hot" : ""}`} key={f.id}>
-                <span className="led sm">{f.id}</span>
-                <span className="led sm">SAR {f.amt}</span>
-                <i className="ok" />
+            <div className="ctrl-grid">
+              <div className="kpis">
+                <div className="kpi k-sales">
+                  <span className="led"><b>12,408</b></span>
+                  <span className="t-meta"><span className="ar-t">مبيعات اليوم</span><span className="en-t">Sales today</span></span>
+                </div>
+                <div className="kpi k-fleet">
+                  <span className="led"><b>97</b><em>/97</em></span>
+                  <span className="t-meta"><span className="ar-t">ماكينات نشطة</span><span className="en-t">Machines online</span></span>
+                </div>
+                <div className="kpi k-alerts">
+                  <span className="led"><b>0</b></span>
+                  <span className="t-meta"><span className="ar-t">تنبيهات مفتوحة</span><span className="en-t">Open alerts</span></span>
+                </div>
               </div>
-            ))}
+
+              <div className="feed" aria-hidden="true">
+                <span className="t-meta feed-title">
+                  <span className="ar-t">آخر العمليات</span>
+                  <span className="en-t">Latest payments</span>
+                </span>
+                {FEED.map((f, i) => (
+                  <div className={`feed-row${i === 0 ? " hot" : ""}`} key={f.id}>
+                    <span className="led sm">{f.id}</span>
+                    <span className="led sm">SAR {f.amt}</span>
+                    <i className="ok" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="branches" aria-hidden="true">
+                <span className="t-meta feed-title">
+                  <span className="ar-t">النشاط عبر 9 فروع</span>
+                  <span className="en-t">Activity across 9 branches</span>
+                </span>
+                <div className="bars">
+                  {BARS.map((h, i) => (
+                    <i key={i} style={{ "--h": `${h}%`, transitionDelay: `${i * 45}ms` } as React.CSSProperties} />
+                  ))}
+                </div>
+                <div className="geo t-meta">
+                  <span className="ok" aria-hidden="true" />
+                  <span className="ar-t">كل الأجهزة ضمن النطاق الآمن</span>
+                  <span className="en-t">All devices inside the geofence</span>
+                </div>
+              </div>
+            </div>
+
+            {/* State 1 toast: the tap from the hero, arriving here. */}
+            <div className="toast" aria-hidden="true">
+              <i className="dot" />
+              <span className="t-meta"><span className="ar-t">دفعة جديدة</span><span className="en-t">New payment</span></span>
+              <span className="led sm">M-062 · SAR 8.50</span>
+            </div>
           </div>
         </div>
       </div>

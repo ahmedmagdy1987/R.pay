@@ -6,15 +6,25 @@
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/plex-mono-500.woff2') format('woff2'); }
 
 /* ============================================================
-   R.Pay Concept 08 · "One Tap. Total Control." / «لمسة واحدة. تحكّم كامل.»
+   R.Pay Concept 08 · "One Tap. Total Control." — refinement pass
    Route-scoped stylesheet. ALL tokens live under .onetap.
 
    HARD RULES — the accent contract:
-     --cyan is SYSTEM ENERGY only: the tap pulse/echo, network lines &
-       nodes, status LEDs, the #prog hairline. Never on buttons.
-     --warm is HUMAN ACTION only: CTA buttons. Never on data, text,
-       borders or ambient glows.
-   Everything else is neutral. Dark-only by design.
+     --cyan is SYSTEM ENERGY only: tap pulse/echo, network/status
+       signals, LED emphasis, #prog. Never on buttons.
+     --warm is HUMAN ACTION only: CTA buttons + the contextual
+       .tlink text links. Never on data or ambient glows.
+
+   SHARED SYSTEM (every section obeys these):
+     radius --r; hairline --line; content width --w-content;
+     text measure --w-text; spacing --gap-act between acts
+     (density-audited: no automatic 100vh, no dead scroll);
+     motion: 400ms cubic-bezier(.22,1,.36,1), rises ≤ 12px.
+
+   SCROLL CONTRACT: html is the ONLY vertical scroll container.
+     Nothing here may set overflow-y auto/scroll on a page-level
+     wrapper, and the page's last element never pre-translates
+     (see .foot rise-exemption at the reveal system).
    ============================================================ */
 
 .onetap {
@@ -31,8 +41,11 @@
   --fb: var(--font-plex), sans-serif;                 /* body    */
   --fm: 'IBM Plex Mono', ui-monospace, monospace;     /* machine — digits/Latin ONLY */
 
+  --r: 18px;                                          /* one radius, page-wide */
+  --w-content: 1240px;
+  --w-text: 760px;
   --padx: clamp(1.25rem, 5vw, 4rem);
-  --pad-block: clamp(5rem, 10vw, 8.5rem);
+  --gap-act: clamp(4rem, 8vw, 6.75rem);
 
   position: relative;
   background: var(--void);
@@ -93,9 +106,7 @@
 }
 
 /* ============================================================
-   TYPE SCALE — exactly four sizes.
-   Arabic descenders and diacritics need the generous leading;
-   values follow flow's screenshot-verified measurements.
+   TYPE SCALE — exactly four sizes + the eyebrow label.
    ============================================================ */
 .onetap .t-display {
   font-family: var(--fd);
@@ -125,7 +136,23 @@
 .onetap .en-t.t-meta,
 .onetap .t-meta .en-t { letter-spacing: .1em; text-transform: uppercase; }
 
-/* LED windows: the machine voice — DIGITS/LATIN ONLY, never Arabic. */
+/* The eyebrow: one standardized section label — a cyan tick + meta text. */
+.onetap .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  margin-bottom: .7rem;
+}
+.onetap .eyebrow::before {
+  content: "";
+  width: 14px;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(53, 224, 212, .5);
+}
+
+/* LED windows: the machine voice — DIGITS/LATIN ONLY, never Arabic.
+   direction:ltr + isolate keep IDs and currency intact inside RTL. */
 .onetap .led {
   font-family: var(--fm);
   font-weight: 500;
@@ -138,7 +165,10 @@
 .onetap .ar-t { letter-spacing: normal; }
 
 /* ============================================================
-   CTA SYSTEM — one verb, one warm. --warm appears ONLY here.
+   CTA SYSTEM — one verb; a strict three-tier hierarchy:
+     .cta-warm .cta-xl  — the two dominant moments (hero, close)
+     .cta-warm .cta-nav — compact header entry
+     .tlink             — quiet contextual text links (cards)
    ============================================================ */
 .onetap .cta-warm {
   display: inline-flex;
@@ -183,21 +213,33 @@
   font-size: clamp(1.1rem, 2.2vw, 1.45rem);
 }
 .onetap .cta-nav { padding: .55rem 1.15rem; font-size: .88rem; }
-.onetap :is(a, button):focus-visible {
+.onetap .tlink {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  color: var(--warm);
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: .95rem;
+  text-decoration: none;
+}
+.onetap .tlink:hover { text-decoration: underline; text-underline-offset: 4px; }
+.onetap :is(a, button, [tabindex="0"]):focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 3px;
   border-radius: 8px;
 }
 
 /* ============================================================
-   ACT RHYTHM
+   ACT RHYTHM — density-audited. No automatic 100vh anywhere
+   below the hero; act padding is the ONLY inter-section space.
    ============================================================ */
-.onetap .act { position: relative; z-index: 2; padding: var(--pad-block) var(--padx); }
-.onetap .act-head { max-width: 760px; margin-inline: auto; text-align: center; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
-.onetap .act-lead { margin-top: .8rem; }
+.onetap .act { position: relative; z-index: 2; padding: calc(var(--gap-act) * .5) var(--padx); }
+.onetap .act-head { max-width: var(--w-text); margin-inline: auto; text-align: center; margin-bottom: clamp(1.6rem, 4vw, 2.6rem); }
+.onetap .act-lead { margin-top: .6rem; }
 
 /* ============================================================
-   ACT I — THE TAP (hero)
+   ACT I — THE TAP (hero) — preserved composition, clean screen.
    ============================================================ */
 .onetap .hero {
   min-height: 100svh;
@@ -209,6 +251,7 @@
 .onetap .hero video {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -224,14 +267,8 @@
     linear-gradient(90deg, rgba(5, 7, 10, .78) 0%, rgba(5, 7, 10, .45) 34%, transparent 62%),
     linear-gradient(180deg, rgba(5, 7, 10, .55), transparent 26%, transparent 72%, rgba(5, 7, 10, .72));
 }
-html.en .onetap .hero .veil {
-  background:
-    linear-gradient(90deg, rgba(5, 7, 10, .78) 0%, rgba(5, 7, 10, .45) 34%, transparent 62%),
-    linear-gradient(180deg, rgba(5, 7, 10, .55), transparent 26%, transparent 72%, rgba(5, 7, 10, .72));
-}
 
-/* The pulse-echo: the film's ring leaves the screen and crosses the page.
-   Born at the terminal (≈68% x / 55% y of the hero frame). Cyan role. */
+/* The pulse-echo: the film's ring crossing into the page. Cyan role. */
 .onetap .echo { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 .onetap .echo i {
   position: absolute;
@@ -276,7 +313,8 @@ html.en .onetap .hero .veil {
 }
 .onetap .brand img { height: 30px; width: auto; display: block; }
 .onetap .hero-nav .side { display: flex; align-items: center; gap: .8rem; }
-.onetap .lang {
+.onetap .hero-nav .lang,
+.onetap .foot .lang {
   background: transparent;
   border: 1px solid rgba(226, 240, 252, .28);
   color: var(--ink);
@@ -287,10 +325,11 @@ html.en .onetap .hero .veil {
   font-size: .85rem;
   cursor: pointer;
 }
-.onetap .lang:hover { border-color: rgba(226, 240, 252, .55); }
+.onetap .hero-nav .lang:hover,
+.onetap .foot .lang:hover { border-color: rgba(226, 240, 252, .55); }
 
-/* Copy block lives in the film's left negative space (physical left —
-   the terminal is physically on the right of the frame in BOTH langs). */
+/* Copy block in the film's left negative space (physical left — the
+   terminal is physically right of frame in BOTH languages). */
 .onetap .hero-copy {
   position: absolute;
   left: var(--padx);
@@ -339,9 +378,9 @@ html[dir="rtl"] .onetap .down { transform: translateX(50%); }
    ============================================================ */
 .onetap .action-stage {
   position: relative;
-  max-width: 1200px;
+  max-width: var(--w-content);
   margin-inline: auto;
-  border-radius: 18px;
+  border-radius: var(--r);
   overflow: hidden;
   border: 1px solid var(--line);
   background: var(--deep);
@@ -394,51 +433,256 @@ html[dir="rtl"] .onetap .down { transform: translateX(50%); }
 .onetap .beat-chip.on .tick { background: var(--cyan); box-shadow: 0 0 8px rgba(53, 224, 212, .8); }
 
 /* ============================================================
-   ACT III — ONE NETWORK
+   SHARED CARD SYSTEM — the fleet act and the machines act speak
+   one interaction language: a flex row whose active card expands
+   by interpolated flex-grow. Labels stay readable in all states.
    ============================================================ */
-.onetap .network { padding-inline: 0; }
-.onetap .network .act-head { padding-inline: var(--padx); }
-.onetap .net-stage {
-  position: relative;
-  height: clamp(420px, 74vh, 720px);
-  background:
-    linear-gradient(180deg, rgba(5, 7, 10, .88), rgba(5, 7, 10, .55) 30%, rgba(5, 7, 10, .55) 70%, rgba(5, 7, 10, .92)),
-    url('/assets/concept-08/network-hall.webp') center / cover no-repeat;
+.onetap .cards-row {
+  display: flex;
+  gap: 14px;
+  max-width: var(--w-content);
+  margin-inline: auto;
 }
-.onetap .net-stage canvas {
+.onetap .cards-row > article {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--deep);
+  overflow: hidden;
+  cursor: default;
+  transition-property: flex-grow, border-color;
+}
+.onetap .cards-row > article.is-active {
+  flex-grow: 2.3;
+  border-color: rgba(53, 224, 212, .3);
+}
+/* The restrained pulse: a cyan hairline under the active card only. */
+.onetap .cards-row > article::after {
+  content: "";
+  position: absolute;
+  inset-inline: 18%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 10px rgba(53, 224, 212, .6);
+  opacity: 0;
+}
+.onetap .cards-row > article.is-active::after { opacity: .9; }
+.onetap .fcard-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 7, 10, .16), transparent 34%, transparent 52%, rgba(5, 7, 10, .9));
+}
+
+/* ---- ACT III — ONE NETWORK (fleet cards) ---- */
+.onetap .fleet-row { height: clamp(380px, 48vh, 460px); }
+.onetap .fcard.image img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  display: block;
 }
-.onetap .net-hud {
+.onetap .fcard-body {
   position: absolute;
-  top: clamp(1rem, 4vh, 2.4rem);
-  inset-inline-start: var(--padx);
-  display: flex;
-  flex-direction: column;
-  gap: .3rem;
+  inset-inline: 0;
+  bottom: 0;
+  padding: clamp(1.1rem, 2.4vw, 1.8rem);
 }
-.onetap .net-hud .led {
-  font-size: clamp(2.4rem, 6vw, 4.2rem);
+.onetap .fcard-body .led.xl {
+  font-size: clamp(2.6rem, 5.4vw, 4rem);
   color: var(--ink);
   text-shadow: 0 0 24px rgba(53, 224, 212, .35);
+  display: block;
 }
-.onetap .net-cta { display: flex; margin: clamp(2rem, 5vw, 3rem) auto 0; width: fit-content; }
+.onetap .fcard-line { max-width: 30ch; }
+.onetap .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .9rem; }
+.onetap .chip {
+  padding: .3rem .8rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(5, 7, 10, .55);
+  color: var(--ink);
+}
+.onetap .fcard.data { display: flex; flex-direction: column; padding: clamp(1.1rem, 2.4vw, 1.6rem); }
+.onetap .fcard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+.onetap .fcard-title { color: var(--ink); font-family: var(--fd); font-weight: 600; }
+.onetap .sim {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .28rem .75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(53, 224, 212, .35);
+  color: rgba(226, 240, 252, .75);
+  white-space: nowrap;
+  flex: none;
+}
+.onetap .sim i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(53, 224, 212, .8);
+}
+.onetap .ok {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(53, 224, 212, .8);
+  flex: none;
+}
+.onetap .pay-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+  margin-top: .4rem;
+  margin-bottom: auto;
+}
+.onetap .pay-steps li {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  opacity: .45;
+}
+.onetap .pay-steps li .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(226, 240, 252, .25);
+  flex: none;
+}
+.onetap .pay-steps li .led.sm { margin-inline-start: auto; }
+.onetap .pay-steps[data-step="1"] li:nth-child(1),
+.onetap .pay-steps[data-step="2"] li:nth-child(-n+2),
+.onetap .pay-steps[data-step="3"] li { opacity: 1; }
+.onetap .pay-steps[data-step="1"] li:nth-child(1) .dot,
+.onetap .pay-steps[data-step="2"] li:nth-child(-n+2) .dot,
+.onetap .pay-steps[data-step="3"] li .dot {
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(53, 224, 212, .8);
+}
+.onetap .health-rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  margin-top: .4rem;
+  margin-bottom: auto;
+}
+.onetap .health-rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  padding: .55rem .75rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.onetap .led.sm { font-size: .82rem; color: var(--ink); }
+
+/* ---- ACT V — MACHINE CARDS ---- */
+.onetap .machine-row { height: clamp(480px, 60vh, 600px); }
+.onetap .mcard img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.onetap .mcard-body {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: clamp(1.1rem, 2.4vw, 1.8rem);
+}
+.onetap .mcard-title {
+  color: var(--ink);
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition-property: font-size;
+}
+.onetap .mcard.is-active .mcard-title { font-size: clamp(1.2rem, 2.2vw, 1.7rem); }
+.onetap .mcard-more {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition-property: grid-template-rows, opacity;
+}
+.onetap .mcard.is-active .mcard-more { grid-template-rows: 1fr; opacity: 1; }
+.onetap .mcard-more > * { min-height: 0; }
+.onetap .mcard-more { overflow: hidden; }
+.onetap .mcard-line { max-width: 44ch; margin-bottom: .5rem; }
 
 /* ============================================================
-   ACT IV — THE CONTROL ROOM
+   ACT IV — THE CONTROL ROOM (sticky walkthrough)
    ============================================================ */
+.onetap .control { height: 240vh; padding: 0; }
+.onetap .ctrl-stick {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(.8rem, 2.5vh, 1.6rem) var(--padx);
+}
+.onetap .ctrl-frame { width: min(84vw, 1320px); }
+.onetap .ctrl-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.4rem;
+  margin-bottom: 1rem;
+}
+.onetap .ctrl-head .t-beat { font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.onetap .ctrl-steps {
+  list-style: none;
+  display: flex;
+  gap: 1.2rem;
+  padding-bottom: .35rem;
+}
+.onetap .ctrl-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+  opacity: .45;
+}
+.onetap .ctrl-steps li i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(226, 240, 252, .25);
+}
+.onetap .ctrl-steps li.done { opacity: .75; }
+.onetap .ctrl-steps li.done i { background: rgba(53, 224, 212, .5); }
+.onetap .ctrl-steps li.now { opacity: 1; color: var(--ink); }
+.onetap .ctrl-steps li.now i { background: var(--cyan); box-shadow: 0 0 8px rgba(53, 224, 212, .8); }
+
 .onetap .ctrl-shell {
   position: relative;
-  max-width: 1100px;
-  margin-inline: auto;
-  border-radius: 18px;
+  border-radius: var(--r);
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(16, 22, 29, .92), rgba(10, 18, 32, .88));
   overflow: hidden;
 }
-/* The runner: the same pulse, arriving. Fires once when the act turns on. */
 .onetap .ctrl-runner {
   position: absolute;
   top: 0;
@@ -478,36 +722,30 @@ html[dir="rtl"] .onetap .control.on .ctrl-runner { animation-name: runner-rtl; }
   background: rgba(226, 240, 252, .16);
 }
 .onetap .ctrl-title { color: var(--ink); }
-.onetap .sim {
-  margin-inline-start: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: .45rem;
-  padding: .3rem .8rem;
-  border-radius: 999px;
-  border: 1px solid rgba(53, 224, 212, .35);
-  color: rgba(226, 240, 252, .75);
-}
-.onetap .sim i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: 0 0 8px rgba(53, 224, 212, .8);
-}
+.onetap .ctrl-bar .sim { margin-inline-start: auto; }
 
 .onetap .ctrl-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 1.25fr;
+  grid-template-columns: 1.05fr .95fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1px;
+  background: var(--line);
+  height: min(58vh, 520px);
+}
+.onetap .kpis {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: var(--line);
 }
 .onetap .kpi,
-.onetap .feed { background: rgba(5, 7, 10, .55); padding: 1.4rem 1.2rem; }
-.onetap .kpi { display: flex; flex-direction: column; gap: .45rem; justify-content: center; }
-.onetap .kpi .led { font-size: clamp(1.7rem, 3.4vw, 2.6rem); color: var(--ink); }
+.onetap .feed,
+.onetap .branches { background: rgba(5, 7, 10, .55); padding: clamp(1rem, 2vw, 1.5rem); }
+.onetap .kpi { display: flex; flex-direction: column; gap: .4rem; justify-content: center; }
+.onetap .kpi .led { font-size: clamp(1.9rem, 3.8vw, 3rem); color: var(--ink); transition-property: text-shadow, opacity; }
 .onetap .kpi .led em { font-style: normal; color: var(--mute); font-size: .6em; }
-.onetap .feed { display: flex; flex-direction: column; gap: .55rem; }
+.onetap .feed { display: flex; flex-direction: column; gap: .55rem; overflow: hidden; }
 .onetap .feed-title { margin-bottom: .2rem; }
 .onetap .feed-row {
   display: flex;
@@ -518,79 +756,72 @@ html[dir="rtl"] .onetap .control.on .ctrl-runner { animation-name: runner-rtl; }
   border-radius: 10px;
   border: 1px solid transparent;
 }
-.onetap .feed-row .led.sm { font-size: .82rem; color: var(--mute); }
-.onetap .feed-row .ok {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(53, 224, 212, .35);
-}
+.onetap .feed-row .led.sm { color: var(--mute); }
+.onetap .feed-row .ok { opacity: .4; }
 .onetap .feed-row.hot {
   border-color: rgba(53, 224, 212, .3);
   background: rgba(53, 224, 212, .06);
 }
 .onetap .feed-row.hot .led.sm { color: var(--ink); }
-.onetap .feed-row.hot .ok { background: var(--cyan); box-shadow: 0 0 8px rgba(53, 224, 212, .8); }
+.onetap .feed-row.hot .ok { opacity: 1; }
+.onetap .branches { display: flex; flex-direction: column; }
+.onetap .bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(.5rem, 1.4vw, 1rem);
+  padding-block: .8rem;
+}
+.onetap .bars i {
+  flex: 1;
+  height: 22%;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, rgba(53, 224, 212, .55), rgba(53, 224, 212, .12));
+  transition-property: height;
+  transition-duration: 700ms;
+}
+.onetap .geo {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding-top: .6rem;
+  border-top: 1px solid var(--line);
+}
+.onetap .toast {
+  position: absolute;
+  bottom: 1.2rem;
+  inset-inline-end: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .6rem .95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(53, 224, 212, .35);
+  background: rgba(5, 7, 10, .88);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .5);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition-property: opacity, transform;
+}
+.onetap .toast .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(53, 224, 212, .8);
+}
+/* Walkthrough states */
+.onetap .control.s1 .toast { opacity: 1; transform: translateY(0); }
+.onetap .control.s1 .feed-row.hot { background: rgba(53, 224, 212, .1); }
+.onetap .control.s2 .bars i,
+.onetap .control.s3 .bars i { height: var(--h); }
+.onetap .control.s2 .k-fleet .led { text-shadow: 0 0 22px rgba(53, 224, 212, .45); }
+.onetap .control.s3 .kpi .led { text-shadow: 0 0 18px rgba(53, 224, 212, .3); }
 
 /* ============================================================
-   ACT V — BUILT FOR REAL MACHINES
+   ACT VI — PROOF (compact band)
    ============================================================ */
-.onetap .machines { padding-inline: 0; }
-.onetap .machines .act-head { padding-inline: var(--padx); }
-.onetap .scene {
-  position: relative;
-  margin: 0 0 clamp(1.2rem, 3vw, 2.2rem);
-  overflow: hidden;
-}
-.onetap .scene img {
-  display: block;
-  width: 100%;
-  height: clamp(420px, 78vh, 740px);
-  object-fit: cover;
-}
-.onetap .scene::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(5, 7, 10, .3), transparent 30%, transparent 55%, rgba(5, 7, 10, .88)),
-    linear-gradient(90deg, rgba(5, 7, 10, .35), transparent 40%);
-  pointer-events: none;
-}
-html[dir="rtl"] .onetap .scene::after {
-  background:
-    linear-gradient(180deg, rgba(5, 7, 10, .3), transparent 30%, transparent 55%, rgba(5, 7, 10, .88)),
-    linear-gradient(270deg, rgba(5, 7, 10, .35), transparent 40%);
-}
-/* Left-pinned plates keep the physical-left darkening in both directions. */
-html[dir="rtl"] .onetap .scene-left::after,
-.onetap .scene-left::after {
-  background:
-    linear-gradient(180deg, rgba(5, 7, 10, .3), transparent 30%, transparent 55%, rgba(5, 7, 10, .88)),
-    linear-gradient(90deg, rgba(5, 7, 10, .4), transparent 44%);
-}
-.onetap .scene-copy {
-  position: absolute;
-  bottom: clamp(1.6rem, 5vh, 3.2rem);
-  inset-inline-start: var(--padx);
-  z-index: 2;
-  max-width: 560px;
-}
-/* Plates whose negative space is physical-left pin their copy there in
-   both languages (the hero pattern). */
-.onetap .scene-left .scene-copy {
-  inset-inline-start: auto;
-  left: var(--padx);
-  right: auto;
-}
-.onetap .scene-eyebrow { display: block; margin-bottom: .5rem; }
-.onetap .scene-title { color: var(--ink); }
-.onetap .scene-line { margin-top: .5rem; }
-
-/* ============================================================
-   ACT VI — PROOF + CLOSE
-   ============================================================ */
-.onetap .proof { padding-bottom: clamp(2rem, 4vw, 3rem); }
+.onetap .proof { padding-block: calc(var(--gap-act) * .5) calc(var(--gap-act) * .4); }
 .onetap .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -598,13 +829,12 @@ html[dir="rtl"] .onetap .scene-left::after,
   max-width: 1100px;
   margin-inline: auto;
   text-align: center;
-  margin-bottom: clamp(2.4rem, 6vw, 4rem);
+  margin-bottom: clamp(1.8rem, 4vw, 2.8rem);
 }
 .onetap .stat { display: flex; flex-direction: column; gap: .45rem; }
 .onetap .stat .led { font-size: clamp(1.7rem, 4vw, 3rem); color: var(--ink); }
 
-/* Brands marquee (shared component) — dark-route port. The logo strip
-   keeps its light card: the logos are drawn for it (flow precedent). */
+/* Brands marquee (shared component) — light card, flow precedent. */
 .onetap .brands { display: grid; justify-items: center; }
 .onetap .brands .lbl { text-align: center; margin-bottom: 1.2rem; font-size: .8rem; color: var(--mute); }
 .onetap .marquee {
@@ -641,38 +871,89 @@ html[dir="rtl"] .onetap .scene-left::after,
   flex: none;
 }
 
+/* ============================================================
+   THE CLOSE — a branded final act (66vh class, not a void)
+   ============================================================ */
 .onetap .close {
   position: relative;
-  min-height: 88svh;
+  min-height: clamp(460px, 64vh, 640px);
   display: grid;
   place-items: center;
   text-align: center;
   overflow: hidden;
 }
-.onetap .close-bg {
+/* Ambient R.Pay light: one horizon hairline + soft rise. No blobs. */
+.onetap .close-light {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(60% 46% at 50% 62%, rgba(53, 224, 212, .07), transparent 70%);
 }
-.onetap .close-inner { position: relative; z-index: 2; display: grid; justify-items: center; gap: 1.6rem; }
+.onetap .close-light::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(53, 224, 212, .55), transparent);
+}
+.onetap .close-light::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 22%;
+  height: 180px;
+  background: radial-gradient(60% 100% at 50% 0%, rgba(53, 224, 212, .08), transparent 70%);
+}
+.onetap .close-inner { position: relative; z-index: 2; display: grid; justify-items: center; gap: 1.5rem; padding-block: clamp(2.5rem, 7vh, 4rem); }
+.onetap .close .t-display { font-size: clamp(2.2rem, 5.4vw, 4.6rem); }
 .onetap .close-note { display: block; }
 
+/* ============================================================
+   FUNCTIONAL FOOTER — compact, verified content only.
+   ============================================================ */
 .onetap .foot {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid var(--line);
+  padding: clamp(1.8rem, 4vw, 2.6rem) var(--padx) 1.4rem;
+  color: var(--mute);
+}
+.onetap .foot-main {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: clamp(1.4rem, 4vw, 3rem);
+  max-width: var(--w-content);
+  margin-inline: auto;
+  align-items: start;
+}
+.onetap .foot-brand .brand { font-size: 1.15rem; }
+.onetap .foot-brand .brand img { height: 26px; }
+.onetap .foot-desc { display: block; margin-top: .7rem; max-width: 40ch; line-height: 1.9; }
+.onetap .foot-nav { display: flex; flex-wrap: wrap; gap: .9rem 1.4rem; padding-top: .35rem; }
+.onetap .foot-nav a,
+.onetap .foot-contact a { color: var(--mute); text-decoration: none; }
+.onetap .foot-nav a:hover,
+.onetap .foot-contact a:hover { color: var(--ink); }
+.onetap .foot-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .8rem;
+  padding-top: .35rem;
+}
+.onetap .foot-base {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.6rem var(--padx) 2rem;
+  max-width: var(--w-content);
+  margin: clamp(1.4rem, 3vw, 2rem) auto 0;
+  padding-top: 1.1rem;
   border-top: 1px solid var(--line);
-  color: var(--mute);
-  font-size: .8rem;
-  position: relative;
-  z-index: 2;
 }
 .onetap .fmark { font-family: var(--fd); font-weight: 700; letter-spacing: .18em; color: rgba(226, 240, 252, .3); }
 
-/* ---- WhatsApp widget (shared component, dark-route port) ---- */
+/* ---- WhatsApp widget (shared component) — yields at the end. ---- */
 .onetap .wa {
   position: fixed;
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
@@ -681,7 +962,9 @@ html[dir="rtl"] .onetap .scene-left::after,
   display: flex;
   align-items: center;
   gap: 10px;
+  transition-property: opacity, transform;
 }
+.onetap.at-end .wa { opacity: 0; transform: translateY(8px); pointer-events: none; }
 .onetap .wa-btn {
   display: grid;
   place-items: center;
@@ -710,8 +993,6 @@ html[dir="rtl"] .onetap .scene-left::after,
 @media (hover: hover) {
   .onetap .wa:hover .wa-tip { opacity: 1; transform: none; }
 }
-/* <=820px the sticky bar carries the WhatsApp entry point; the floating
-   widget hides so a secondary never sits beside a primary CTA. */
 @media (max-width: 820px) {
   .onetap .wa { display: none; }
 }
@@ -731,7 +1012,7 @@ html[dir="rtl"] .onetap .scene-left::after,
 .onetap .sticky-cta .cta-warm { width: 100%; }
 
 /* ============================================================
-   REVEAL SYSTEM — [data-rise] hides only under .reveals (JS present).
+   REVEAL SYSTEM — [data-rise] hides only under .reveals.
    ============================================================ */
 .onetap.reveals [data-rise] {
   opacity: 0;
@@ -739,26 +1020,27 @@ html[dir="rtl"] .onetap .scene-left::after,
   transition-property: opacity, transform;
 }
 .onetap.reveals [data-rise].in { opacity: 1; transform: translateY(0); }
+/* The LAST element on the page may never rise: its pre-reveal translateY
+   extends the scrollable area by 12px and resurrects the second
+   scrollbar while media loads. It fades in place instead. */
+.onetap.reveals .foot[data-rise] { transform: none; }
 
 /* ============================================================
    RESPONSIVE ART DIRECTION
    ============================================================ */
 @media (max-width: 1024px) {
   .onetap .hero-copy { max-width: min(560px, 54vw); }
-  .onetap .ctrl-grid { grid-template-columns: repeat(3, 1fr); }
-  .onetap .feed { grid-column: 1 / -1; }
+  .onetap .ctrl-frame { width: min(92vw, 1320px); }
+  .onetap .ctrl-head { flex-direction: column; align-items: flex-start; gap: .8rem; }
 }
 
 @media (max-width: 820px) {
   /* Mobile is a different composition: tall film, terminal lower third,
-     copy on top. Not a shrunken desktop. */
+     copy on top. Card rows become snap carousels — one card per view. */
   .onetap .hero { display: flex; flex-direction: column; }
   .onetap .hero .hero-poster,
   .onetap .hero video { object-position: 50% 72%; }
-  /* The copy block runs deep on tall phones — keep it on solid darkness
-     down to ~72%, then let the terminal own the lower frame. */
-  .onetap .hero .veil,
-  html.en .onetap .hero .veil {
+  .onetap .hero .veil {
     background: linear-gradient(180deg, rgba(5, 7, 10, .86) 0%, rgba(5, 7, 10, .68) 44%, rgba(5, 7, 10, .34) 66%, transparent 78%, rgba(5, 7, 10, .55) 100%);
   }
   .onetap .hero-copy {
@@ -770,41 +1052,73 @@ html[dir="rtl"] .onetap .scene-left::after,
     padding-inline: var(--padx);
     max-width: none;
     text-align: center;
+    flex: 1;
   }
   .onetap .hero .sub { margin-inline: auto; }
   .onetap .ctas { justify-content: center; }
   .onetap .pays { justify-content: center; gap: .9rem 1.1rem; }
-  .onetap .hero-copy { flex: 1; }
   .onetap .echo i { left: 50%; top: 74%; }
   .onetap .cta-nav { display: none; }
   .onetap .down { display: none; }
   .onetap .sticky-cta { display: block; }
 
-  .onetap .net-stage { height: clamp(380px, 62vh, 560px); }
+  /* Card rows → horizontal snap carousels. This overflow-x scroller is a
+     CAROUSEL, not the page: it never scrolls vertically. */
+  .onetap .cards-row {
+    height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--padx);
+    padding-bottom: .5rem;
+    scrollbar-width: none;
+  }
+  .onetap .cards-row::-webkit-scrollbar { display: none; }
+  .onetap .cards-row > article {
+    flex: 0 0 84%;
+    scroll-snap-align: center;
+  }
+  .onetap .fleet-row > article { height: clamp(380px, 56vh, 480px); }
+  .onetap .machine-row > article { height: clamp(440px, 60vh, 540px); }
+  /* No hover on touch: every card shows its full content. */
+  .onetap .mcard-more { grid-template-rows: 1fr; opacity: 1; }
+  .onetap .cards-row > article { flex-grow: 0 !important; }
+
+  /* Control walkthrough: no sticky theatre on mobile — one composed
+     panel, steps as a row, state 3 pinned by the component. */
+  .onetap .control { height: auto; padding: calc(var(--gap-act) * .5) var(--padx); }
+  .onetap .ctrl-stick { position: static; height: auto; padding: 0; display: block; }
+  .onetap .ctrl-frame { width: 100%; }
+  .onetap .ctrl-grid { height: auto; grid-template-columns: 1fr; }
+  .onetap .kpis { grid-template-columns: 1fr 1fr; }
+  .onetap .kpi:first-child { grid-column: 1 / -1; }
+  .onetap .toast { display: none; }
+
   .onetap .stats { grid-template-columns: repeat(2, 1fr); }
-  .onetap .scene img { height: clamp(380px, 64vh, 560px); }
-  .onetap .ctrl-grid { grid-template-columns: 1fr 1fr; }
-  .onetap .kpi:nth-child(3) { grid-column: 1 / -1; }
+  .onetap .foot-main { grid-template-columns: 1fr; gap: 1.4rem; }
+  .onetap .foot-contact { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .onetap .close { min-height: clamp(420px, 56vh, 560px); }
 }
 
 @media (max-width: 600px) {
   .onetap .beats { flex-wrap: wrap; gap: .45rem; }
   .onetap .beat-chip { padding: .34rem .7rem; }
-  .onetap .brandlogo { height: 26px; }
-  .onetap .foot { flex-direction: column; text-align: center; gap: .5rem; }
+  .onetap .brandlogo { height: 30px; }
+  .onetap .foot-base { flex-direction: column; text-align: center; gap: .5rem; }
 }
 
 @media (max-width: 400px) {
   .onetap .ctas { flex-direction: column; align-items: stretch; }
   .onetap .ctas .cta-warm,
   .onetap .ctas .cta-ghost { width: 100%; }
+  .onetap .cards-row > article { flex: 0 0 92%; }
 }
 
 /* ============================================================
-   REDUCED MOTION — a designed still experience, not a broken one.
+   REDUCED MOTION — a designed still experience.
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  .onetap .echo i { display: none; }         /* no ring sweep */
+  .onetap .echo i { display: none; }
   .onetap .pays span { color: rgba(226, 240, 252, .78); }
   .onetap .action-stage video,
   .onetap .action-stage img { filter: none; transform: none; }
@@ -813,5 +1127,9 @@ html[dir="rtl"] .onetap .scene-left::after,
   .onetap .mtrack { animation: none; }
   .onetap.reveals [data-rise] { opacity: 1; transform: none; }
   .onetap .ctrl-runner { display: none; }
+  .onetap .control { height: auto; padding: calc(var(--gap-act) * .5) var(--padx); }
+  .onetap .ctrl-stick { position: static; height: auto; display: block; padding: 0; }
+  .onetap .bars i { height: var(--h); }
+  .onetap .toast { display: none; }
   .onetap .sticky-cta { transition: none; }
 }

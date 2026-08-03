@@ -61,11 +61,24 @@ for (const [name, w, h] of VIEWPORTS) {
   if (over > 1) note(`[one-tap ${name}] horizontal overflow: ${over}px`);
   await page.screenshot({ path: `${OUT}/ot-${name}-ar-hero.png` });
   // Mid-scroll act shots (AR), from the top of each act.
-  for (const [act, sel] of [["action", "#action"], ["network", "#network"], ["control", "#control"], ["machines", "#machines"], ["close", "#demo"]]) {
-    await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: "start" }), sel);
-    await page.waitForTimeout(name === "1440x900" ? 3800 : 1400); // let network anim finish on the doc viewport
+  for (const [act, sel] of [["action", "#action"], ["fleet", "#fleet"], ["control", "#control"], ["machines", "#machines"], ["close", "#demo"], ["footer", ".onetap .foot"]]) {
+    await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: s === "#control" ? "start" : "center" }), sel);
+    await page.waitForTimeout(1400);
     await page.screenshot({ path: `${OUT}/ot-${name}-ar-${act}.png` });
   }
+  // Scrollbar regression: html must be the ONLY vertical scroll container,
+  // in this loaded state and mid-page.
+  const rogue = await page.evaluate(() =>
+    [...document.querySelectorAll("*"), document.body]
+      .filter((el) => {
+        const cs = getComputedStyle(el);
+        if (!["auto", "scroll"].includes(cs.overflowY)) return false;
+        if (el.scrollHeight <= el.clientHeight + 1) return false;
+        return el !== document.documentElement;
+      })
+      .map((el) => `${el.tagName}.${String(el.className).slice(0, 60)}`)
+  );
+  rogue.forEach((r) => note(`[one-tap ${name}] rogue vertical scroll container: ${r}`));
   // EN pass on key viewports only.
   if (["1440x900", "390x844"].includes(name)) {
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -87,15 +100,41 @@ for (const [name, w, h] of VIEWPORTS) {
   await page.goto(`${BASE}/concepts/one-tap`, { waitUntil: "networkidle", timeout: 45000 });
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `${OUT}/ot-reduced-hero.png` });
-  const videoCount = await page.locator(".onetap video").count();
+  const videoCount = await page.locator(".onetap .hero video").count();
   if (videoCount > 0) note(`[reduced-motion] hero video element present (${videoCount}) — expected poster-only hero`);
-  await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: "start" }), "#network");
+  await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: "center" }), "#fleet");
   await page.waitForTimeout(1000);
-  await page.screenshot({ path: `${OUT}/ot-reduced-network.png` });
+  await page.screenshot({ path: `${OUT}/ot-reduced-fleet.png` });
   await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: "start" }), "#control");
   await page.waitForTimeout(1000);
   await page.screenshot({ path: `${OUT}/ot-reduced-control.png` });
   audit.done();
+  await page.close();
+}
+
+/* ---------- 3b. Scrollbar regression DURING media load (the original bug's
+   exact reproduction: throttled network, probe while the films stream) ---------- */
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Network.emulateNetworkConditions", {
+    offline: false, latency: 40, downloadThroughput: (1.2 * 1024 * 1024) / 8, uploadThroughput: 256 * 1024,
+  });
+  await page.goto(`${BASE}/concepts/one-tap`, { waitUntil: "domcontentloaded", timeout: 60000 });
+  await page.waitForTimeout(1200); // hero film still streaming at ~1.2Mbps
+  const probe = await page.evaluate(() => ({
+    rogue: [...document.querySelectorAll("*"), document.body]
+      .filter((el) => {
+        const cs = getComputedStyle(el);
+        return ["auto", "scroll"].includes(cs.overflowY) &&
+          el.scrollHeight > el.clientHeight + 1 && el !== document.documentElement;
+      })
+      .map((el) => `${el.tagName}.${String(el.className).slice(0, 60)}`),
+    bodyOverflowY: getComputedStyle(document.body).overflowY,
+  }));
+  probe.rogue.forEach((r) => note(`[during-load] rogue vertical scroll container: ${r}`));
+  if (["auto", "scroll"].includes(probe.bodyOverflowY)) note(`[during-load] body overflow-y is ${probe.bodyOverflowY} — must never be a scroll container`);
+  await page.screenshot({ path: `${OUT}/ot-during-load.png` });
   await page.close();
 }
 

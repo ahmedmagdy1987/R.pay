@@ -34,8 +34,13 @@
 
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden}
+/* overflow-x on body must be `clip`, NOT `hidden`: `hidden` computes the
+   unset axis to `auto`, which silently makes <body> a second vertical
+   scroll container (html + body scrollbars = the "double scrollbar" bug).
+   `clip` clips without creating a scroll container; html remains the one
+   page scroller (document.scrollingElement). */
 body{font-family:var(--fa);color:var(--ink);background:var(--bg);
-  overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background-color .4s,color .4s}
+  overflow-x:clip;-webkit-font-smoothing:antialiased;transition:background-color .4s,color .4s}
 /* Page gradient on a composited fixed layer (avoids iOS background-attachment jank). */
 body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--bg-grad)}
 html.en body{font-family:var(--fe)}
