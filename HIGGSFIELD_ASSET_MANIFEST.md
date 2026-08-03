@@ -1,6 +1,29 @@
 # HIGGSFIELD ASSET MANIFEST — Concept 08 «لمسة واحدة / One Tap»
 
-**Date:** 2026-08-03 · **Account:** Higgsfield Ultra (MCP) · **Total spend this concept:** ≈ 250 credits of 5,442 available.
+**Date:** 2026-08-03 (v1 + refinement pass) · **Account:** Higgsfield Ultra (MCP) · **Total spend:** ≈ 430 credits of 5,442 available.
+
+## REFINEMENT PASS (v2) — clean-screen hero + aspect-specific card masters
+
+All v2 generations chain from a new canon: a **clean-screen terminal reference** (job `61b22494`) whose display carries ONLY the R.Pay logo + contactless symbol — zero language-dependent text. Frame-by-frame inspection via `scripts/vframes.mjs` on every video.
+
+| File (shipped) | Purpose | Model | Source chain | Dimensions | Size |
+|---|---|---|---|---|---|
+| `hero-poster.webp` | Act I poster (desktop), text-free screen | Nano Banana Pro 2K | terminal-clean ref → 16:9 recomposition | 1920×1072 | 45 KB |
+| `hero-poster-tall.webp` | Act I mobile poster | Nano Banana Pro 2K | terminal-clean ref → 9:16 | 1080×1935 | 58 KB |
+| `hero-wide.mp4` | Act I film: tap → surface ripple → settle | Seedance 2.0, 8s from new poster | job `eb8e3124` | 1920×1072 | 958 KB |
+| `hero-tall.mp4` | Act I mobile film | Kling 3.0 Turbo, 8s (Seedance failed the tall job twice) | job `fc921990` | 1080×1936 | 900 KB |
+| `card-arcade.webp` | Act V card master, 3:4, machine complete in crop-safe center, icon-only reader, no screen title | Nano Banana Pro 2K | v2 after v1 rejected for "B.PAY" reader corruption | 1200×1607 | 36 KB |
+| `card-vending.webp` | Act V card master, 3:4, logo-only screen | Nano Banana Pro 2K | vending ref | 1200×1607 | 90 KB |
+| `card-coffee.webp` | Act V card master, 3:4, logo-only screen | Nano Banana Pro 2K | coffee ref | 1200×1607 | 39 KB |
+| `arcade-live-poster.webp` | Act II poster — abstract screen glow, NO game title | Nano Banana Pro 2K | arcade master v2 → 16:9 | 1600×893 | 29 KB |
+| `arcade-live.mp4` | Act II ambient clip, text-free screen | Kling 3.0 Turbo 5s | from the poster above | 1600×893 | 294 KB |
+| `hub-card.webp` | Hub card + OG image | sharp crop of the clean hero poster (no new generation) | — | 1200×675 | 30 KB |
+
+**v2 rejects:** arcade card master v1 (reader label corrupted to "B.PAY") · one Seedance tall-film failure ×2 (moved to Kling). **Superseded & removed from repo:** v1 hero media (baked «اضغط للدفع / Click to pay» screen text — the refinement's core defect), `scene-arcade/vending/coffee.webp` (16:9 strips cropped machines in the old stacked layout), GALAXY-STRIKE-titled arcade clip/poster. `network-hall.webp` (v1) remains in service as the fleet-card plate.
+
+---
+
+## ORIGINAL PASS (v1) — kept for provenance
 **Identity anchoring:** every generation is image-to-image against the repo's canonical renders (`device-terminal.webp`, `machine-arcade.webp`, `machine-vending.webp`, `machine-coffee.webp`, `flow/film-poster.webp` for grade reference). No headline/CTA text is baked into any media; the only in-media text is the product's own screen UI reproduced from the references.
 
 ## Production assets (shipped, `public/assets/concept-08/`)

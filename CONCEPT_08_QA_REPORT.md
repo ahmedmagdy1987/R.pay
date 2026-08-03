@@ -1,5 +1,36 @@
 # CONCEPT 08 — QA REPORT
 
+## REFINEMENT PASS (v2, 2026-08-03)
+
+**Scope:** hero text-artifact elimination, double-scrollbar root fix, fleet/control/machines rebuilds, density audit, CTA hierarchy, functional footer, unified system.
+
+### The left-scrollbar root cause (exact)
+
+Two defects compounded. (1) `app/globals.css` set `body { overflow-x: hidden }`; per CSS spec, one hidden axis computes the other from `visible` to `auto`, so **`<body>` itself became a second vertical scroll container** alongside `html`. (2) The reveal system pre-translated the page's last element (`.foot`) by 12px; a transformed box at the document end **extends body's scrollable overflow by exactly those 12px**, activating body's scrollbar. In RTL the two scrollbars render on opposite sides — the reported "second left scrollbar". It vanished after full scroll because the footer's reveal returned the transform to 0. **Fix:** `body { overflow-x: clip }` (clips without creating a scroll container — benefits all concepts) + the footer is rise-exempt (fades in place). **Regression test:** `qa-onetap.mjs` asserts zero rogue vertical scroll containers on all 8 viewports in loaded state AND during throttled media download (the bug's original reproduction).
+
+### Commands re-run
+
+`npx tsc --noEmit` → 0 errors · `npm run build` → ✓ 12/12 pages, one-tap 7.15 kB route JS · `qa-onetap.mjs` (twice: before + after polish) → only cinema's pre-existing hot-link failure repo-wide · `perf-onetap.mjs` → LCP 144 ms (poster-first), CLS 0.02, 1 long task, 1.31 MB full transfer.
+
+### Verified in this pass
+
+- **No generated text artifact anywhere**: hero posters/films, Act II clip/poster, and all three card masters regenerated against a clean-screen terminal canon (logo + contactless symbol only); every video inspected frame-by-frame.
+- **One scrollbar** in all states: before media, during throttled loading, after playback, at page bottom, after AR↔EN switches.
+- Fleet act ≈ 860px desktop total (was ~1400px with the starburst); every card readable in contracted state; keyboard focus expands cards; mobile snap carousel.
+- Control room: dashboard `min(84vw, 1320px)`, three scroll states (payment arrives → status updates → one view), toast repositioned clear of KPIs; mobile and reduced-motion pin the final composed state; machine IDs and SAR amounts render LTR-isolated inside RTL.
+- Machine cards: three complete machines in aspect-specific 3:4 masters — zero clipped machines, zero seams; active card reveals benefit + text-link CTA; inactive titles no longer truncate (size-stepped, no mid-word ellipsis).
+- CTA hierarchy: two dominant (hero, close) + compact nav + card text-links — the five-equal-buttons problem is gone; StickyCTA rival-suppression updated; the floating WhatsApp widget hides when close/footer is visible.
+- Footer: functional two-layer ending (brand/description, section nav, WhatsApp + email + language switch, copyright) — verified content only.
+- All 9 routes regression-clean; hub card updated to the clean-screen crop.
+
+### Evidence
+
+`refine-before/` (baseline), `refine-after/` (post-rebuild), `refine-final/` (post-polish) screenshot sets — 8 viewports × AR/EN × all acts + during-load + reduced-motion + no-video. Curated comparisons in `docs/concept-08-refinement/`.
+
+---
+
+## ORIGINAL PASS (v1)
+
 **Route:** `/concepts/one-tap` · **Branch:** `concept-08-one-tap` (from `main` @ `fddd85e`) · **Date:** 2026-08-03
 
 ## Commands run

@@ -1,98 +1,62 @@
-# CONCEPT 08 — VISUAL SYSTEM
+# CONCEPT 08 — VISUAL SYSTEM (v2, refinement pass 2026-08-03)
 
-**Route:** `/concepts/one-tap` · **Root class:** `.onetap` · **Mode:** dark-only (deliberate; declared, not half-supported)
+**Route:** `/concepts/one-tap` · **Root class:** `.onetap` · **Mode:** dark-only (deliberate)
 **Title:** «لمسة واحدة. تحكّم كامل.» / **One Tap. Total Control.**
 
 ---
 
 ## 1. Core idea
 
-Concept 07 told the product's story from the *product's* point of view (the can falls). Concept 08 tells it from the **operator's** point of view: one customer tap ripples **outward** — the machine wakes, the fleet lights up, and the operator sees everything on one surface. The tap is the trigger; **control is the payoff.** The visitor understands R.Pay by watching one transaction travel from a fingertip to a control room.
+Concept 07 told the story from the *product's* POV (the can falls). Concept 08 is **operator-POV**: one customer tap ripples outward — the machine wakes, the fleet lights up, the operator sees everything on one surface. The tap is the trigger; **control is the payoff.**
 
-## 2. Hero story (the signature experience)
+## 2. Hero (preserved composition, clean-screen media)
 
-A real-time film composition, not a background video:
+Poster-first film: text + poster render instantly, the film fades in `onCanPlay`, plays ONCE and settles (no loop seam); «شاهد عملية الدفع» replays it. At the film's pulse moment a DOM echo-ring crosses into the page and ignites the payment-brands row — the branded moment where film energy becomes interface energy.
 
-| Beat | On screen | Layer |
-|---|---|---|
-| 0.0s | Finished poster: terminal on the machine's dark face, hand + phone frozen 2 cm from the screen. Headline + CTA already rendered | AVIF/WebP poster (LCP) + HTML |
-| ~0.5s | Film fades in behind the text (`onCanPlay`), hand completes the tap | MP4 loop, muted, `playsInline` |
-| tap | One thin cyan ring blooms outward from the terminal — the film's pulse | film |
-| echo | The same pulse **leaves the film and enters the page**: a DOM ring expands past the hero copy; the stats row beneath ignites | CSS ring + counter ignition |
-| settle | Film settles to stillness and loops seamlessly; page is calm again | film |
+**Media rule (hard):** the terminal screen carries ONLY the R.Pay logo + contactless symbol — a graphic-only interface with **zero language-dependent text baked into any generated frame**. All words on the page are HTML. Every regenerated frame was inspected frame-by-frame (`scripts/vframes.mjs`).
 
-The DOM pulse-echo is the branded moment: the film's energy visibly becomes the interface's energy. The secondary CTA «شاهد عملية الدفع / Watch the payment flow» restarts the film and replays the echo (stays on page).
+## 3. The six acts
 
-**Hero HTML stack:** eyebrow (آر باي · نظام الدفع والتحكّم) → H1 (the two-beat slogan, Arabic-first) → one-line sub («حوّل كل ماكينة إلى نقطة بيع ذكية، وأدرها من منصة واحدة.») → primary CTA + secondary → five payment brands as plain text (mada · VISA · Mastercard · Apple Pay · STC Pay). Nothing else.
+| # | Act | Visual | Height discipline |
+|---|---|---|---|
+| 1 | **اللمسة / The Tap** | Clean-screen hero film + HTML copy stack | 100svh (the only full-viewport act) |
+| 2 | **من لمسة إلى تشغيل / Tap → Action** | Text-free arcade ambient clip, entry-triggered, beat chips | media-sized, 16:9 stage |
+| 3 | **شبكة واحدة / One Network** | **Fleet cards**: dominant image card (97 + machine types over the fleet plate) + two operational data cards (live payment simulation · fleet health), flex-interpolated expansion, cyan hairline marks the active card only | row `clamp(380px,48vh,460px)`; whole act ≈ 760–900px |
+| 4 | **غرفة التحكّم / The Control Room** | Sticky walkthrough (240vh): the `min(84vw,1320px)` DOM dashboard transitions through **دفعة تصل → الحالة تتحدّث → رؤية واحدة**; integrated title; premium «محاكاة مباشرة» disclosure chip | sticky viewport; mobile/reduced-motion = single composed panel |
+| 5 | **لماكينات حقيقية / Real Machines** | **Machine cards**: three aspect-specific 3:4 masters (machine complete inside the crop-safe center), same flex-interpolation language as Act III; active card reveals benefit + a **text-link** CTA | row `clamp(480px,60vh,600px)` |
+| 6 | **الإثبات والختام / Proof + Close + Footer** | Verified stats → light logo strip → close act (`64vh` class: hairline horizon light, headline, uncontested CTA) → compact functional footer | close is NOT 100vh; footer ≈ 300px |
 
-## 3. Storyboard (six acts)
+## 4. Shared system (unified in this pass)
 
-| # | Act | Claim proven | Visual | Media |
-|---|---|---|---|---|
-| 1 | **اللمسة / The Tap** | Payment is one tap | Hero film (above) | `hero-wide.mp4` / `hero-tall.mp4` + posters |
-| 2 | **من لمسة إلى تشغيل / Tap to Action** | The tap drives the machine | Arcade cabinet alive in a dark hall; three mono beat-captions (لمسة → تفويض → تشغيل) | `arcade-live.mp4` play-once on entry + poster |
-| 3 | **شبكة واحدة / One Network** | One tap scales to a fleet | Canvas constellation: 1 node ignites → 97 light up → lines converge to one point; HUD labels as HTML; flow direction mirrors `dir` | Canvas 2D (no video) over `network-hall.webp` backdrop |
-| 4 | **غرفة التحكّم / The Control Room** | The operator sees everything | Full-width DOM-built ops surface in LED vernacular — digits-only mono, fed by the same pulse; labeled «محاكاة مباشرة / Live simulation» | DOM only (honest by design) |
-| 5 | **لماكينات حقيقية / Built for Real Machines** | It runs the verified sectors | Three full-bleed cinematic scenes: أركيد / بيع ذاتي / قهوة, each with a tailored line + the single CTA verb | `arcade-scene.webp`, `vending-scene.webp`, `coffee-scene.webp` |
-| 6 | **الإثبات والختام / Proof + Close** | Trusted, and ready | Verified stats row → partner logos → closing line «ماكيناتك جاهزة. خلّيها أذكى.» / "Your machines are ready. Make them smarter." → uncontested oversized CTA | HTML + logos |
+- **One radius** `--r: 18px`, one hairline `--line`, one content width `--w-content: 1240px`, one text measure `--w-text: 760px`.
+- **One eyebrow**: cyan tick + meta label, every act.
+- **One card language**: Acts III and V share the `.cards-row` flex-interpolation (active card `flex-grow: 2.3`, 400ms house curve); mobile turns the same rows into snap carousels (84% cards, no hover dependency, full content visible).
+- **Accent contract**: cyan = system energy (pulse, status, active-card hairline, #prog). Warm = human action (buttons + `.tlink` text links). Nothing else colored.
+- **CTA hierarchy (three tiers, one verb):** nav compact → hero dominant + ghost secondary → card text-links → close dominant. Five same-verb touchpoints, two dominant.
+- **Type**: 4 sizes (display/beat/body/meta) + LED mono (digits/Latin only, `direction:ltr` isolated — machine IDs and SAR amounts never reverse in RTL).
 
-## 4. Visual hierarchy
+## 5. Scroll contract (the double-scrollbar fix, root-caused)
 
-- One focal object per viewport; ambient effects are suppressed during narrative moments.
-- Scale contrast does the drama: display headline `clamp(2.6rem, 7.2vw, 6.4rem)`; body stays ≤ 1.06rem; LED digits large; captions small mono.
-- Whitespace is structural — acts breathe with `clamp(96px, 14vh, 180px)` spacing; no card grids.
+`html` is the **only** vertical scroll container. Two root causes were fixed:
+1. `body { overflow-x: hidden }` in `globals.css` silently computed `overflow-y: auto`, making `<body>` a second scroll container → changed to `overflow-x: clip` (clips without creating a scroll container; benefits all concepts).
+2. The page's last element (`.foot`) pre-translated 12px for its reveal, extending body's scrollable area while media loaded → the footer is rise-exempt (fades in place).
 
-## 5. Color
+`scripts/qa-onetap.mjs` now asserts **no rogue vertical scroll container** in loaded state AND mid-download (throttled network), on every viewport.
 
-```css
---bg:    #05070A;  /* rich black, flow lineage */
---bg-2:  #0A1220;  /* deep blue-black gradient stop */
---ink:   #F2F6FA;  /* text */
---dim:   #8FA3B8;  /* secondary text */
---cyan:  #35E0D4;  /* SYSTEM ENERGY ONLY: pulse, network lines, status LEDs */
---warm:  #FFB454;  /* HUMAN ACTION ONLY: CTAs + tap-glow */
-```
-**Hard rule (written into `one-tap.css` like flow's):** cyan never appears on buttons; warm never appears on data. Everything else is neutral.
+## 6. Density rules (audited)
 
-## 6. Typography
+- No automatic `min-height: 100vh` below the hero.
+- Act padding: `calc(clamp(4rem, 8vw, 6.75rem) / 2)` — desktop inter-act gaps ≈ 128–216px, mobile ≈ 64–108px.
+- Every viewport of scroll reveals information or advances a state; no dead black regions.
 
-- **Readex Pro** 700/600/400 (self-hosted woff2, `@font-face` in route CSS — the flow pattern; next/font Google fetch is documented flaky here). Arabic display: `line-height ≥ 1.32`, `letter-spacing: normal` (cursive joining guard).
-- **IBM Plex Mono** 500/400 for HUD labels, beat indices, LED digits — **digits + Latin only, never Arabic**.
-- Four sizes total: display / lead / body / mono-meta. No fifth.
+## 7. Motion
 
-## 7. Motion system
+One law: 400ms `cubic-bezier(.22,1,.36,1)`; rises ≤ 12px; films play-once/entry-triggered and pause offscreen; the control walkthrough is the only scroll-driven state machine. Reduced motion: designed still states everywhere (no hero video element, pinned walkthrough state 3, static bars at final heights, carousels fully readable).
 
-- One law: `400ms cubic-bezier(.22,1,.36,1)`, rises ≤ 12px. Entry reveals via IntersectionObserver, play-once, no replay on scroll-back.
-- Films: hero loops continuously (paused when offscreen via IO); act films play on entry, pause when hidden.
-- Network canvas: rAF only while visible and only while animating; the convergence animation runs once, then holds a designed still.
-- The pulse-echo is the only element allowed to cross a section boundary.
-- `prefers-reduced-motion`: films replaced by posters, canvas renders its final constellation frame, counters SSR their final values, crossfades only. Fully usable, designed, not stripped.
+## 8. Footer (functional layer)
 
-## 8. CTA logic
+Brand + verified one-line description · section nav + hub link · WhatsApp + `hello@rpay.sa` + language switch · divider · copyright + wordmark. **Nothing invented** (no legal links, addresses, registration numbers). The floating WhatsApp widget hides (`.at-end`) whenever the close act or footer is visible — the closing CTA is never contested.
 
-- **One verb:** «احجز عرضًا مباشرًا» / "Book a live demo" — nav, hero, post-network, post-proof, close. All → `https://wa.me/966550796555?text=` «مرحبًا، أرغب بحجز عرض مباشر لـ R.Pay» (verified channel, upgraded prefill).
-- Microcopy under the primary: «شاهد كيف تعمل R.Pay على ماكيناتك.» / "See how R.Pay works with your machines." + reply promise line.
-- Secondary (hero only): «شاهد عملية الدفع» / "Watch the payment flow" — replays the sequence, never leaves the page.
-- Floating `WhatsAppWidget` mounts after the hero (house pattern, suppressed near rival CTAs by StickyCTA precedent).
+## 9. Intentionally rejected
 
-## 9. Responsive strategy
-
-- `≤820px` is a different art direction, not a shrink: `hero-tall` 9:16 media, terminal in the lower third, copy above; acts stack full-bleed stills; the network act simplifies to fewer nodes at full opacity; **no frame sequences, no horizontal rails** (repo-documented).
-- Viewports art-directed: 1920, 1440, 1280, 1024, 768, 430, 390, 360.
-- Arabic line breaks are hand-controlled in the display sizes (`<br/>` between the two beats of the slogan).
-
-## 10. Performance strategy
-
-- LCP is the headline text + poster (`priority` hint), film streams after `canplay`; CTA works before any media arrives.
-- Media budget: hero loop ≤ ~2 MB MP4 (H.264), act films lazy-loaded on approach, posters AVIF/WebP with explicit dimensions (zero CLS).
-- No three.js, no animation libraries; JS is IO + rAF + one canvas module. Below-fold components are not hydrated where server-renderable.
-- Offscreen media paused; canvas rAF gated; no continuous loops while idle.
-
-## 11. Intentionally rejected
-
-- Re-telling 07's fall (tap→drop) — 08 is the outward ripple, operator-POV.
-- WebGL product scene (no 3D asset; video is cheaper and photoreal), page-wide scrub, scroll hijack.
-- Light theme, gradient headings, glass cards, chip rows in the hero, logo marquee above the fold.
-- A "real" dashboard screenshot (none exists — honesty via LED vernacular + simulation label).
-- Invented stats/certifications; AI-generated logos; text baked into media.
-- A second CTA verb anywhere.
+Starburst network visualization (dead space, noise, disconnected 97) · full-bleed stacked machine strips (crops, seams, banner feel) · five equal orange buttons · Apple pastiche · light theme · WebGL · invented analytics to fill the dashboard · any baked text in generated media.
