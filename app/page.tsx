@@ -96,6 +96,17 @@ const CONCEPTS: Concept[] = [
     descAr: "سقطة واحدة متواصلة: من اللمسة إلى الدرج. الاسكرول هو السقوط.",
     descEn: "One continuous fall, from tap to tray. The scroll is the drop.",
   },
+  {
+    num: "08",
+    href: "/concepts/one-tap",
+    img: "/assets/concept-08/hub-card.webp",
+    status: "live",
+    statusAr: "جديد", statusEn: "New",
+    eyebrowAr: "سينمائي · فيلم منتج", eyebrowEn: "Cinematic · Product film",
+    titleAr: "لمسة واحدة", titleEn: "One Tap",
+    descAr: "لمسة واحدة توقظ الماكينة، وتضيء الشبكة، وتصل إلى المشغّل لحظيًا. تحكّم كامل من أول لمسة.",
+    descEn: "One tap wakes the machine, lights the network, and lands on the operator's screen in real time. Total control from the first tap.",
+  },
 ];
 
 export default function Hub() {
