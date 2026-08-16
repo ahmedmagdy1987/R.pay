@@ -1,0 +1,1369 @@
+/* ============================================================================
+   R.PAY — THE HORIZON
+   Milestone 1. Complete, self-contained stylesheet for /redesign.
+
+   NOTE ON CASCADE LAYERS: this file is deliberately UNLAYERED.
+   `app/globals.css` is imported by the root layout and is itself unlayered, and
+   unlayered declarations beat every layered one regardless of order. Wrapping
+   this file in @layer therefore handed `globals.css`'s `* { padding: 0 }` a win
+   over `.stage { padding-inline: … }` — the page rendered edge-to-edge with no
+   gutters. Layers get reintroduced properly when globals.css is retired with the
+   legacy concept routes; until then, everything here stays unlayered.
+   ========================================================================== */
+
+
+/* ─────────────────────────────────────────────────────────────── FONTS ─── */
+/* Vendored, on disk. No third-party request, no FOIT, no layout shift. */
+
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-600.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Plex Mono";
+  src: url("/fonts/plex-mono-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Plex Mono";
+  src: url("/fonts/plex-mono-500.woff2") format("woff2");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+
+/* Metric-matched fallbacks. While the real faces are in flight the system font is
+   scaled to occupy the same box, so the swap changes glyph shapes but not layout. */
+@font-face {
+  font-family: "Readex Fallback";
+  src: local("Segoe UI"), local("Tahoma"), local("Arial");
+  size-adjust: 104%;
+  ascent-override: 96%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Mono Fallback";
+  src: local("Consolas"), local("Menlo"), local("Courier New");
+  size-adjust: 96%;
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+/* ══ reset ══ */
+
+.rp, .rp *, .rp *::before, .rp *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* `clip`, never `hidden`: hidden computes the unset axis to auto and makes the
+   element a second scroll container. That is the documented double-scrollbar bug
+   from the previous build — do not change it. */
+.rp { overflow-x: clip; -webkit-text-size-adjust: 100%; min-height: 100svh; }
+
+.rp img, .rp svg { display: block; max-width: 100%; }
+.rp button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.rp :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+.rp ::selection { background: var(--signal); color: var(--hull); }
+
+
+/* ══ tokens ══ */
+
+.rp {
+  /* ── Ground. Two elevation steps exist. There is no third. ── */
+  --hull:        #040F1E;
+  --deck:        #0A1826;
+  --deck-2:      #102336;
+  --hairline:    #16283A;
+
+  /* ── Brass: the structural instrument voice. The anti-generic move. ── */
+  --brass:       #C8A96B;
+  --brass-dim:   #7A6742;   /* graphics only — 3.52:1 on hull (WCAG 1.4.11) */
+
+  /* ── State. LAW 1: cyan means live. ≤12 consuming nodes. ── */
+  --signal:      #00AEEF;   /* reporting / online — nothing else, ever */
+  --settled:     #1FD3B8;   /* money arrived; the only filled button */
+  --warn:        #F2A33C;   /* approaching threshold */
+  --breach:      #FF4D4D;   /* used twice on the whole site */
+  --dead:        #6B7785;   /* offline */
+
+  /* ── Ink ── */
+  --ink:         #E8EFF6;   /* 13.8:1 on hull */
+  --ink-muted:   #9FB0C2;   /*  8.4:1 on hull — never go lower */
+  --ink-faint:   #6F8296;   /*  5.1:1 — mono labels only, never body copy */
+
+  /* ── Type ── */
+  --f-ar:    "Readex Pro", "Readex Fallback", system-ui, sans-serif;
+  --f-mono:  "Plex Mono", "Mono Fallback", ui-monospace, SFMono-Regular, monospace;
+
+  /* ── Motion. LAW 3: nothing moves unless it is reporting. ──
+     Danger arrives in 180ms and leaves over 900ms. That asymmetry is the
+     product's emotional argument; do not "harmonise" these two values. */
+  --e-linear:   linear;                          /* machines do not ease */
+  --e-report:   cubic-bezier(.22, 1, .36, 1);
+  --e-print:    cubic-bezier(.16, 1, .30, 1);
+  --e-alarm:    cubic-bezier(.40, 0, .20, 1);
+
+  --d-1: 120ms; --d-2: 180ms; --d-3: 240ms;
+  --d-4: 420ms; --d-5: 640ms; --d-6: 900ms; --d-7: 1400ms;
+
+  /* Motion switches. The reduced-motion block rewrites only these. */
+  --mo-dur:   var(--d-4);
+  --mo-alarm: var(--d-2);
+  --mo-recov: var(--d-6);
+
+  /* ── Layout ── */
+  /* THE PAGE AXIS — the x of the instrument's first branch node, as a fraction
+     of the instrument's width. Every structural line below the hero sits here, so
+     the page descends from a real attachment point instead of being stacked. */
+  --axis: 2.5482%;
+
+  --pad-x:  clamp(20px, 5vw, 72px);
+  --w-max:  1320px;   /* text and gauges */
+  --w-inst: 1680px;   /* the instrument — the spine outranks the text column */
+  --w-text: 62ch;
+}
+
+/* Reduced motion is a RESTRUCTURE, not a freeze. Everything reaches its final
+   state instantly; the radar stays fully draggable. LAW: remove all motion and
+   the page is still 95% as good. */
+@media (prefers-reduced-motion: reduce) {
+  .rp {
+    --mo-dur: 1ms; --mo-alarm: 1ms; --mo-recov: 1ms;
+    --e-report: linear; --e-print: linear; --e-alarm: linear;
+  }
+}
+
+
+/* ══ type ══ */
+
+.rp {
+  font-family: var(--f-ar);
+  color: var(--ink);
+  background: var(--hull);
+  font-size: 17px;
+  line-height: 1.75;              /* Arabic body leading */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* LAW 7 — Arabic is drawn first. Latin tracking severs cursive joining and
+   instantly marks a site as foreign-made. This is absolute. */
+.rp :lang(ar), .rp [dir="rtl"] { letter-spacing: 0 !important; }
+
+.rp h1, .rp h2, .rp h3 {
+  font-weight: 700;
+  line-height: 1.15;              /* display leading, never tighter */
+  text-wrap: balance;
+}
+
+.rp .display {
+  font-size: clamp(1.9rem, 5.4vw, 3.5rem);
+  letter-spacing: -0.01em;
+}
+.rp[lang="ar"] .display { letter-spacing: 0; }
+
+.rp .lede {
+  font-size: clamp(1rem, 1.7vw, 1.18rem);
+  color: var(--ink-muted);
+  max-width: var(--w-text);
+  line-height: 1.7;
+}
+
+/* Mono is the telemetry voice: machine-generated, therefore true. */
+.rp .mono {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: 0.04em;
+}
+
+/* Machine IDs, amounts and timestamps are LTR islands inside RTL copy. */
+.rp .ltr { direction: ltr; unicode-bidi: isolate; }
+
+.rp .label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Bilingual switch — Arabic default, English on html.en */
+.rp .en-t { display: none; }
+.rp.en .ar-t { display: none; }
+.rp.en .en-t { display: revert; }
+
+
+/* ══════════════════════════════════════════════════════════ INSTRUMENT ═══ */
+/* ══ instrument ══ */
+
+
+.stage {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(18px, 3vh, 30px) clamp(20px, 4vh, 40px);
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  gap: clamp(16px, 3vh, 34px);
+}
+
+/* Reading and data blocks stay at the text measure; only the instrument spans
+   the full stage. That is the hierarchy stated as layout. */
+.rp .mast,
+.rp .say,
+.rp .gauges,
+.rp .rails,
+.rp .logline-wrap,
+.rp .readout,
+.rp .foot-note {
+  max-width: var(--w-max);
+  margin-inline-start: var(--axis);
+  margin-inline-end: 0;
+  width: auto;
+}
+
+/* ── Masthead ── */
+.mast { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.mast-brand { display: flex; align-items: center; gap: 10px; direction: ltr; }
+.mast-brand img { width: 26px; height: auto; }
+.mast-brand b { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
+.mast-tools { display: flex; align-items: center; gap: 8px; }
+
+.tool {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+  border: 1px solid var(--hairline);
+  padding: 7px 11px;
+  min-height: 34px;
+  display: inline-flex; align-items: center;
+  transition: border-color var(--d-1) var(--e-report),
+              color var(--d-1) var(--e-report);
+}
+.tool:hover { border-color: var(--brass-dim); color: var(--ink); }
+
+/* ── Headline block ── */
+.say { display: grid; gap: 14px; align-content: end; }
+.say .display em { font-style: normal; color: var(--brass); }
+
+/* ── THE HORIZON — the peg grammar ─────────────────────────────────────────
+   spine → socket → stem → JOINT → head.
+   LAW 2: the horizon is the brand. It animates by LENGTH only — never opacity,
+   never blur, never glow. The brass spine is the backbone the fleet hangs from,
+   so brass is drawn HEAVIER than any single machine: infrastructure outranks
+   any one node. That hierarchy is the whole point of the form. */
+
+.horizon { position: relative; display: grid; gap: 0; align-content: center; }
+.horizon-svg { width: 100%; height: auto; overflow: visible; }
+
+/* The spine, broken into nine branch segments. The breaks ARE the branch
+   structure — there is no separate grouping device anywhere in the system. */
+.h-seg {
+  stroke: var(--brass);
+  stroke-width: 4.5;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Each segment opens with a node: where a branch attaches to the backbone. */
+.h-node { fill: var(--brass); }
+
+.h-branch-label {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  fill: var(--brass);
+  letter-spacing: 0.1em;
+}
+.h-branch-count { font-family: var(--f-mono); font-size: 9.5px; fill: var(--ink-faint); }
+
+/* ── The peg ──────────────────────────────────────────────────────────────
+   Stem is brass because it is infrastructure. Head carries state because it is
+   the machine. The joint between them is empty space, and that gap repeated 97
+   times is the texture nobody else has. */
+
+.pg-stem {
+  stroke: var(--brass-dim);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  transition: stroke var(--d-1) var(--e-linear);
+}
+
+.pg-head {
+  stroke: var(--ink-faint);
+  stroke-width: 2.5;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+  transition: stroke var(--d-1) var(--e-linear),
+              transform var(--mo-recov) var(--e-report),
+              opacity var(--mo-recov) var(--e-report);
+}
+
+.pg[data-state="online"]  .pg-head { stroke: var(--signal); }
+.pg[data-state="offline"] .pg-head { stroke: var(--dead); }
+
+/* DETECTED — the socket is hot but the machine is still seated. */
+.pg[data-state="alert"] .pg-head { stroke: var(--breach); }
+.pg[data-state="alert"] .pg-stem { stroke: var(--breach); }
+
+/* ISOLATED + STOPPED — the peg pulls OUT of its socket. The joint widens, the
+   stem retracts to the spine, and the machine goes dark. Nothing is written on
+   screen for the viewer to read: the form says it.
+   Arrives in --mo-alarm (fast). Leaves over --mo-recov (slow). */
+.pg[data-state="breach"] .pg-head {
+  stroke: var(--dead);
+  transform: translate(var(--pull-x, 0px), var(--pull-y, 14px));
+  opacity: .5;
+  transition: stroke var(--mo-alarm) var(--e-alarm),
+              transform var(--mo-alarm) var(--e-alarm),
+              opacity var(--mo-alarm) var(--e-alarm);
+}
+.pg[data-state="breach"] .pg-stem {
+  stroke: var(--breach);
+  transition: stroke var(--mo-alarm) var(--e-alarm);
+}
+/* Rotated grammar pulls along the other axis. */
+.h-mobile .pg[data-state="breach"] .pg-head { --pull-x: -14px; --pull-y: 0px; }
+
+/* Pre-choreography: pegs exist in the DOM (server-rendered, meaningful with zero
+   JS) but sit unlit until the sweep deposits them. */
+.horizon[data-armed="true"] .pg-head,
+.horizon[data-armed="true"] .pg-stem { stroke: transparent; }
+.horizon[data-armed="true"] .pg[data-lit="1"] .pg-stem { stroke: var(--brass-dim); }
+.horizon[data-armed="true"] .pg[data-lit="1"] .pg-head { stroke: var(--ink-faint); }
+.horizon[data-armed="true"] .pg[data-resolved="1"][data-state="online"]  .pg-head { stroke: var(--signal); }
+.horizon[data-armed="true"] .pg[data-resolved="1"][data-state="offline"] .pg-head { stroke: var(--dead); }
+.horizon[data-armed="true"] .pg[data-resolved="1"][data-state="alert"]   .pg-head { stroke: var(--breach); }
+.horizon[data-armed="true"] .pg[data-resolved="1"][data-state="breach"]  .pg-head { stroke: var(--dead); }
+
+/* Hit targets: invisible, generous, pointer-only. */
+.h-hit { fill: transparent; cursor: crosshair; }
+.h-hit:hover ~ .pg-head { stroke-width: 5; }
+.h-hit:hover ~ .pg-stem { stroke: var(--brass); }
+
+/* ── The breach, on the brand form itself ─────────────────────────────────
+   Red travels a BOUNDED distance along the spine and stops. The bound is the
+   message: this was contained. It is drawn from the socket outward, so the
+   viewer sees isolation happen rather than reading that it did. */
+.h-breach { opacity: 0; transition: opacity var(--mo-alarm) var(--e-alarm); }
+.h-breach[data-in="1"] { opacity: 1; }
+
+.h-hot {
+  stroke: var(--breach);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+.h-breach[data-in="1"] .h-hot {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--mo-alarm) var(--e-alarm);
+}
+
+.h-scar { fill: var(--breach); }
+.h-breach-t {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  fill: var(--breach);
+  letter-spacing: 0.12em;
+}
+
+/* The travelling light */
+.h-sweep { opacity: 0; }
+
+/* ── Readout: what a peg says when you touch it ── */
+.readout {
+  min-height: 62px;
+  border-top: 1px solid var(--hairline);
+  padding-top: 12px;
+  display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline;
+}
+.readout .ro-id { font-size: 13px; color: var(--ink); }
+.readout .ro-k  { font-size: 11px; }
+.readout .ro-v  { font-size: 13px; color: var(--ink-muted); }
+.readout .ro-v[data-state="online"]  { color: var(--signal); }
+.readout .ro-v[data-state="offline"] { color: var(--dead); }
+.readout .ro-v[data-state="breach"]  { color: var(--breach); }
+.readout .ro-hint { font-size: 11px; color: var(--ink-faint); }
+
+/* ── Readouts row ── */
+.gauges { display: flex; flex-wrap: wrap; gap: 10px 40px; align-items: flex-end; }
+.gauge { display: grid; gap: 3px; }
+.gauge .g-v {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  color: var(--ink);
+  line-height: 1;
+}
+.gauge .g-v[data-tone="signal"] { color: var(--signal); }
+.gauge .g-v small { font-size: .58em; color: var(--ink-faint); }
+
+/* ── Provenance. LAW 4 — every number carries its date. ── */
+.prov {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  border: 1px solid var(--hairline);
+  padding: 4px 9px;
+}
+.prov::before {
+  content: ""; width: 5px; height: 5px; flex: none;
+  background: var(--brass-dim);
+}
+/* There is deliberately NO "live" variant styled here. A live badge may only be
+   added when Metric.isLive is true, which no Milestone-1 figure is. */
+
+/* ── Payment rails: static, monochrome, no badges. Beat 4. ── */
+.rails {
+  border-top: 1px solid var(--hairline);
+  padding-top: 12px;
+  display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center;
+}
+.rails span { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-faint); letter-spacing: 0.06em; }
+.rails .rails-k { color: var(--brass); }
+
+/* ── Log line: the system speaking. Mask sweep, never per-character append —
+   appending glyphs breaks Arabic cursive joining mid-word. ── */
+.logline {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--f-mono); font-size: 12px;
+  color: var(--ink-muted);
+  min-height: 22px;
+}
+.logline .lg-text {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path var(--d-4) var(--e-print);
+}
+.rp:not(.en) .logline .lg-text[data-in="0"] { clip-path: inset(0 0 0 100%); }
+.rp.en    .logline .lg-text[data-in="0"] { clip-path: inset(0 100% 0 0); }
+.logline[data-tone="breach"] { color: var(--breach); }
+.logline[data-tone="ok"]     { color: var(--settled); }
+
+.foot-note { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+.ghost-link {
+  font-size: 13px; color: var(--ink-muted);
+  border-bottom: 1px solid var(--brass-dim);
+  padding-bottom: 2px;
+  transition: color var(--d-1) var(--e-report), border-color var(--d-1) var(--e-report);
+}
+.ghost-link:hover { color: var(--ink); border-color: var(--brass); }
+
+
+/* ══════════════════════════════════════════════════════════════ RADAR ═══ */
+/* ══ radar ══ */
+
+.radar-sec {
+  max-width: var(--w-max);
+  margin-inline: auto;
+  padding: clamp(48px, 9vh, 110px) var(--pad-x);
+  border-top: 1px solid var(--hairline);
+  display: grid;
+  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .radar-sec { grid-template-columns: minmax(280px, 0.85fr) 1fr; align-items: center; }
+}
+
+.radar-copy { display: grid; gap: 14px; align-content: start; }
+.radar-copy h2 { font-size: clamp(1.5rem, 3.4vw, 2.3rem); }
+.radar-copy h2 em { font-style: normal; color: var(--brass); }
+.radar-copy p { color: var(--ink-muted); max-width: 46ch; }
+
+.radar-stage {
+  position: relative;
+  aspect-ratio: 1;
+  width: min(100%, 460px);
+  margin-inline: auto;
+  touch-action: none;              /* we own the drag gesture */
+}
+
+.radar-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.r-ring {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 1;
+  stroke-dasharray: 2.5 4.5;
+  opacity: .8;
+  transition: stroke var(--mo-alarm) var(--e-alarm), opacity var(--mo-alarm) var(--e-alarm);
+}
+.r-ring-inner { stroke: var(--hairline); stroke-dasharray: none; opacity: .5; }
+.r-cross { stroke: var(--hairline); stroke-width: .6; opacity: .8; }
+
+.r-leash {
+  stroke: var(--signal);
+  stroke-width: 1;
+  opacity: .4;
+  transition: stroke var(--mo-alarm) var(--e-alarm);
+}
+
+/* Breach state is one attribute on the wrapper. Every reaction below is CSS,
+   driven off that single flag — no per-element JS style writes. */
+.radar-stage[data-breach="1"] .r-ring  { stroke: var(--breach); opacity: 1; }
+.radar-stage[data-breach="1"] .r-leash { stroke: var(--breach); opacity: .85; }
+
+.r-machine {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 27%;
+  translate: -50% -50%;
+  transform: translate3d(var(--mx, 0px), var(--my, 0px), 0);
+  cursor: grab;
+  filter: saturate(1) brightness(1);
+  transition: filter var(--mo-alarm) var(--e-alarm);
+}
+.r-machine:active { cursor: grabbing; }
+.r-machine.settling { transition: transform var(--mo-recov) var(--e-report), filter var(--mo-recov) var(--e-report); }
+.radar-stage[data-breach="1"] .r-machine { filter: saturate(0) brightness(.55); }
+.r-machine img { width: 100%; height: auto; pointer-events: none; -webkit-user-drag: none; }
+
+/* Revenue counter. Freezes mid-digit on breach and RESUMES from where it
+   stopped — never from zero. That single behaviour is the sale. */
+.r-meter {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 8%;
+  translate: -50% 0;
+  text-align: center;
+  display: grid; gap: 2px;
+  white-space: nowrap;
+}
+.r-meter .m-v {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  color: var(--settled);
+  transition: color var(--mo-alarm) var(--e-alarm);
+}
+.radar-stage[data-breach="1"] .r-meter .m-v { color: var(--dead); }
+
+/* The measuring line — the screenshot frame. */
+.r-dist {
+  position: absolute;
+  inset-inline-start: 50%;
+  bottom: 6%;
+  translate: -50% 0;
+  font-family: var(--f-mono); font-size: 12px;
+  color: var(--breach);
+  opacity: 0;
+  transition: opacity var(--mo-alarm) var(--e-alarm);
+  white-space: nowrap;
+}
+.radar-stage[data-breach="1"] .r-dist { opacity: 1; }
+
+.r-prompt {
+  position: absolute;
+  inset-inline-start: 50%;
+  bottom: -6%;
+  translate: -50% 0;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  text-align: center;
+  white-space: nowrap;
+  transition: opacity var(--d-3) var(--e-report);
+}
+.radar-stage[data-touched="1"] .r-prompt { opacity: 0; }
+
+/* Simulation disclosure. LAW 4 — a simulation says so, always. */
+.sim-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em;
+  color: var(--warn);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+  padding: 4px 9px;
+}
+
+.r-log {
+  display: grid; gap: 5px;
+  border-top: 1px solid var(--hairline);
+  padding-top: 12px;
+  min-height: 74px;
+  font-family: var(--f-mono); font-size: 11.5px;
+  color: var(--ink-faint);
+}
+.r-log li { list-style: none; display: flex; gap: 10px; }
+.r-log li[data-tone="breach"] { color: var(--breach); }
+.r-log li[data-tone="ok"] { color: var(--settled); }
+.r-log li[data-tone="wry"] { color: var(--brass); }
+
+
+/* ══ chrome ══ */
+
+.rp .btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 12px 22px;
+  font-size: 15px; font-weight: 600;
+  background: var(--settled);
+  color: #02201C;
+  transition: transform var(--d-1) var(--e-report), filter var(--d-1) var(--e-report);
+}
+.rp .btn:hover { filter: brightness(1.08); }
+.rp .btn:active { transform: translateY(1px); }
+
+
+/* ══ motion ══ */
+
+/* Anything that must not animate under reduced motion, regardless of tokens. */
+@media (prefers-reduced-motion: reduce) {
+  .rp *, .rp *::before, .rp *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+
+/* ═════════════════════════════════════════════════ THE WINDOW ═══════════
+   Desktop shows the whole spine. A phone shows a WINDOW into it and lets you
+   drag along the fleet — which is literally true (the fleet is wider than the
+   screen) and guarantees the mobile identity is the same drawing, not a second
+   chart of the same data. The horizontal scroll is deliberate and contained;
+   the page body still never scrolls sideways.
+   ======================================================================== */
+
+.rp .h-frame {
+  width: 100%;
+  max-width: var(--w-inst);
+  margin-inline: auto;
+}
+.rp .h-frame .horizon-svg { width: 100%; height: auto; }
+.rp .h-drag-hint { display: none; }
+
+@media (max-width: 860px) {
+  .rp .h-frame {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Reserve the height the drawing will occupy so nothing shifts on load. */
+    aspect-ratio: auto;
+  }
+  .rp .h-frame::-webkit-scrollbar { display: none; }
+  .rp .h-frame .horizon-svg {
+    width: 940px;          /* fixed: the drawing is wider than the phone */
+    max-width: none;
+    height: auto;
+  }
+  .rp .h-drag-hint {
+    display: block;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    padding-top: 8px;
+  }
+}
+
+/* Structural elements (branch drops + labels) arrive at beat 3. Opacity is
+   permitted here and nowhere else: these are labels appearing, not the line. */
+.rp .h-structure { opacity: 0; transition: opacity var(--mo-dur) var(--e-print); }
+.rp .h-structure[data-in="1"] { opacity: 1; }
+.rp .horizon[data-armed="false"] .h-structure { opacity: 1; }
+
+/* Beat gating for the rows below the instrument. */
+.rp .gauges, .rp .rails, .rp .logline-wrap {
+  opacity: 0;
+  transition: opacity var(--mo-dur) var(--e-print);
+}
+.rp .horizon-block[data-phase="idle"] .gauges { opacity: 0; }
+.rp .horizon-block[data-phase="scaled"] .gauges,
+.rp .horizon-block[data-phase="railed"] .gauges,
+.rp .horizon-block[data-phase="breach"] .gauges,
+.rp .horizon-block[data-phase="restored"] .gauges,
+.rp .horizon-block[data-phase="resolved"] .gauges { opacity: 1; }
+
+.rp .horizon-block[data-phase="railed"] .rails,
+.rp .horizon-block[data-phase="breach"] .rails,
+.rp .horizon-block[data-phase="restored"] .rails,
+.rp .horizon-block[data-phase="resolved"] .rails { opacity: 1; }
+
+.rp .horizon-block[data-phase="breach"] .logline-wrap,
+.rp .horizon-block[data-phase="restored"] .logline-wrap,
+.rp .horizon-block[data-phase="resolved"] .logline-wrap { opacity: 1; }
+
+/* No-JS and reduced-motion: everything is present and final immediately. */
+@media (prefers-reduced-motion: reduce) {
+  .rp .gauges, .rp .rails, .rp .logline-wrap { opacity: 1; }
+  .rp .h-structure { opacity: 1; }
+}
+
+/* Layout of the hero stack */
+.rp .horizon-block { display: grid; gap: clamp(14px, 2.4vh, 26px); align-content: center; }
+
+@media (max-width: 560px) {
+  .rp .stage { gap: 14px; }
+  .rp .gauges { gap: 10px 24px; }
+  .rp .readout { min-height: 74px; }
+}
+
+/* ── Accessible alternative to the horizon ─────────────────────────────────
+   The instrument is a graphic; screen-reader users get the same information as
+   a real table rather than 97 tab stops, which would be a keyboard trap in all
+   but name. Roving-tabindex exploration of the graphic is a Milestone-2 item. */
+.rp .vh {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+
+
+/* ═══════════════════════════════════ REPETITION TESTS ═══════════════════
+   The same grammar at three other scales. If it only works in the hero it is a
+   drawing, not a system — these are the cheap test of that.
+   ======================================================================= */
+
+/* ── 1. The spine as the page progress rail ──────────────────────────────
+   Nine brass segments carrying the real machine counts, progress travelling as
+   cyan because "where you are" is live state. Same object, compressed. */
+.rp .spine-rail {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 4px;
+  z-index: 50;
+  pointer-events: none;
+  /* Its own ground: the rail must stay legible over any section it floats above,
+     including the paper act later. Without it the rail also reads as whatever
+     happens to be behind it. */
+  background: var(--hull);
+}
+.rp .spine-rail svg { width: 100%; height: 100%; display: block; }
+.rp .sr-seg  { fill: var(--brass-dim); }
+.rp .sr-node { stroke: var(--brass); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.rp .sr-fill {
+  fill: var(--signal);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+/* RTL fills from the reading edge. */
+.rp[dir="rtl"] .sr-fill { transform-origin: 100% 50%; }
+
+@keyframes rp-rail {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rp .sr-fill { transition: none; }
+}
+
+/* ── 2. The joint as a section divider ──────────────────────────────────
+   Not a 1px line. A spine that breaks, with one peg hanging off it. */
+.rp .joint-rule {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.rp .joint-rule svg { width: 100%; height: 26px; display: block; overflow: visible; }
+.rp .jr-seg  { fill: var(--brass-dim); }
+.rp .jr-node { stroke: var(--brass); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.rp .jr-stem { stroke: var(--brass-dim); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.rp .jr-head { stroke: var(--ink-faint); stroke-width: 3.5; vector-effect: non-scaling-stroke; }
+.rp .joint-rule[data-tone="signal"]  .jr-head { stroke: var(--signal); }
+.rp .joint-rule[data-tone="breach"]  .jr-head { stroke: var(--breach); }
+.rp .joint-rule[data-tone="settled"] .jr-head { stroke: var(--settled); }
+.rp .joint-rule[data-tone="dead"]    .jr-head { fill: var(--dead); }
+.rp .jr-label {
+  position: absolute;
+  inset-block-start: 30px;
+  inset-inline-start: 0;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* The rail sits above the page, so the first section clears it. */
+.rp .stage { padding-block-start: calc(clamp(18px, 3vh, 30px) + 10px); }
+
+.rp .divider-slot {
+  max-width: var(--w-inst);
+  padding-block-end: 26px;
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: 6px 0;
+}
+/* The divider replaces the radar section's plain top hairline — one device, not two. */
+.rp .radar-sec { border-top: 0; }
+
+/* ═════════════════════════════ SECTION 02 — THE FOUR QUESTIONS ═══════════
+   The non-data test. Same grammar, human payload.
+   spine → node → stem → JOINT → head, where the head is a sentence.
+
+   No cyan (a question is not live state). No motion (explanation does not
+   report). No cards, no panels, no icons, no metrics.
+   ======================================================================== */
+
+/* Shared reading column, so the transition stem and the section spine land on
+   exactly the same axis. */
+.rp .measure {
+  max-width: var(--w-max);
+  margin-inline-start: var(--axis);
+  margin-inline-end: 0;
+  width: auto;
+}
+/* Full-width structural container; children register against --axis inside it. */
+.rp .stack {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+/* ── The transition: the section hangs off the horizon ─────────────────── */
+/* The stem lives inside the same .measure box the question spine uses, so the
+   two land on one axis by construction rather than by arithmetic. */
+.rp .hang {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+.rp .hang-inner { position: relative; height: 86px; }
+.rp .hang-stem,
+.rp .hang-node { position: absolute; inset-inline-start: 0; }
+.rp .hang-stem {
+  inset-block-start: 0;
+  width: 1.5px; height: 48px;
+  background: var(--brass-dim);
+}
+/* JOINT: 48px → 86px is deliberately empty. */
+.rp .hang-node {
+  inset-block-start: 44px;
+  width: 9px; height: 1.5px;
+  background: var(--brass);
+  margin-inline-start: -3.75px;
+}
+
+/* ── The section ───────────────────────────────────────────────────────── */
+.rp .qs {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: 8px clamp(56px, 9vh, 108px);
+}
+
+.rp .qs-head { display: grid; gap: 14px; padding-block-end: clamp(34px, 5vh, 62px); }
+.rp .qs-title {
+  font-size: clamp(1.55rem, 3.4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.34;          /* Arabic display needs clearance for diacritics */
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.rp .qs-title em { font-style: normal; color: var(--brass); }
+
+/* ── Each question is a peg ────────────────────────────────────────────── */
+.rp .qs-list { list-style: none; display: grid; gap: clamp(30px, 4.4vh, 48px); }
+
+.rp .q {
+  position: relative;
+  /* spine 1.5 + stem 34 + JOINT 16.5 — the hero's ratio, not a wider one */
+  padding-inline-start: 52px;
+  max-width: calc(62ch + 52px);   /* Arabic measure — runs shorter than Latin */
+  margin-inline-end: auto;
+}
+
+/* The spine segment. It BREAKS between questions, exactly as it breaks between
+   branches in the hero — the gaps are the structure. */
+.rp .q::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 2px 2px;
+  width: 1.5px;
+  background: var(--brass-dim);
+}
+/* The stem, reaching inward from the socket toward the question. */
+.rp .q::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 1.5px;
+  inset-block-start: 26px;
+  width: 34px;
+  height: 1.5px;
+  background: var(--brass-dim);
+}
+/* The node opening each segment. */
+.rp .q-node {
+  position: absolute;
+  inset-inline-start: -3.5px;
+  inset-block-start: 2px;
+  width: 8.5px;
+  height: 1.5px;
+  background: var(--brass);
+}
+
+/* SYSTEM VOICE — the only mono in the section. The system counts; it does not
+   speak. Small, brass, subordinate. */
+.rp .q-n {
+  display: block;
+  font-size: 11.5px;
+  letter-spacing: .16em;
+  color: var(--brass);
+  margin-block-end: 8px;
+}
+
+/* HUMAN VOICE — the head position, occupied by a sentence. */
+.rp .q-q {
+  font-size: clamp(1.18rem, 2.3vw, 1.62rem);
+  font-weight: 700;
+  line-height: 1.42;
+  color: var(--ink);
+  margin-block-end: 8px;
+  text-wrap: balance;
+}
+.rp .q-a {
+  font-size: clamp(.98rem, 1.5vw, 1.06rem);
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--ink-muted);
+  max-width: 54ch;
+}
+
+.rp .qs-more { padding-block-start: clamp(28px, 4vh, 48px); }
+
+@media (max-width: 700px) {
+  .rp .q { padding-inline-start: 34px; }      /* spine + 22 stem + 10.5 joint */
+  .rp .q::after { width: 22px; inset-block-start: 22px; }
+  .rp .hang-inner { height: 62px; }
+  .rp .hang-stem { height: 34px; }
+  .rp .hang-node { inset-block-start: 30px; }
+  .rp .qs-title { max-width: 18ch; }
+}
+
+/* ═══════════════════════════════════ DAYBREAK ════════════════════════════
+   The environmental change is a HARD CUT, not a fade. A crossfade would be a
+   theme change; this is an act break.
+
+   Brass in daylight stays TECHNICAL, not luxurious. Two rules keep it there:
+   it appears only as hairlines and small marks — never as a fill, a gradient or
+   a large area — and it never gains saturation or shine. Gold becomes luxury
+   when it becomes a surface. Kept to 1.5px it stays infrastructure.
+   ======================================================================== */
+
+.rp .db-night { background: var(--hull); padding-block: 0; }
+.rp .db-col { position: relative; margin-inline-start: var(--axis); height: 132px; }
+
+/* The line descends, then stops. The remaining 34px is the JOINT — it spans the
+   cut, so the line disappears into the boundary and re-emerges changed. */
+.rp .db-stem {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  width: 1.5px;
+  height: 98px;
+  background: var(--brass-dim);
+}
+.rp .db-sign {
+  position: absolute;
+  inset-inline-start: 22px;
+  inset-block-start: 74px;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* ── Daylight ──────────────────────────────────────────────────────────── */
+.rp .day {
+  /* Day tokens, scoped to the paper act. Nothing in the night may read them. */
+  --paper:      #F2EFE9;   /* Riyadh limestone — warm, so the ink sits */
+  --rule-day:   #CFC9BC;
+  --ink-day:    #12110F;
+  --ink-day-60: #5C5850;
+  --brass-day:  #7A5F2B;   /* 5.23:1 on paper — technical, not gold */
+
+  background: var(--paper);
+  color: var(--ink-day);
+}
+.rp .daylight { padding-block: 0 clamp(56px, 9vh, 104px); }
+
+.rp .dl-col { position: relative; margin-inline-start: var(--axis); max-width: var(--w-max); }
+
+/* The rule RESUMES after the joint — same axis, changed role. In the dark it
+   suspends; here it registers. Nothing hangs from it. */
+.rp .dl-rule {
+  position: absolute;
+  inset-inline-start: 0;
+  width: 1.5px;
+  background: var(--brass-day);
+}
+.rp .dl-rule-a { inset-block-start: 34px; height: 148px; }
+.rp .dl-node {
+  position: absolute;
+  inset-inline-start: -3.5px;
+  width: 8.5px;
+  height: 1.5px;
+  background: var(--brass-day);
+}
+.rp .dl-node-a { inset-block-start: 34px; }
+
+.rp .dl-eyebrow {
+  display: block;
+  padding-block-start: 30px;
+  padding-inline-start: 34px;
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: var(--brass-day);
+}
+
+/* HUMAN VOICE, with room. Weight 400 rather than 700: daylight is calmer than
+   the command deck, and the size carries the emphasis instead. */
+.rp .dl-title {
+  padding-inline-start: 34px;
+  margin-block: 20px 0;
+  font-size: clamp(1.5rem, 3.5vw, 2.7rem);
+  font-weight: 400;
+  line-height: 1.52;          /* Arabic at display size needs generous leading */
+  letter-spacing: 0;
+  color: var(--ink-day);
+  max-width: 24ch;
+  text-wrap: balance;
+}
+
+.rp .dl-body {
+  padding-inline-start: 34px;
+  margin-block-start: 26px;
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.95;          /* more air than the night act */
+  color: var(--ink-day-60);
+  max-width: 54ch;
+}
+
+/* ── The break: the rule stops, content changes, the rule resumes ─────── */
+.rp .dl-pair {
+  position: relative;
+  margin-block-start: clamp(52px, 8vh, 96px);
+  display: grid;
+  gap: clamp(30px, 4.4vh, 52px);
+}
+.rp .dl-rule-b { inset-block-start: 2px; height: calc(100% - 4px); }
+.rp .dl-node-b { inset-block-start: 2px; }
+
+.rp .dl-block { position: relative; padding-inline-start: 34px; max-width: 52ch; }
+.rp .dl-label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  color: var(--brass-day);
+  margin-block-end: 10px;
+}
+.rp .dl-statement {
+  font-size: clamp(1.02rem, 1.7vw, 1.2rem);
+  line-height: 1.9;
+  color: var(--ink-day);
+  font-weight: 400;
+}
+
+.rp .dl-more { padding-inline-start: 34px; margin-block-start: clamp(44px, 6vh, 76px); }
+.rp .dl-link {
+  font-size: 14px;
+  color: var(--ink-day-60);
+  border-block-end: 1px solid var(--brass-day);
+  padding-block-end: 3px;
+  transition: color var(--d-1) var(--e-report);
+}
+.rp .dl-link:hover { color: var(--ink-day); }
+.rp .daylight :focus-visible { outline-color: var(--brass-day); }
+.rp .daylight ::selection { background: var(--brass-day); color: var(--paper); }
+
+@media (max-width: 700px) {
+  .rp .db-col { height: 104px; }
+  .rp .db-stem { height: 76px; }
+  .rp .db-sign { inset-block-start: 58px; inset-inline-start: 18px; }
+  .rp .dl-eyebrow,
+  .rp .dl-title,
+  .rp .dl-body,
+  .rp .dl-block,
+  .rp .dl-more { padding-inline-start: 24px; }
+  .rp .dl-title { max-width: 20ch; }
+}
+
+/* ═════════════════════════════ PRODUCTION SECTIONS ═══════════════════════
+   All of them inherit the same discipline: the column sits on --axis, the
+   measure is Arabic-first, mono is the system and Readex is the person, and
+   nothing moves. Identity comes from proportion, alignment and interruption
+   before it comes from repeating a mark.
+   ======================================================================== */
+
+/* Shared column geometry. Everything below the hero registers on one axis. */
+.rp .ml-col, .rp .rf-col, .rp .fl-col,
+.rp .au-col, .rp .wr-col,
+.rp .wl-col, .rp .hv-col, .rp .si-col {
+  margin-inline-start: var(--axis);
+  max-width: var(--w-max);
+  position: relative;
+}
+
+/* Night sections share a rhythm. */
+.rp .ml-sec, .rp .rf-sec, .rp .fl-sec, .rp .wl-sec, .rp .hv-sec {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(56px, 9vh, 112px) 0;
+}
+
+.rp .ml-title, .rp .rf-title, .rp .fl-title, .rp .wl-title, .rp .hv-title {
+  font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.34;
+  margin-block: 14px 0;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+.rp .ml-title em, .rp .rf-title em, .rp .fl-title em,
+.rp .wl-title em, .rp .hv-title em { font-style: normal; color: var(--brass); }
+
+.rp .ml-note, .rp .rf-note, .rp .fl-lede, .rp .wl-note, .rp .hv-lede {
+  font-size: clamp(.98rem, 1.5vw, 1.06rem);
+  line-height: 1.8;
+  color: var(--ink-muted);
+  max-width: 54ch;
+}
+
+/* ── 03 · the money line ───────────────────────────────────────────────── */
+.rp .ml-paths {
+  margin-block-start: clamp(30px, 5vh, 54px);
+  display: grid;
+  gap: clamp(30px, 5vh, 52px);
+}
+@media (min-width: 900px) { .rp .ml-paths { grid-template-columns: 1fr 1fr; gap: 56px; } }
+
+.rp .ml-path { display: grid; gap: 10px; }
+.rp .ml-path svg { width: 100%; height: 34px; overflow: visible; }
+.rp .ml-path-k { font-size: 10.5px; letter-spacing: .16em; color: var(--brass); }
+
+/* R.Pay's run is unbroken, and mint at the end: the money arrived. */
+.rp .ml-run { stroke: var(--brass); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.rp .ml-dim { stroke: var(--ink-faint); stroke-width: 1.5; }
+.rp .ml-from { fill: var(--brass); }
+.rp .ml-to { fill: var(--settled); }
+.rp .ml-dim-f { fill: var(--ink-faint); }
+/* The intermediary is a box that INTERRUPTS the run. Everywhere else on this
+   page a break is structure; here it is the delay, and it reads because the
+   reader has been taught for four sections what an unbroken line means. */
+.rp .ml-block { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+
+.rp .ml-ends {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em;
+  color: var(--ink-faint);
+}
+.rp .ml-arrive { color: var(--settled); }
+.rp .ml-mid { color: var(--ink-muted); }
+.rp .ml-path[data-kind="broken"] .ml-note { color: var(--ink-faint); }
+
+/* ── 04 · the riyal that came back ─────────────────────────────────────── */
+.rp .rf-path { margin-block: clamp(26px, 4vh, 42px) 0; display: grid; gap: 8px; }
+.rp .rf-path svg { width: 100%; height: 30px; overflow: visible; }
+.rp .rf-run { stroke: var(--warn); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.rp .rf-back { fill: var(--warn); }
+.rp .rf-from { fill: var(--ink-faint); }
+.rp .rf-ends {
+  display: flex; justify-content: space-between;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em; color: var(--ink-faint);
+}
+.rp .rf-ends-to { color: var(--warn); }
+
+.rp .rf-log {
+  margin-block-start: 20px;
+  display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline;
+  font-size: 11.5px; letter-spacing: .1em;
+  border-block-start: 1px solid var(--hairline);
+  padding-block-start: 12px;
+}
+.rp .rf-log-k { color: var(--warn); }
+.rp .rf-log-t { color: var(--ink-faint); }
+.rp .rf-note { margin-block-start: 18px; }
+
+/* ── 06 · the fleet ────────────────────────────────────────────────────── */
+.rp .fl-grid {
+  margin-block-start: clamp(30px, 5vh, 54px);
+  display: grid; gap: clamp(26px, 4vh, 44px);
+  align-items: start;
+}
+@media (min-width: 860px) { .rp .fl-grid { grid-template-columns: minmax(0, 340px) 1fr; gap: 56px; } }
+
+/* Treated as schematics, not photography. Desaturated and darkened toward the
+   hull so a 720x964 render never invites inspection. */
+.rp .fl-terminal img,
+.rp .fl-class img {
+  filter: saturate(.28) brightness(.82) contrast(1.06);
+  mix-blend-mode: luminosity;
+  opacity: .92;
+}
+.rp .fl-terminal { display: grid; gap: 10px; max-width: 340px; }
+.rp .fl-terminal img { width: 100%; height: auto; }
+.rp .fl-cap { font-size: 10px; letter-spacing: .18em; color: var(--brass); }
+
+.rp .fl-classes { list-style: none; display: grid; gap: 18px; }
+.rp .fl-class {
+  display: grid; grid-template-columns: 72px 1fr; gap: 16px; align-items: center;
+  border-block-start: 1px solid var(--hairline);
+  padding-block-start: 16px;
+}
+.rp .fl-class img { width: 72px; height: auto; }
+.rp .fl-class h3 { font-size: 1rem; font-weight: 700; margin-block-end: 4px; }
+.rp .fl-class p { font-size: .92rem; line-height: 1.7; color: var(--ink-muted); }
+
+.rp .fl-prizes {
+  margin-block-start: clamp(28px, 4vh, 48px);
+  border-block-start: 1px solid var(--hairline);
+  padding-block-start: 16px;
+  max-width: 54ch;
+}
+.rp .fl-prizes-n { font-size: 1.3rem; color: var(--ink); }
+.rp .fl-prizes-l, .rp .fl-prizes-alt { font-size: .96rem; line-height: 1.75; color: var(--ink-muted); }
+
+/* ── DAYLIGHT · who this is for, and where it runs ─────────────────────── */
+.rp .au-sec, .rp .wr-sec {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(52px, 8vh, 96px) 0;
+}
+.rp .au-title, .rp .wr-title {
+  font-size: clamp(1.4rem, 3.1vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.44;
+  color: var(--ink-day);
+  margin-block: 16px 0;
+  max-width: 22ch;
+  padding-inline-start: 34px;
+}
+.rp .au-grid {
+  margin-block-start: clamp(30px, 5vh, 52px);
+  display: grid; gap: clamp(34px, 5vh, 56px);
+}
+@media (min-width: 900px) { .rp .au-grid { grid-template-columns: 1fr 1fr; gap: 56px; } }
+
+.rp .au-card { position: relative; padding-inline-start: 34px; max-width: 46ch; }
+.rp .au-rule { inset-block-start: 2px; height: calc(100% - 4px); }
+.rp .au-node { inset-block-start: 2px; }
+.rp .au-h {
+  font-size: clamp(1.1rem, 2vw, 1.32rem);
+  font-weight: 700; line-height: 1.44;
+  color: var(--ink-day);
+  margin-block: 8px 10px;
+}
+.rp .au-lede { font-size: 1rem; line-height: 1.85; color: var(--ink-day-60); }
+.rp .au-points { list-style: none; margin-block-start: 18px; display: grid; gap: 12px; }
+.rp .au-points li {
+  font-size: .96rem; line-height: 1.8; color: var(--ink-day);
+  padding-inline-start: 16px; position: relative;
+}
+.rp .au-points li::before {
+  content: ""; position: absolute; inset-inline-start: 0; inset-block-start: .72em;
+  width: 7px; height: 1.5px; background: var(--brass-day);
+}
+.rp .au-foot {
+  margin-block-start: clamp(30px, 4vh, 48px);
+  padding-inline-start: 34px;
+  font-size: .96rem; line-height: 1.85; color: var(--ink-day-60); max-width: 52ch;
+}
+
+.rp .wr-lede {
+  padding-inline-start: 34px; margin-block-start: 20px;
+  font-size: 1rem; line-height: 1.9; color: var(--ink-day-60); max-width: 54ch;
+}
+.rp .wr-list { list-style: none; margin-block-start: clamp(28px, 4vh, 46px); }
+.rp .wr-row {
+  display: grid; grid-template-columns: auto 1fr; gap: 18px;
+  padding-block: 18px;
+  border-block-start: 1px solid var(--rule-day);
+  padding-inline-start: 34px;
+  max-width: 62ch;
+}
+.rp .wr-row:last-child { border-block-end: 1px solid var(--rule-day); }
+.rp .wr-n { font-size: 10.5px; letter-spacing: .14em; color: var(--brass-day); padding-block-start: .4em; }
+.rp .wr-h { font-size: 1.06rem; font-weight: 700; color: var(--ink-day); margin-block-end: 5px; }
+.rp .wr-note { font-size: .94rem; line-height: 1.75; color: var(--ink-day-60); }
+.rp .wr-pending {
+  margin-block-start: 22px; padding-inline-start: 34px;
+  font-size: .86rem; line-height: 1.7; color: var(--ink-day-60);
+  max-width: 52ch; font-style: italic;
+}
+
+/* ── ACT III · white label, handover, station ident ────────────────────── */
+.rp .wl-note { margin-block-start: 16px; }
+
+.rp .hv-sec { padding-block: clamp(64px, 11vh, 128px) 0; }
+.rp .hv-lede { margin-block-start: 16px; }
+.rp .hv-actions {
+  margin-block-start: clamp(26px, 4vh, 40px);
+  display: flex; flex-wrap: wrap; gap: 12px;
+}
+.rp .btn-primary, .rp .btn-ghost {
+  min-height: 46px; padding: 12px 22px;
+  font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: filter var(--d-1) var(--e-report), border-color var(--d-1) var(--e-report);
+}
+.rp .btn-primary { background: var(--settled); color: #02201C; }
+.rp .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.rp .btn-ghost { border: 1px solid var(--hairline); color: var(--ink); }
+.rp .btn-ghost:hover:not(:disabled) { border-color: var(--brass-dim); }
+.rp .btn-primary:disabled, .rp .btn-ghost:disabled { opacity: .45; cursor: not-allowed; }
+
+.rp .hv-pending {
+  margin-block-start: 16px; max-width: 52ch;
+  font-size: .86rem; line-height: 1.7; color: var(--warn); font-style: italic;
+}
+.rp .hv-fine { margin-block-start: 14px; font-size: 12.5px; color: var(--ink-faint); }
+
+.rp .si-sec {
+  max-width: var(--w-inst); margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(64px, 10vh, 120px) clamp(40px, 6vh, 72px);
+}
+.rp .si-rule { display: block; height: 1.5px; background: var(--brass-dim); margin-block-end: 26px; }
+.rp .si-grid { display: grid; gap: 22px; }
+@media (min-width: 760px) { .rp .si-grid { grid-template-columns: 1fr auto; align-items: end; } }
+.rp .si-mark { font-size: 15px; letter-spacing: .2em; color: var(--brass); }
+.rp .si-line { margin-block-start: 8px; font-size: .92rem; line-height: 1.75; color: var(--ink-muted); max-width: 44ch; }
+.rp .si-sa { color: var(--ink-faint); }
+.rp .si-pending { font-size: 10.5px; letter-spacing: .1em; color: var(--ink-faint); }
+
+/* ── The development marker. Deliberately ugly: a tasteful one gets ignored,
+      and the whole point is that a placeholder must be impossible to miss. */
+.rp .dev-fact { position: relative; display: inline; }
+.rp .dev-fact-tag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 5px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: var(--hull);
+  background: var(--warn);
+  vertical-align: middle;
+}
+.rp .prov-dev { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+.rp .prov-dev::before { background: var(--warn); }
+
+@media (max-width: 700px) {
+  .rp .au-title, .rp .wr-title, .rp .au-card,
+  .rp .au-foot, .rp .wr-lede, .rp .wr-row, .rp .wr-pending { padding-inline-start: 24px; }
+  .rp .fl-class { grid-template-columns: 56px 1fr; gap: 12px; }
+  .rp .fl-class img { width: 56px; }
+}
+
+.rp .r-cta { margin-block-start: 18px; }
+.rp .hv-sec { scroll-margin-block-start: 24px; }

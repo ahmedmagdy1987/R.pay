@@ -1,0 +1,105 @@
+{
+  "generatedAt": "2026-08-16T13:58:29.502Z",
+  "viewports": [
+    {
+      "name": "01-desktop-1920",
+      "w": 1920,
+      "h": 1080,
+      "dpr": 1,
+      "overflowPx": 0
+    },
+    {
+      "name": "02-desktop-1440",
+      "w": 1440,
+      "h": 900,
+      "dpr": 2,
+      "overflowPx": 0
+    },
+    {
+      "name": "03-laptop-1280",
+      "w": 1280,
+      "h": 800,
+      "dpr": 2,
+      "overflowPx": 0
+    },
+    {
+      "name": "04-tablet-1024",
+      "w": 1024,
+      "h": 768,
+      "dpr": 2,
+      "overflowPx": 0
+    },
+    {
+      "name": "05-ipad-834",
+      "w": 834,
+      "h": 1112,
+      "dpr": 2,
+      "overflowPx": 0
+    },
+    {
+      "name": "06-phone-430",
+      "w": 430,
+      "h": 932,
+      "dpr": 3,
+      "overflowPx": 0
+    },
+    {
+      "name": "07-phone-390",
+      "w": 390,
+      "h": 844,
+      "dpr": 3,
+      "overflowPx": 0
+    },
+    {
+      "name": "08-android-360",
+      "w": 360,
+      "h": 800,
+      "dpr": 2,
+      "overflowPx": 0
+    }
+  ],
+  "perf": {
+    "profile": "4x CPU throttle · Fast 3G (1.6Mbps/150ms) · 360x800 @2x",
+    "lcpMs": 900,
+    "lcpElement": "unknown",
+    "cls": 0.0008,
+    "ttfbMs": 4,
+    "breachInteractionMs": 25,
+    "transferBytesApprox": 126411
+  },
+  "a11y": {
+    "ar": {
+      "violations": [],
+      "passes": 25
+    },
+    "en": {
+      "violations": [],
+      "passes": 25
+    }
+  },
+  "notes": [],
+  "geofence_desktop": {
+    "frozenAt": "5,053",
+    "afterHolding1_2s": "5,053",
+    "counterHeldSteady": true,
+    "afterRecovery": "5,084",
+    "resumedFromFrozenNotZero": true
+  },
+  "geofence_mobile": {
+    "frozenAt": "5,050",
+    "afterHolding1_2s": "5,050",
+    "counterHeldSteady": true,
+    "afterRecovery": "5,079",
+    "resumedFromFrozenNotZero": true
+  },
+  "reducedMotion": {
+    "pegsResolvedImmediately": 97,
+    "breachPresentAtFirstPaint": 1
+  },
+  "noJs": {
+    "pegsRendered": 97,
+    "branchSegments": 9
+  },
+  "failures": [],
+  "passed": true
+}
