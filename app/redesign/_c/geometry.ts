@@ -84,12 +84,23 @@ const D_STEM = 22;        // socket → joint
 const D_JOINT = 10;       // THE GAP
 const D_HEAD = 46;        // the machine
 
-export function desktopLayout(machines: Machine[]): Layout {
+/**
+ * @param mirror  SVG coordinates ignore `direction`, so on an Arabic page an
+ *   unmirrored drawing enumerates the fleet left-to-right — backwards — and the
+ *   right-to-left sweep then lights ticks in the opposite order to its own travel.
+ *   Mirroring puts machine 1 on the reading edge and re-syncs the light with what
+ *   it deposits.
+ */
+export function desktopLayout(machines: Machine[], mirror = false): Layout {
   const total = machines.length;
   const width = D_PAD * 2 + (total - 1) * D_GAP_M + (BRANCHES.length - 1) * D_GAP_B;
 
   const ticks: TickPos[] = [];
   const drops: DropPos[] = [];
+
+  /* Mirror about the drawing's own centre line. Text anchors are unaffected, so
+     Arabic labels stay correctly shaped — only positions flip. */
+  const mx = (v: number) => (mirror ? width - v : v);
 
   const stemEnd = D_SPINE_Y + D_STEM;
   const headTop = stemEnd + D_JOINT;
@@ -106,10 +117,10 @@ export function desktopLayout(machines: Machine[]): Layout {
       ticks.push({
         ordinal,
         machine: machines[ordinal - 1],
-        socketX: x, socketY: D_SPINE_Y,
-        stemX1: x, stemY1: D_SPINE_Y, stemX2: x, stemY2: stemEnd,
-        headX1: x, headY1: headTop, headX2: x, headY2: headEnd,
-        hx: x - D_GAP_M / 2, hy: D_SPINE_Y - 12,
+        socketX: mx(x), socketY: D_SPINE_Y,
+        stemX1: mx(x), stemY1: D_SPINE_Y, stemX2: mx(x), stemY2: stemEnd,
+        headX1: mx(x), headY1: headTop, headX2: mx(x), headY2: headEnd,
+        hx: mx(x) - D_GAP_M / 2, hy: D_SPINE_Y - 12,
         hw: D_GAP_M, hh: headEnd - D_SPINE_Y + 24,
         branchIndex: bi,
       });
@@ -119,10 +130,10 @@ export function desktopLayout(machines: Machine[]): Layout {
     const segEnd = x + D_GAP_M * 0.55;
     drops.push({
       branchIndex: bi,
-      segX1: segStart, segY1: D_SPINE_Y, segX2: segEnd, segY2: D_SPINE_Y,
-      nodeX: segStart, nodeY: D_SPINE_Y,
-      labelX: (segStart + segEnd) / 2, labelY: D_SPINE_Y - 17,
-      countX: (segStart + segEnd) / 2, countY: headEnd + 22,
+      segX1: mx(segStart), segY1: D_SPINE_Y, segX2: mx(segEnd), segY2: D_SPINE_Y,
+      nodeX: mx(segStart), nodeY: D_SPINE_Y,
+      labelX: mx((segStart + segEnd) / 2), labelY: D_SPINE_Y - 17,
+      countX: mx((segStart + segEnd) / 2), countY: headEnd + 22,
     });
 
     x += D_GAP_B;
@@ -136,7 +147,11 @@ export function desktopLayout(machines: Machine[]): Layout {
     spine: { x1: 0, y1: D_SPINE_Y, x2: width, y2: D_SPINE_Y },
     ticks,
     drops,
-    sweep: { from: width, to: -150, axis: "x", thickness: 150 },
+    /* The light enters from the reading edge and leaves by the far edge, so it
+       arrives at machine 1 first — the order the ticks are deposited in. */
+    sweep: mirror
+      ? { from: width, to: -150, axis: "x" as const, thickness: 150 }
+      : { from: -150, to: width, axis: "x" as const, thickness: 150 },
     leader: {
       socketX: bt.socketX, socketY: D_SPINE_Y,
       hotA: bt.socketX - 46, hotB: bt.socketX + 46,
@@ -144,5 +159,19 @@ export function desktopLayout(machines: Machine[]): Layout {
     },
   };
 }
+
+/**
+ * THE PAGE AXIS.
+ *
+ * The x of the first branch node, as a fraction of the instrument's width. Every
+ * structural line below the hero — the transition stem, Section 02's spine, the
+ * Daybreak crossing, the daylight registration rule — sits on this axis, so the
+ * page is one spatial construction descending from a real attachment point on the
+ * fleet rather than a stack of separately styled sections.
+ *
+ * Derived, never hardcoded: change the padding or the tick gap and this follows.
+ */
+export const AXIS_PCT = ((D_PAD - D_GAP_M * 0.55) /
+  (D_PAD * 2 + 96 * D_GAP_M + (BRANCHES.length - 1) * D_GAP_B)) * 100;
 
 export { BREACH_ORDINAL };

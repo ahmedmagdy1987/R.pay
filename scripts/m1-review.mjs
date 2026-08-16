@@ -334,6 +334,155 @@ async function main() {
       await ctx.close();
     }
 
+    /* ── 2e. Daybreak — the environmental change ────────────────────────── */
+    for (const [label, vp, dpr] of [
+      ["desktop", { width: 1440, height: 900 }, 2],
+      ["mobile", { width: 390, height: 844 }, 3],
+    ]) {
+      const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: dpr });
+      const page = await ctx.newPage();
+      await page.goto(BASE + ROUTE, { waitUntil: "networkidle" });
+      await page.waitForTimeout(RESOLVED);
+
+      // before / during / after the cut
+      const cut = await page.evaluate(() => {
+        const el = document.querySelector(".daylight");
+        return el ? el.getBoundingClientRect().top + window.scrollY : 0;
+      });
+      const at = async (offset, name) => {
+        await page.evaluate((y) => window.scrollTo(0, y), Math.max(0, cut + offset));
+        await page.waitForTimeout(350);
+        await page.screenshot({ path: path.join(SHOTS, `db-${label}-${name}.png`) });
+      };
+      await at(-Math.round(vp.height * 0.85), "1-before");
+      await at(-Math.round(vp.height * 0.42), "2-approaching");
+      await at(-Math.round(vp.height * 0.12), "3-at-the-cut");
+      await at(Math.round(vp.height * 0.22), "4-after");
+
+      await page.locator(".daylight").screenshot({ path: path.join(SHOTS, `dl-${label}-no-logo.png`) });
+
+      // Light-theme grammar crop: strip logo, company name and the headline, so
+      // only the structure and the type system remain to be judged.
+      await page.evaluate(() => {
+        document.querySelectorAll(".dl-title, .dl-eyebrow").forEach((el) => el.remove());
+      });
+      await page.waitForTimeout(200);
+      await page.locator(".daylight").screenshot({ path: path.join(SHOTS, `dl-${label}-grammar-crop.png`) });
+
+      await ctx.close();
+    }
+
+    /* ── 2f. Arabic typography close-ups + structural axis check ────────── */
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 4 });
+      const page = await ctx.newPage();
+      await page.goto(BASE + ROUTE, { waitUntil: "networkidle" });
+      await page.waitForTimeout(RESOLVED);
+
+      for (const [sel, name] of [
+        [".qs-title", "ar-type-1-s02-heading"],
+        [".qs-list .q:nth-child(1)", "ar-type-2-question"],
+        [".dl-title", "ar-type-3-daylight-title"],
+        [".dl-pair .dl-block:last-child", "ar-type-4-daylight-statement"],
+        [".rails", "ar-type-5-mixed-latin-terms"],
+      ]) {
+        const el = page.locator(sel).first();
+        if ((await el.count()) === 0) {
+          failures.push(`CAPTURE: no element matches ${sel} (${name})`);
+          log(`FAIL  capture: no match for ${sel}`);
+          continue;
+        }
+        await el.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(200);
+        await el.screenshot({ path: path.join(SHOTS, `${name}.png`) });
+      }
+
+      /* STRUCTURAL CHECK — one page axis. The instrument's first branch node, the
+         Section 02 spine, the Daybreak stem and the daylight rule must all sit on
+         the same vertical line. This is what makes the page one construction. */
+      const axis = await page.evaluate(() => {
+        const edge = (el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+          return rtl ? window.innerWidth - r.right : r.left;
+        };
+        return {
+          heroNode: edge(document.querySelector(".h-frame .h-node")),
+          s02Node: edge(document.querySelector(".qs-list .q-node")),
+          dbStem: edge(document.querySelector(".db-stem")),
+          dlNode: edge(document.querySelector(".dl-node-a")),
+        };
+      });
+      report.axis = axis;
+      const vals = Object.values(axis).filter((v) => typeof v === "number");
+      const spread = vals.length ? Math.max(...vals) - Math.min(...vals) : 999;
+      report.axisSpreadPx = Number(spread.toFixed(2));
+      if (vals.length < 4) {
+        failures.push(`AXIS: only ${vals.length}/4 structural marks found`);
+        log(`FAIL  axis: only ${vals.length}/4 marks found`);
+      } else if (spread > 6) {
+        failures.push(`AXIS: structural lines diverge by ${spread.toFixed(1)}px (max 6)`);
+        log(`FAIL  axis: lines diverge by ${spread.toFixed(1)}px`);
+      } else {
+        log(`ok    axis: 4 structural lines within ${spread.toFixed(1)}px`);
+      }
+      await ctx.close();
+    }
+
+    /* ── 2g. Daylight design-law checks ─────────────────────────────────── */
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+      const page = await ctx.newPage();
+      await page.goto(BASE + ROUTE, { waitUntil: "networkidle" });
+      await page.waitForTimeout(RESOLVED);
+
+      const dayCyan = await page.evaluate(() => {
+        const sec = document.querySelector(".daylight");
+        if (!sec) return -1;
+        const signal = getComputedStyle(document.querySelector(".rp"))
+          .getPropertyValue("--signal").trim().replace("#", "");
+        const target = `rgb(${parseInt(signal.slice(0,2),16)},${parseInt(signal.slice(2,4),16)},${parseInt(signal.slice(4,6),16)})`;
+        let hits = 0;
+        for (const el of sec.querySelectorAll("*")) {
+          const cs = getComputedStyle(el);
+          for (const prop of ["color","backgroundColor","borderTopColor","borderInlineStartColor","fill","stroke"]) {
+            const v = cs[prop];
+            if (v && v.replace(/\s/g, "") === target) hits++;
+          }
+        }
+        return hits;
+      });
+      report.law_cyanInDaylight = dayCyan;
+      if (dayCyan !== 0) {
+        failures.push(`LAW cyan-means-live: ${dayCyan} cyan use(s) in daylight`);
+        log(`FAIL  law: ${dayCyan} cyan use(s) in daylight`);
+      } else { log("ok    law: no cyan in daylight"); }
+
+      const dayAnims = await page.evaluate(() => {
+        const sec = document.querySelector(".daylight");
+        let n = 0;
+        for (const el of [sec, ...sec.querySelectorAll("*")]) n += el.getAnimations({ subtree: false }).length;
+        return n;
+      });
+      report.law_animationsInDaylight = dayAnims;
+      if (dayAnims !== 0) {
+        failures.push(`LAW nothing-moves: ${dayAnims} animation(s) in daylight`);
+        log(`FAIL  law: ${dayAnims} animation(s) in daylight`);
+      } else { log("ok    law: no animation in daylight"); }
+
+      expectAtLeast("daylight: registration rules", await page.locator(".dl-rule").count(), 2);
+      expectAtLeast("daylight: nodes", await page.locator(".dl-node").count(), 2);
+      // The joint is earned once, at the cut. There must be no pegs in daylight.
+      const dayPegs = await page.locator(".daylight .pg, .daylight .jr-head").count();
+      if (dayPegs !== 0) {
+        failures.push(`GRAMMAR: ${dayPegs} peg(s) in daylight — nothing hangs in daylight`);
+        log(`FAIL  grammar: ${dayPegs} peg(s) in daylight`);
+      } else { log("ok    grammar: no pegs in daylight"); }
+
+      await ctx.close();
+    }
+
     /* ── 3. The geofence interaction, step by step ──────────────────────── */
     for (const [label, vpName, vp] of [
       ["desktop", "1440", { width: 1440, height: 900 }],

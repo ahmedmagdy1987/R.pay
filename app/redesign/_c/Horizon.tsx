@@ -34,7 +34,8 @@ interface Props {
 }
 
 export default function Horizon({ fleet, en }: Props) {
-  const layout = desktopLayout(fleet.machines);
+  // Arabic reads from the right, so the drawing mirrors with the language.
+  const layout = desktopLayout(fleet.machines, !en);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);

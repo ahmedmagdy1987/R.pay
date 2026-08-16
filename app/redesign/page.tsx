@@ -8,6 +8,7 @@ import Radar from "./_c/Radar";
 import SpineRail from "./_c/SpineRail";
 import JointRule from "./_c/JointRule";
 import Questions from "./_c/Questions";
+import Daybreak from "./_c/Daybreak";
 
 /**
  * MILESTONE 1 — THE HORIZON
@@ -142,12 +143,14 @@ export default function RedesignPage() {
 
       <Radar en={en} />
 
-      {/* Milestone 1 ends here. Sections 02–08 follow after review. */}
+      {/* Milestone 2B — the act break and the first daylight section */}
+      <Daybreak en={en} />
+
       <footer className="stage" style={{ minHeight: "auto", paddingBlock: "40px" }}>
         <p className="label">
           {en
-            ? "Milestone 1 — the Horizon and the geofence. Sections 02–08 follow after review."
-            : "المرحلة الأولى — الأفق والنطاق الجغرافي. الأقسام ٠٢–٠٨ بعد المراجعة."}
+            ? "Milestone 2B — Hero, Section 02, Daybreak, first daylight section. The rest follows after review."
+            : "المرحلة ٢ب — الأفق، الأسئلة، مطلع النهار، وأول قسم نهاري. البقية بعد المراجعة."}
         </p>
       </footer>
     </div>

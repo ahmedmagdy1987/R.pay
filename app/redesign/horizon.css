@@ -121,6 +121,11 @@
   --mo-recov: var(--d-6);
 
   /* ── Layout ── */
+  /* THE PAGE AXIS — the x of the instrument's first branch node, as a fraction
+     of the instrument's width. Every structural line below the hero sits here, so
+     the page descends from a real attachment point instead of being stacked. */
+  --axis: 2.5482%;
+
   --pad-x:  clamp(20px, 5vw, 72px);
   --w-max:  1320px;   /* text and gauges */
   --w-inst: 1680px;   /* the instrument — the spine outranks the text column */
@@ -220,7 +225,12 @@
 .rp .rails,
 .rp .logline-wrap,
 .rp .readout,
-.rp .foot-note { max-width: var(--w-max); margin-inline: auto; width: 100%; }
+.rp .foot-note {
+  max-width: var(--w-max);
+  margin-inline-start: var(--axis);
+  margin-inline-end: 0;
+  width: auto;
+}
 
 /* ── Masthead ── */
 .mast { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -804,7 +814,18 @@
 
 /* Shared reading column, so the transition stem and the section spine land on
    exactly the same axis. */
-.rp .measure { max-width: var(--w-max); margin-inline: auto; width: 100%; }
+.rp .measure {
+  max-width: var(--w-max);
+  margin-inline-start: var(--axis);
+  margin-inline-end: 0;
+  width: auto;
+}
+/* Full-width structural container; children register against --axis inside it. */
+.rp .stack {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
 
 /* ── The transition: the section hangs off the horizon ─────────────────── */
 /* The stem lives inside the same .measure box the question spine uses, so the
@@ -925,4 +946,152 @@
   .rp .hang-stem { height: 34px; }
   .rp .hang-node { inset-block-start: 30px; }
   .rp .qs-title { max-width: 18ch; }
+}
+
+/* ═══════════════════════════════════ DAYBREAK ════════════════════════════
+   The environmental change is a HARD CUT, not a fade. A crossfade would be a
+   theme change; this is an act break.
+
+   Brass in daylight stays TECHNICAL, not luxurious. Two rules keep it there:
+   it appears only as hairlines and small marks — never as a fill, a gradient or
+   a large area — and it never gains saturation or shine. Gold becomes luxury
+   when it becomes a surface. Kept to 1.5px it stays infrastructure.
+   ======================================================================== */
+
+.rp .db-night { background: var(--hull); padding-block: 0; }
+.rp .db-col { position: relative; margin-inline-start: var(--axis); height: 132px; }
+
+/* The line descends, then stops. The remaining 34px is the JOINT — it spans the
+   cut, so the line disappears into the boundary and re-emerges changed. */
+.rp .db-stem {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  width: 1.5px;
+  height: 98px;
+  background: var(--brass-dim);
+}
+.rp .db-sign {
+  position: absolute;
+  inset-inline-start: 22px;
+  inset-block-start: 74px;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* ── Daylight ──────────────────────────────────────────────────────────── */
+.rp .daylight {
+  /* Day tokens, scoped. Nothing outside this section may read them. */
+  --paper:      #F2EFE9;   /* Riyadh limestone — warm, so the ink sits */
+  --rule-day:   #CFC9BC;
+  --ink-day:    #12110F;
+  --ink-day-60: #5C5850;
+  --brass-day:  #7A5F2B;   /* 5.23:1 on paper — technical, not gold */
+
+  background: var(--paper);
+  color: var(--ink-day);
+  padding-block: 0 clamp(72px, 12vh, 148px);
+}
+
+.rp .dl-col { position: relative; margin-inline-start: var(--axis); max-width: var(--w-max); }
+
+/* The rule RESUMES after the joint — same axis, changed role. In the dark it
+   suspends; here it registers. Nothing hangs from it. */
+.rp .dl-rule {
+  position: absolute;
+  inset-inline-start: 0;
+  width: 1.5px;
+  background: var(--brass-day);
+}
+.rp .dl-rule-a { inset-block-start: 34px; height: 148px; }
+.rp .dl-node {
+  position: absolute;
+  inset-inline-start: -3.5px;
+  width: 8.5px;
+  height: 1.5px;
+  background: var(--brass-day);
+}
+.rp .dl-node-a { inset-block-start: 34px; }
+
+.rp .dl-eyebrow {
+  display: block;
+  padding-block-start: 30px;
+  padding-inline-start: 34px;
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: var(--brass-day);
+}
+
+/* HUMAN VOICE, with room. Weight 400 rather than 700: daylight is calmer than
+   the command deck, and the size carries the emphasis instead. */
+.rp .dl-title {
+  padding-inline-start: 34px;
+  margin-block: 20px 0;
+  font-size: clamp(1.5rem, 3.5vw, 2.7rem);
+  font-weight: 400;
+  line-height: 1.52;          /* Arabic at display size needs generous leading */
+  letter-spacing: 0;
+  color: var(--ink-day);
+  max-width: 24ch;
+  text-wrap: balance;
+}
+
+.rp .dl-body {
+  padding-inline-start: 34px;
+  margin-block-start: 26px;
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.95;          /* more air than the night act */
+  color: var(--ink-day-60);
+  max-width: 54ch;
+}
+
+/* ── The break: the rule stops, content changes, the rule resumes ─────── */
+.rp .dl-pair {
+  position: relative;
+  margin-block-start: clamp(52px, 8vh, 96px);
+  display: grid;
+  gap: clamp(30px, 4.4vh, 52px);
+}
+.rp .dl-rule-b { inset-block-start: 2px; height: calc(100% - 4px); }
+.rp .dl-node-b { inset-block-start: 2px; }
+
+.rp .dl-block { position: relative; padding-inline-start: 34px; max-width: 52ch; }
+.rp .dl-label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  color: var(--brass-day);
+  margin-block-end: 10px;
+}
+.rp .dl-statement {
+  font-size: clamp(1.02rem, 1.7vw, 1.2rem);
+  line-height: 1.9;
+  color: var(--ink-day);
+  font-weight: 400;
+}
+
+.rp .dl-more { padding-inline-start: 34px; margin-block-start: clamp(44px, 6vh, 76px); }
+.rp .dl-link {
+  font-size: 14px;
+  color: var(--ink-day-60);
+  border-block-end: 1px solid var(--brass-day);
+  padding-block-end: 3px;
+  transition: color var(--d-1) var(--e-report);
+}
+.rp .dl-link:hover { color: var(--ink-day); }
+.rp .daylight :focus-visible { outline-color: var(--brass-day); }
+.rp .daylight ::selection { background: var(--brass-day); color: var(--paper); }
+
+@media (max-width: 700px) {
+  .rp .db-col { height: 104px; }
+  .rp .db-stem { height: 76px; }
+  .rp .db-sign { inset-block-start: 58px; inset-inline-start: 18px; }
+  .rp .dl-eyebrow,
+  .rp .dl-title,
+  .rp .dl-body,
+  .rp .dl-block,
+  .rp .dl-more { padding-inline-start: 24px; }
+  .rp .dl-title { max-width: 20ch; }
 }
