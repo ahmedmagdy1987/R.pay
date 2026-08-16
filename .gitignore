@@ -14,3 +14,9 @@ public/assets/flow/master.mp4
 shots/
 shots-*/
 tsconfig.tsbuildinfo
+
+# Redesign review captures: regenerable via `M1_OUT=... node scripts/m1-review.mjs`.
+# The folders stay on disk (previous review runs are immutable) but are not tracked —
+# ~34 MB of PNGs would bloat history permanently. Written reviews and the summary
+# comparison images ARE tracked, because they carry the argument.
+docs/redesign-2026/*/shots/

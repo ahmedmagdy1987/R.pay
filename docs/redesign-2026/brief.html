@@ -1,0 +1,832 @@
+<title>R.Pay Bridge Brief</title>
+<style>
+  /* ─── Tokens: night is the default world; light theme becomes "daylight/paper" ─── */
+  :root {
+    --hull:        #061320;
+    --deck:        #0B1A29;
+    --deck-2:      #102336;
+    --hairline:    #1B3047;
+    --brass:       #C8A96B;
+    --brass-dim:   #7E683F;
+    --signal:      #2FB8E8;
+    --settled:     #35D6BC;
+    --warn:        #F2A33C;
+    --breach:      #FF6B6B;
+    --ink:         #E6EFF7;
+    --ink-2:       #A2B5C7;
+    --ink-3:       #6F849A;
+    --ground:      var(--hull);
+    --surface:     var(--deck);
+    --surface-2:   var(--deck-2);
+    --rule:        var(--hairline);
+    --accent:      var(--brass);
+    --accent-dim:  var(--brass-dim);
+    --shadow:      none;
+
+    --f-display: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+    --f-body:    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --f-mono:    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --measure: 68ch;
+    --pad-x: clamp(20px, 5vw, 64px);
+  }
+
+  /* Light / daylight: the paper act */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ground:     #F2EFE9;
+      --surface:    #EAE6DD;
+      --surface-2:  #E1DCD1;
+      --rule:       #CFC7B6;
+      --accent:     #7A5F2B;
+      --accent-dim: #9C8455;
+      --ink:        #12110F;
+      --ink-2:      #4C4740;
+      --ink-3:      #6E675C;
+      --signal:     #0A6E96;
+      --settled:    #0F7A68;
+      --warn:       #9A6412;
+      --breach:     #B33232;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:     #F2EFE9;
+    --surface:    #EAE6DD;
+    --surface-2:  #E1DCD1;
+    --rule:       #CFC7B6;
+    --accent:     #7A5F2B;
+    --accent-dim: #9C8455;
+    --ink:        #12110F;
+    --ink-2:      #4C4740;
+    --ink-3:      #6E675C;
+    --signal:     #0A6E96;
+    --settled:    #0F7A68;
+    --warn:       #9A6412;
+    --breach:     #B33232;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--pad-x) 96px; }
+  .col  { max-width: var(--measure); }
+
+  /* ─── Masthead: a horizon with ticks, echoing the recommended hero ─── */
+  .masthead { padding: clamp(48px, 9vw, 104px) 0 0; }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 22px;
+  }
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 400;
+    font-size: clamp(2.3rem, 6.2vw, 4.1rem);
+    line-height: 1.06;
+    letter-spacing: -.012em;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .standfirst {
+    font-size: clamp(1.02rem, 1.9vw, 1.2rem);
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0 0 40px;
+  }
+
+  .horizon { margin: 0 0 8px; height: 20px; display: block; width: 100%; }
+
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 10px 28px;
+    font-family: var(--f-mono); font-size: 11.5px;
+    color: var(--ink-3); letter-spacing: .06em;
+    padding: 14px 0 0; border-top: 1px solid var(--rule);
+  }
+  .meta-row b { color: var(--ink-2); font-weight: 500; }
+
+  /* ─── Sections ─── */
+  section { padding: clamp(44px, 7vw, 80px) 0 0; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 16px;
+    border-top: 1px solid var(--accent-dim);
+    padding-top: 14px; margin-bottom: 30px;
+  }
+  .sec-num {
+    font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .12em;
+    color: var(--accent); flex: none; padding-top: 6px;
+  }
+  h2 {
+    font-family: var(--f-display); font-weight: 400;
+    font-size: clamp(1.5rem, 3.2vw, 2.15rem);
+    line-height: 1.16; letter-spacing: -.008em; margin: 0; text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--f-body); font-weight: 650;
+    font-size: 1.02rem; letter-spacing: .002em;
+    margin: 34px 0 10px; color: var(--ink);
+  }
+  h4 {
+    font-family: var(--f-mono); font-weight: 500;
+    font-size: 11.5px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--accent); margin: 26px 0 10px;
+  }
+  p { margin: 0 0 16px; max-width: var(--measure); }
+  a { color: var(--signal); text-decoration: underline; text-underline-offset: 3px; }
+  strong { font-weight: 650; color: var(--ink); }
+  em.ar { font-style: normal; font-weight: 600; }
+
+  ul, ol { max-width: var(--measure); margin: 0 0 18px; padding-inline-start: 22px; }
+  li { margin: 0 0 8px; }
+  li::marker { color: var(--accent-dim); }
+
+  /* ─── Instrument panel ─── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 22px 24px;
+    margin: 0 0 20px;
+  }
+  .panel.flag { border-inline-start: 3px solid var(--warn); }
+  .panel.stop { border-inline-start: 3px solid var(--breach); }
+  .panel.good { border-inline-start: 3px solid var(--settled); }
+  .panel > :last-child { margin-bottom: 0; }
+  .panel-t {
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px;
+  }
+
+  /* ─── Tables ─── */
+  .tw { overflow-x: auto; margin: 0 0 22px; border: 1px solid var(--rule); border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 480px; }
+  th, td { text-align: start; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th {
+    font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--surface-2); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num, td.mono, th.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .yes { color: var(--settled); font-weight: 600; }
+  .no  { color: var(--breach); font-weight: 600; }
+
+  /* ─── Status pills ─── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; padding: 3px 9px; border-radius: 2px;
+    border: 1px solid currentColor; white-space: nowrap;
+  }
+  .pill.ok    { color: var(--settled); }
+  .pill.warnp { color: var(--warn); }
+  .pill.bad   { color: var(--breach); }
+  .pill.info  { color: var(--signal); }
+  .pill i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex: none; }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+
+  /* ─── Verdict block ─── */
+  .verdict {
+    border: 1px solid var(--accent-dim);
+    border-radius: 3px; padding: clamp(22px, 3.4vw, 34px);
+    background: var(--surface); margin: 8px 0 28px;
+  }
+  .verdict .name {
+    font-family: var(--f-display); font-size: clamp(1.7rem, 4vw, 2.5rem);
+    line-height: 1.1; margin: 0 0 6px;
+  }
+  .verdict .name span { color: var(--accent); }
+  .verdict .ar { font-size: 1.15rem; color: var(--ink-2); margin: 0 0 18px; }
+
+  /* ─── The daylight act: a deliberate ground flip, demonstrating the idea ─── */
+  .daylight {
+    background: #F2EFE9; color: #12110F;
+    margin: 40px calc(var(--pad-x) * -1) 0;
+    padding: clamp(36px, 6vw, 64px) var(--pad-x);
+    border-block: 1px solid #CFC7B6;
+  }
+  .daylight h2, .daylight h3 { color: #12110F; }
+  .daylight h4, .daylight .sec-num { color: #7A5F2B; }
+  .daylight .sec-head { border-top-color: #9C8455; }
+  .daylight p, .daylight li { color: #2C2822; }
+  .daylight strong { color: #12110F; }
+  .daylight .panel { background: #EAE6DD; border-color: #CFC7B6; }
+  .daylight .panel-t { color: #6E675C; }
+  .daylight .tw { border-color: #CFC7B6; }
+  .daylight th, .daylight td { border-bottom-color: #CFC7B6; }
+  .daylight thead th { background: #E1DCD1; color: #7A5F2B; }
+  .daylight .dawn {
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: #7A5F2B; margin: 0 0 26px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .daylight .dawn::after { content: ""; height: 1px; background: #9C8455; flex: 1; }
+
+  /* ─── Concept grid ─── */
+  .concepts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(248px, 1fr)); margin: 0 0 24px; }
+  .concept { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; padding: 16px 18px; }
+  .concept.win { border-color: var(--accent); background: var(--surface-2); }
+  .concept .cn { font-family: var(--f-display); font-size: 1.15rem; margin: 0 0 2px; }
+  .concept .ca { font-size: 13px; color: var(--ink-3); margin: 0 0 9px; }
+  .concept .cd { font-size: 14px; color: var(--ink-2); margin: 0 0 10px; }
+  .concept .cv { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .concept.win .cv { color: var(--accent); }
+
+  /* ─── Ask list ─── */
+  .ask { border-top: 1px solid var(--rule); padding: 15px 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; }
+  .ask:last-of-type { border-bottom: 1px solid var(--rule); }
+  .ask .tag { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; padding-top: 4px; white-space: nowrap; }
+  .ask .tag.block { color: var(--breach); }
+  .ask .tag.need  { color: var(--warn); }
+  .ask .tag.nice  { color: var(--ink-3); }
+  .ask .body { margin: 0; max-width: var(--measure); }
+  .ask .body b { display: block; margin-bottom: 2px; }
+
+  footer {
+    margin-top: 64px; border-top: 1px solid var(--accent-dim);
+    padding-top: 20px;
+    font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .06em; color: var(--ink-3);
+    display: flex; flex-wrap: wrap; gap: 8px 26px; justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">R.Pay · Recovery, audit and creative direction · 16 Aug 2026</p>
+    <h1>Every machine <em>under your command.</em></h1>
+    <p class="standfirst">
+      The project is recovered, builds clean, and is fully understood. What follows is the honest
+      diagnosis of why eight concepts never produced a “wow”, the direction I recommend instead,
+      and the exact list of things I need from you before a single line is written.
+    </p>
+
+    <svg class="horizon" viewBox="0 0 1200 20" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="14" x2="1200" y2="14" stroke="var(--accent-dim)" stroke-width="1"/>
+      <g stroke="var(--signal)" stroke-width="2">
+        <line x1="40"  y1="6" x2="40"  y2="14"/><line x1="70"  y1="8" x2="70"  y2="14"/>
+        <line x1="100" y1="5" x2="100" y2="14"/><line x1="130" y1="9" x2="130" y2="14"/>
+        <line x1="160" y1="6" x2="160" y2="14"/><line x1="190" y1="7" x2="190" y2="14"/>
+        <line x1="250" y1="6" x2="250" y2="14"/><line x1="280" y1="8" x2="280" y2="14"/>
+        <line x1="310" y1="5" x2="310" y2="14"/><line x1="370" y1="7" x2="370" y2="14"/>
+        <line x1="400" y1="6" x2="400" y2="14"/><line x1="460" y1="9" x2="460" y2="14"/>
+        <line x1="490" y1="6" x2="490" y2="14"/><line x1="550" y1="7" x2="550" y2="14"/>
+        <line x1="610" y1="5" x2="610" y2="14"/><line x1="670" y1="8" x2="670" y2="14"/>
+        <line x1="730" y1="6" x2="730" y2="14"/><line x1="790" y1="7" x2="790" y2="14"/>
+        <line x1="850" y1="6" x2="850" y2="14"/><line x1="910" y1="9" x2="910" y2="14"/>
+        <line x1="970" y1="6" x2="970" y2="14"/><line x1="1030" y1="7" x2="1030" y2="14"/>
+        <line x1="1090" y1="5" x2="1090" y2="14"/><line x1="1150" y1="8" x2="1150" y2="14"/>
+      </g>
+      <g stroke="var(--ink-3)" stroke-width="2">
+        <line x1="220" y1="10" x2="220" y2="14"/><line x1="340" y1="10" x2="340" y2="14"/>
+        <line x1="520" y1="10" x2="520" y2="14"/><line x1="640" y1="10" x2="640" y2="14"/>
+      </g>
+      <line x1="430" y1="2" x2="430" y2="14" stroke="var(--breach)" stroke-width="2"/>
+    </svg>
+
+    <div class="meta-row">
+      <span>REPO <b>ahmedmagdy1987/R.pay</b></span>
+      <span>BRANCH <b>main @ 611aa45</b></span>
+      <span>BUILD <b>12/12 static · exit 0</b></span>
+      <span>TYPECHECK <b>0 errors</b></span>
+    </div>
+  </header>
+
+  <!-- ══════════════ 1 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>Recovery report</h2></div>
+
+    <p>
+      The project was <strong>not present</strong> on this machine — only <code>todonado</code> and
+      <code>twin_cat</code> existed. I cloned it fresh, so nothing local was at risk and no destructive
+      git command was needed or run.
+    </p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Item</th><th>Finding</th><th class="mono">Status</th></tr></thead>
+        <tbody>
+          <tr><td>Path</td><td class="mono">C:\Users\CCBoot\Documents\projects\r.pay</td><td><span class="pill ok"><i></i>cloned</span></td></tr>
+          <tr><td>Framework</td><td>Next.js 14.2.35, App Router · React 18.3.1 · TypeScript 5.4.5 strict</td><td><span class="pill ok"><i></i>ok</span></td></tr>
+          <tr><td>Package manager</td><td>npm (package-lock.json) · <code>npm ci</code> → 33 packages</td><td><span class="pill ok"><i></i>installed</span></td></tr>
+          <tr><td>Branch / HEAD</td><td>main @ 611aa45 · clean tree · up to date with origin</td><td><span class="pill ok"><i></i>clean</span></td></tr>
+          <tr><td>Other branches</td><td><code>v1-original</code> (75f8eb0, the real business site) · <code>concept-08-one-tap</code> (merged)</td><td><span class="pill info"><i></i>intact</span></td></tr>
+          <tr><td>Typecheck</td><td><code>tsc --noEmit</code> → 0 errors</td><td><span class="pill ok"><i></i>pass</span></td></tr>
+          <tr><td>Production build</td><td>12/12 routes prerendered static · First Load JS 87–101 kB</td><td><span class="pill ok"><i></i>pass</span></td></tr>
+          <tr><td>Lint</td><td><code>next lint</code> declared but <strong>eslint is not installed</strong> — running it would prompt interactively, so I did not</td><td><span class="pill warnp"><i></i>absent</span></td></tr>
+          <tr><td>Environment</td><td>No <code>.env*</code> of any kind, and none needed. Only <code>NEXT_PUBLIC_SITE_URL</code> is read, and it has a fallback</td><td><span class="pill ok"><i></i>none required</span></td></tr>
+          <tr><td>Security</td><td>3 high advisories, all from the Next 14.2.x tree (next, postcss, nanoid). Fix = Next 16, breaking</td><td><span class="pill warnp"><i></i>deferred</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel stop">
+      <p class="panel-t">The one thing worth fixing immediately</p>
+      <p style="margin:0">
+        <strong>65 MB of dead video is being deployed.</strong> <code>public/assets/flow/master.mp4.part00/01/02</code>
+        (44 MB) plus a byte-identical duplicate <code>master.mp4.part00</code> at the repo root (20 MB). I verified
+        the checksums match and that <strong>nothing in the codebase references them</strong> — they are a split
+        archive of a 4K source, committed to dodge GitHub's 100 MB limit. <code>.gitignore</code> excludes the
+        reassembled <code>master.mp4</code> but not the parts. Deleting them takes <code>public/</code> from 55 MB to ~11 MB.
+      </p>
+    </div>
+
+    <h4>Design tooling</h4>
+    <div class="pill-row">
+      <span class="pill ok"><i></i>UI/UX Pro Max — READY</span>
+      <span class="pill warnp"><i></i>Figma MCP — CONNECTED, NOT AUTHORABLE</span>
+      <span class="pill ok"><i></i>Higgsfield — READY (Ultra, 1,774 credits)</span>
+    </div>
+    <p>
+      <strong>UI/UX Pro Max</strong> is genuinely operational — I ran its search engine and got real data back
+      (GSAP scroll presets, Three.js mobile ceilings, palettes). Two honest caveats: its RTL/Arabic query returns
+      only generic layout rules, so <strong>it has no Arabic-specific guidance</strong>; and its stock recommendation
+      for “payment technology premium” was gold-and-purple Swiss minimalism, which is wrong for this brand. It is a
+      validator, not an art director.
+    </p>
+    <p>
+      <strong>Figma</strong> authenticated fine as <code>filmingfuture1@gmail.com</code> — but the account is a
+      <strong>View seat on a Starter-tier team</strong>. A View seat cannot edit files at all, and Starter has no
+      library publishing and no multi-mode variables. Every write tool
+      (<code>use_figma</code>, <code>create_new_file</code>) will be rejected. See §7 for exactly what to upgrade.
+    </p>
+  </section>
+
+  <!-- ══════════════ 2 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>What R.Pay actually is</h2></div>
+
+    <p>
+      This was the most valuable thing the audit turned up, and it is <strong>not</strong> what the current
+      homepage says. I could not verify the company externally — a web search surfaces only an unrelated
+      “R Pay Wallet” product — so everything below is drawn from the code, chiefly the
+      <code>v1-original</code> branch, which is the real business site rather than a concept.
+    </p>
+
+    <p>R.Pay sells <strong>two things as one system</strong>: payment hardware bolted onto unattended machines, and the operations platform the owner uses to run them. It is not a payment gateway. The buyer is an operator who owns physical machines full of his money that he cannot see.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Claim</th><th>R.Pay</th><th>SurePay · Geidea</th></tr></thead>
+        <tbody>
+          <tr><td>Direct settlement to the owner's account, no middleman</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>Automatic refund on failed payment, no human</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>GPS geofence — device leaves its zone, it shuts itself down</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>Inventory and prize management per device</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>Remote add / remove of devices</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>White-label option</td><td class="yes">✓</td><td class="no">✗</td></tr>
+          <tr><td>Real-time dashboard</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      The customer logos in <code>lib/assets/logos.ts</code> are the strongest asset the company has and the site
+      currently reduces them to a hover-pause marquee: <strong>Roshn</strong> (PIF's giga-developer),
+      <strong>Dar Al Arkan</strong>, <strong>LuLu</strong>, <strong>Boulevard City</strong> and
+      <strong>Boulevard World</strong> (Riyadh Season), <strong>Sela</strong>, Al Khozama, Kinan, Hamat, Malahi,
+      Al Nadej, Al Deera, Shawarma House. Named deployments: Saffori Land, Sparky's, VR Games Zone.
+    </p>
+
+    <div class="panel flag">
+      <p class="panel-t">The insight that changes the brief</p>
+      <p style="margin:0">
+        Most of those logos are <strong>venues, not operators</strong> — developers and malls that
+        <em>host</em> machines rather than own them. That means R.Pay has <strong>two audiences</strong>, and
+        every one of the eight existing concepts addresses only one of them. Serving the venue owner is a hole
+        in the current site, not a refinement of it.
+      </p>
+    </div>
+
+    <p class="mono" style="font-family:var(--f-mono);font-size:13px;color:var(--ink-2)">
+      Verified figures: 465,255 transactions · 97 machines · 9 branches · 9,434 prizes · 90/97 online ·
+      rails: mada, VISA, Mastercard, Apple Pay, stc pay, GCCNET
+    </p>
+  </section>
+
+  <!-- ══════════════ 3 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>Why the previous work never produced a “wow”</h2></div>
+
+    <p>
+      The diagnosis is not that the work was bad. <strong>The engineering is genuinely top-tier</strong> — the
+      double-scrollbar root-cause, the reduced-motion handling that never mounts a video element, the bidi
+      discipline, LCP around 140 ms. The problem is elsewhere, and the repo's own documents already say so.
+    </p>
+
+    <p>
+      The project's research file names its own earlier hero as the cautionary example:
+      <em>“7-layer glow stacks — the repo's <code>latest</code> hero documents the hierarchy collapse.”</em>
+      That hero stacked an SVG network, two orbit rings, a halo, a CSS payment card with NFC ripple and sheen,
+      a glass sales panel, two floating chips and seven-level parallax — and deleted the hero video to make room.
+    </p>
+
+    <h3>Three real causes</h3>
+    <ol>
+      <li><strong>Nine familiar moves, each executed at 8/10, average out to “competent”.</strong> Gradient headline, glass panel, radar sweep, marquee, sticky dashboard, ripple, count-ups, cursor glow, magnetic buttons. All well made. Not one is unfamiliar. <strong>Wow is not effects — it is proprietary form.</strong> Crop any screen, remove the logo, and nobody can name the company or even the category.</li>
+      <li><strong>Concept 08 corrected by subtraction, which was necessary but not sufficient.</strong> It went from noisy to clean. Clean is not wow. Restraint without an owned form is just quiet.</li>
+      <li><strong>Nobody was empowered to decide.</strong> Eight concepts exist because optionality replaced commitment. They even contradict each other on whether R.Pay <em>is</em> or <em>serves</em> the region's largest arcade operator.</li>
+    </ol>
+  </section>
+
+  <!-- ══════════════ 4 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>Six directions considered</h2></div>
+    <p>
+      I ran two independent processes — a four-lens audit of the existing work, and a six-way concept
+      panel briefed only on the verified product facts, judged by brand, conversion and engineering panels.
+      Twenty-one specialists in total. These were the candidates.
+    </p>
+
+    <div class="concepts">
+      <div class="concept win">
+        <p class="cn">The Bridge</p><p class="ca">برج القيادة</p>
+        <p class="cd">The site <em>is</em> the control room. Hand the operator the instruments for ninety seconds.</p>
+        <p class="cv">◆ Selected</p>
+      </div>
+      <div class="concept">
+        <p class="cn">One Riyal</p><p class="ca">ريال واحد</p>
+        <p class="cd">Follow a single riyal from a child's thumb to the operator's bank account.</p>
+        <p class="cv">Runner-up · grafted</p>
+      </div>
+      <div class="concept">
+        <p class="cn">Daylight</p><p class="ca">النهار</p>
+        <p class="cd">The only white site in a category of dark navy and cyan glow. Swiss, typographic, effect-free.</p>
+        <p class="cv">Grafted as Act II</p>
+      </div>
+      <div class="concept">
+        <p class="cn">Al-Wasl</p><p class="ca">الوَصْل</p>
+        <p class="cd">Own one drawn stroke — the kashida — as join, rule, ledger line and receipt.</p>
+        <p class="cv">Grafted · font-dependent</p>
+      </div>
+      <div class="concept">
+        <p class="cn">Silent Grid</p><p class="ca">الشبكة الصامتة</p>
+        <p class="cd">Invisible national infrastructure made visible. Machines as nodes on a live map.</p>
+        <p class="cv">Two ideas taken</p>
+      </div>
+      <div class="concept">
+        <p class="cn">Axis</p><p class="ca">المِحوَر</p>
+        <p class="cd">The terminal as a desirable industrial object, named and specified.</p>
+        <p class="cv">Naming idea taken</p>
+      </div>
+    </div>
+
+    <p>
+      <strong>Axis died on a measurement.</strong> The machine renders on disk are 720×964 and the terminal is
+      749×1000 — full-bleed hardware worship is physically impossible without a 3D pipeline nobody should fund.
+      <strong>Al-Wasl was the most beautiful idea</strong> and it is the one I would pick in a world with a
+      commissioned Arabic typeface; its own author named the risk correctly — a bare 1px rule is the most generic
+      element in web design, and without drawn Arabic you arrive at <em>clean</em> again.
+    </p>
+  </section>
+
+  <!-- ══════════════ THE ACT BREAK ══════════════ -->
+  <div class="daylight">
+    <p class="dawn">مطلع النهار · Daybreak — the ground changes, and this is the idea</p>
+    <div class="sec-head"><span class="sec-num">05</span><h2>The recommendation</h2></div>
+
+    <div class="verdict" style="background:#EAE6DD;border-color:#9C8455">
+      <p class="name" style="color:#12110F">The <span style="color:#7A5F2B">Bridge</span></p>
+      <p class="ar" style="color:#4C4740">برج القيادة — the ship's bridge, not a landing page</p>
+      <p style="margin:0;color:#2C2822">
+        R.Pay's buyer is awake at 11pm asking four questions: is my money reaching me, is machine 43 working,
+        has someone moved it, what did I make today. Every competitor answers with a brochure. A brochure is the
+        wrong instrument, because the product is not information — it is <strong>command</strong>.
+        So we do not describe the control room. <strong>We hand him the controls.</strong>
+      </p>
+    </div>
+
+    <h3>And then we turn the lights on</h3>
+    <p>
+      Halfway down, <strong>the night ends</strong>. The instruments stop, the page becomes paper in daylight,
+      and the same company that just showed you a fleet under command shows you a printed document: who already
+      installed it, how it compares, and what it does for the venue that <em>hosts</em> machines rather than owning
+      them. Then the sun goes down and we return to the bridge to shake hands.
+      <strong>You just experienced the transition</strong> — that is the mechanism, on this page, working.
+    </p>
+
+    <p>That two-act shape does four jobs simultaneously, which is why it beat a prettier idea:</p>
+    <ul>
+      <li>It is the <strong>leap</strong> — old and new are incomparable at thumbnail size.</li>
+      <li>It finally gives the <strong>second audience</strong> (Roshn, Boulevard, a mall's procurement lead) a room they can breathe in.</li>
+      <li>It solves <strong>dark-palette legibility</strong> on a cheap phone at 40% brightness in a Riyadh mall.</li>
+      <li>It is the <strong>surprise</strong>. Nobody who has scrolled eight sections of black instrumentation expects the page to open a window.</li>
+    </ul>
+
+    <h3>Why this one and not Al-Wasl</h3>
+    <p>
+      <strong>Every dependency of The Bridge is code.</strong> No photo shoot, no 3D pipeline, no typeface
+      procurement blocking week one. Al-Wasl cannot start until a licensed or commissioned Arabic face lands —
+      and the type is the longest-lead item in the project. The Bridge ships without it and gets
+      <em>better</em> with it. That is the difference between a plan and a coin flip.
+    </p>
+    <p>
+      Both processes independently converged on the same conclusions — kill the hub, delete the dead video,
+      no gradients, no fake dashboards, real artifacts with timestamps. Where they converged, I have high
+      confidence. Where they diverged, I have taken The Bridge's architecture and grafted Al-Wasl's best
+      object into it: <strong>the receipt</strong> — <em class="ar">وصل</em>, which in Arabic means both
+      <em>the join</em> and <em>the receipt</em>. It lives on paper, in Act II, and it needs no disclaimer
+      because it is true.
+    </p>
+
+    <h3>The one law that carries everything</h3>
+    <p style="font-size:1.1rem">
+      <strong>Cyan means live.</strong> Never a border, never a button, never a heading, never decoration.
+      If something is cyan, it is reporting real state — twelve consuming nodes site-wide, lint-enforced.
+      Rationing is what makes it read as competence instead of ornament. In Act II there is
+      <strong>no cyan at all</strong>, because in daylight nothing needs a status light.
+    </p>
+  </div>
+
+  <!-- ══════════════ 6 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><h2>The direction, specified</h2></div>
+
+    <h4>The hero — seven seconds, no video, no loader</h4>
+    <p>
+      Under 30 kB beyond fonts. <strong>LCP is the headline text, present at first paint.</strong>
+      A brass hairline runs the viewport at 58vh — a horizon, static, already there. The headline is already set:
+      <em class="ar">كل مكينة تحت أمرك.</em>
+    </p>
+    <div class="tw">
+      <table>
+        <thead><tr><th class="mono">t</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">0.00</td><td>Nothing is animating. In a category of moving gradients, a page that is <strong>finished on arrival</strong> is the loudest thing in the room.</td></tr>
+          <tr><td class="mono">0.15–1.05</td><td>A cyan light travels <strong>right to left</strong> along the horizon, depositing a tick as it passes each position. It exits; <strong>97 ticks stand on the horizon.</strong> No label yet — the visitor is curious, which is correct.</td></tr>
+          <tr><td class="mono">1.05–1.57</td><td>A second hairline draws beneath with nine brass drops marking the nine branches. The line stops being a line and becomes a <strong>scale</strong>. Three readouts settle: transactions, online, settlement.</td></tr>
+          <tr><td class="mono">1.60</td><td>One static monochrome row: mada · VISA · Mastercard · Apple Pay · stc pay · GCCNET. The entry objection dies before it forms.</td></tr>
+          <tr><td class="mono">2.2–5.0</td><td>Ninety ticks go cyan. Seven dim to graphite. <strong>Honest, not flattering.</strong></td></tr>
+          <tr><td class="mono">5.0–6.4</td><td><strong>The theft.</strong> Tick 43 turns red, pulses at 1 Hz. A leader draws to one stamped log line: <em class="ar">جهاز ٤٣ · خارج النطاق الجغرافي · إيقاف تلقائي</em></td></tr>
+          <tr><td class="mono">6.40</td><td>Restored. The horizon goes still and <strong>the page never animates unprompted again.</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The whole value proposition lands in under seven seconds, with one marketing sentence, and the visitor has watched a theft get stopped. No filled button in the first 100vh — one ghost link only. The mint CTA appears the instant the rail docks.</p>
+
+    <h4>Structure — fifteen sections, three acts</h4>
+    <div class="tw">
+      <table>
+        <thead><tr><th class="mono">#</th><th>Section</th><th>Job</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">01</td><td>الجسر · The bridge</td><td>Hero. This is a command environment.</td></tr>
+          <tr><td class="mono">02</td><td>الأسئلة الأربعة · Four questions</td><td>His own 11pm anxieties, each answered by one behaviour. <strong>Zero effects. This is where the deal closes.</strong></td></tr>
+          <tr><td class="mono">03</td><td>خط المال · The money line</td><td>Kill the middleman. Two scrubbed lines; the competitor's <em>pauses</em> at a grey box. The pause is the argument.</td></tr>
+          <tr><td class="mono">04</td><td>الريال الذي عاد · The riyal that came back</td><td>A payment fails. The money <strong>reverses on its own</strong> and goes home. Twelve seconds, no click.</td></tr>
+          <tr><td class="mono">05</td><td>الرادار · The radar</td><td><strong>Signature.</strong> Drag the machine out of its zone yourself.</td></tr>
+          <tr><td class="mono">06</td><td>الأسطول · The fleet</td><td>The hardware is real. Named <em class="ar">وَتَد ٠١</em>, one dimensioned plate.</td></tr>
+          <tr><td class="mono">07</td><td>اللمسة · The approval</td><td>The 72-frame sequence, scrubbed, locking on <em class="ar">تمّت</em>. The one human moment.</td></tr>
+          <tr><td class="mono">08</td><td>السجل · The ledger</td><td>The real numbers, each with a provenance chip.</td></tr>
+          <tr><td class="mono">—</td><td colspan="2"><strong>مطلع النهار — DAYBREAK. The ground turns to paper.</strong></td></tr>
+          <tr><td class="mono">09</td><td>الموانئ · Where it's installed</td><td>Not a logo wall — an Arabic <strong>manifest</strong> that reads like a shipping register.</td></tr>
+          <tr><td class="mono">10</td><td>المقارنة · The timetable</td><td>Swiss comparison. Solid ink dot = yes, hollow ring = no. <strong>No colour.</strong></td></tr>
+          <tr><td class="mono">11</td><td>لِمن نعمل · Who this is for</td><td><strong>The venue owner, finally addressed.</strong> Separate CTA, separate inbox.</td></tr>
+          <tr><td class="mono">12</td><td>الأسئلة الشائعة · FAQ</td><td>Settlement window, onboarding, SLA. No theatre.</td></tr>
+          <tr><td class="mono">13</td><td>باسمك · White label</td><td>Type your company name; the rail rebrands for the session.</td></tr>
+          <tr><td class="mono">14</td><td>التسليم · The handover</td><td>Not “contact us”. A Fleet Estimator where <strong>your machines appear on the rail as you type.</strong></td></tr>
+          <tr><td class="mono">15</td><td>القاعدة · Station ident</td><td>CR, VAT, address, phone. Counters still ticking.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Typography</h4>
+    <p>
+      <strong>Body and UI: Readex Pro 400/600 — already on disk.</strong> Telemetry, numerals and log lines:
+      <strong>IBM Plex Mono</strong>, also on disk, tabular figures. Mono reads as machine-generated, therefore true.
+      For display, two tracks: ship on <strong>Noto Kufi Arabic 700</strong> day one, upgrade to a licensed
+      <strong>TPTQ Greta Sans Arabic</strong> or <strong>29LT Zarid Sans</strong> when you decide. Total font
+      budget ~112 kB, two preloaded.
+    </p>
+    <p>
+      Two rules that are not negotiable. <code>:lang(ar) { letter-spacing: 0 !important }</code> — Latin tracking
+      severs cursive joining and instantly marks a site as foreign-made. And <strong>no Arabic is ever revealed
+      character by character</strong>; typing effects break cursive joining mid-word, so every “typing” is a mask
+      sweep over an already-shaped line. Three of the six pitches got that wrong.
+    </p>
+
+    <h4>Motion, scroll and the performance contract</h4>
+    <p>
+      <strong>No animation library.</strong> Native CSS scroll-driven animations where supported, one shared
+      rAF broker as the fallback, Web Animations API for the hero stagger, custom properties for all interpolable
+      state. Five client islands, ~14 kB gzipped total. The frame scrub uses <code>createImageBitmap</code> into a
+      canvas ring buffer — never <code>&lt;video&gt;</code> seeking, which stalls 200–600 ms on mid-tier Android.
+    </p>
+    <p><strong>Rejected outright:</strong> GSAP, Framer Motion, Lenis, Tailwind, all WebGL and 3D, <code>three@0.149.0</code> (unused, ~600 kB), scroll hijacking, <code>backdrop-filter</code> and animated blur.</p>
+    <div class="panel good">
+      <p class="panel-t">CI-enforced budget — fails the PR, not production</p>
+      <p style="margin:0;font-family:var(--f-mono);font-size:13.5px">
+        First Load JS ≤ 110 kB · LCP ≤ 1.8s on Moto G Power / Fast 3G · CLS ≤ 0.02 · INP &lt; 200ms ·
+        Lighthouse a11y = 100 · mobile first view ≤ 550 kB
+      </p>
+    </div>
+    <p>
+      And the single best test in the whole plan, borrowed from the Daylight concept:
+      <strong>“remove all motion and it is still 95% as good.”</strong> Playwright is already a devDependency —
+      it renders every page with <code>prefers-reduced-motion</code> forced and diffs it against the animated
+      build. That one sentence is simultaneously a motion spec, an accessibility spec and a performance budget.
+    </p>
+
+    <h4>Mobile</h4>
+    <p>
+      Designed on its own terms, not scaled down. The rail docks to the bottom edge; the tick index collapses to
+      a 3px hairline; the radar is <strong>better on touch</strong> — dragging a machine out of its zone with your
+      thumb is more visceral than with a cursor, with a haptic tick at the boundary crossing. Act II exists
+      partly <em>because</em> of mobile, since a dark page at 40% brightness in a mall concourse is hard to read.
+    </p>
+
+    <h4>The three signature moments</h4>
+    <ol>
+      <li><strong>اسرق المكينة — Steal the machine.</strong> Drag the machine outside its geofence. The ring snaps red, the render desaturates, and the day's revenue counter <strong>freezes mid-digit</strong>. Release it and the counter resumes <em>from where it stopped, not from zero</em> — which converts “my machine died” into “my money was preserved”. That is the actual sale, for the cost of one variable. Fifth attempt earns the only joke on the site.</li>
+      <li><strong>الريال الذي عاد — The riyal that came back.</strong> Its own section, its own silence. A payment fails and the money travels backwards on its own. No competitor can show this.</li>
+      <li><strong>مطلع النهار — Daybreak.</strong> The act break itself. The cheapest and least copyable moment in the plan, because it is structural rather than technical.</li>
+    </ol>
+    <p>
+      Note what is deliberately <em>not</em> here: no hero video, no 3D, no WebGL, no particles, no gradient.
+      Every one of those was available and every one was rejected on evidence.
+    </p>
+  </section>
+
+  <!-- ══════════════ 7 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">07</span><h2>Tools — what helps, what doesn't</h2></div>
+
+    <h4>Figma — yes, but sequenced, and it needs an upgrade</h4>
+    <p>
+      Figma should <strong>not</strong> lead. There is no Figma library in this project; every decision to date
+      was made in CSS and verified by screenshot. Making Figma the source of truth for a compositor-timed
+      animation wastes weeks and produces a document that is wrong the day it is signed. The correct sequence:
+    </p>
+    <ol>
+      <li><strong>Code is the source of truth.</strong> Tokens live in the repo, pushed <em>one-way</em> into Figma Variables.</li>
+      <li><strong>Generate the library from the tokens</strong> — about nine components. Every one needs an <strong>AR and an EN variant</strong>, bound to <code>dir: rtl | ltr</code> variable modes, because Arabic runs 20–25% shorter and takes different leading. A library built only in Latin produces designs that break in the primary language.</li>
+      <li><strong>Code Connect last</strong>, so Dev Mode shows real JSX. ~20 min per component thereafter — the cheapest governance available.</li>
+    </ol>
+    <p>Figma holds the storyboard and the composed stills. It does not hold the radar, the scrub or the act break.</p>
+    <div class="panel stop">
+      <p class="panel-t">Blocker</p>
+      <p style="margin:0">
+        Your Figma account is a <strong>View seat on a Starter team</strong>. That cannot edit files, cannot
+        publish libraries, and cannot use multi-mode variables — all three of which the plan above needs.
+        You need <strong>Figma Professional with a Full/Edit seat</strong> (Dev Mode for Code Connect comes with it).
+        Until then I can read from Figma but not author in it.
+      </p>
+    </div>
+
+    <h4>Higgsfield — yes, but narrowly</h4>
+    <p>
+      You are on Ultra with 1,774 credits, and the repo shows this pipeline already worked (~430 credits, all
+      image-to-image against canonical renders). But the manifest is also a confession: rejected generations
+      included a reader label corrupted to <strong>“B.PAY”</strong>, invented storefront lettering reading
+      <strong>“CUCCI”</strong>, and garbled Arabic screen text that shipped in v1 and had to be regenerated.
+    </p>
+    <p>
+      So: <strong>no AI hero film.</strong> The one honest use is <strong>320×180 sensor-feed loops</strong> —
+      inside a surveillance frame with a timecode, generated footage reads as a camera feed and its artefacts
+      are invisible at that size. Zero to three clips, ≤250 kB each. Never full-bleed, never above the fold.
+    </p>
+
+    <h4>Adobe — yes, and here is exactly what I want</h4>
+    <div class="tw">
+      <table>
+        <thead><tr><th>App</th><th>Deliverable</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Illustrator</strong></td><td>12 client logos re-traced to single-ink SVG</td><td>They are 123–193px rasters. No CSS filter or auto-trace survives that. <strong>2–3 days, and the one unavoidable production cost.</strong></td></tr>
+          <tr><td><strong>Illustrator</strong></td><td>The R.Pay mark as vector</td><td>The repo has a 142×128 raster only. There is no vector of the company's own logo. <em>Ask you for the original first.</em></td></tr>
+          <tr><td><strong>Illustrator</strong></td><td>Instrument line system + وَتَد orthographic plate + the new ﷼ glyph</td><td>The site's visible grid, drawn by hand. The riyal mark must be SVG — font coverage still risks a tofu box.</td></tr>
+          <tr><td><strong>Photoshop</strong></td><td>Grade machine renders into the hull palette; 128×128 grain tile</td><td>Half a day. Turns “AI product render” into “schematic”. <strong>Do not re-render in 3D</strong> — the existing resolution is sufficient for every size we use.</td></tr>
+          <tr><td><strong>After Effects</strong></td><td>Redaction, timecode and sensor chrome on a real dashboard recording</td><td>AE only masks customer data. The recording itself must be real.</td></tr>
+          <tr><td><strong>InDesign</strong></td><td>8-page <em class="ar">كرّاس المواصفات</em> spec booklet</td><td>The site presents itself as an instrument, so of course there is a manual. Best tertiary lead magnet available.</td></tr>
+          <tr><td><strong>Audition</strong></td><td>One dry relay knock, ~8 kB, muted by default</td><td>A synthesised beep sounds like a web toy. A real relay sounds like a machine.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Adobe Fonts is also the cheapest path to the display face</strong> — if your Creative Cloud is active, Myriad Arabic makes web licensing a non-event and the typeface decision stops being a blocker.</p>
+
+    <h4>Additional skills or MCPs — I do not need any</h4>
+    <p>
+      I deliberately rejected GSAP, WebGL, Three.js, Rive, Lottie and every animation library on evidence, so
+      the tooling that would support them is unnecessary. The one thing that would genuinely help is not
+      software: <strong>three days of a real Arabic typographer</strong>. With no effects to hide behind, every
+      hairline and optical margin in Act II is naked. If that is cut, cap Act II display type at 48px where the
+      flaws are invisible — survivable, but a real degradation.
+    </p>
+  </section>
+
+  <!-- ══════════════ 8 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">08</span><h2>The risk that would kill this</h2></div>
+    <p>
+      All three judging panels named the same one independently, so I am giving it its own section rather than
+      burying it in a list.
+    </p>
+    <div class="panel stop">
+      <p class="panel-t">R1 — If the data feels fake, the concept inverts</p>
+      <p>
+        This direction stakes everything on the visitor believing the telemetry is real. The instant someone
+        senses that “90 of 97 online” is decorative, the site stops reading as competence and starts reading as
+        <strong>theatre</strong> — and a payments company caught performing competence it doesn't have is worse
+        off than one that shipped a nice gradient.
+      </p>
+      <p style="margin:0">
+        <strong>The mitigation is non-negotiable.</strong> Every figure carries a visible provenance chip with a
+        date. The radar is explicitly labelled <em class="ar">محاكاة تفاعلية · لا يتم إيقاف أي جهاز حقيقي</em>.
+        Every counter takes <code>{ value, asOf, isLive }</code> from day one, so going live later is a data swap
+        rather than a rewrite. <strong>If R.Pay will not commit to either a live aggregate endpoint or explicitly
+        dated static figures, do not build this concept</strong> — pick Daylight instead, which needs no live data at all.
+      </p>
+    </div>
+    <p>
+      Two more worth naming now. <strong>You may lose your nerve on Act II</strong> — a white section screenshots
+      as “unfinished” out of context, and someone will ask <em class="ar">أين التصميم؟</em>. So we build it
+      <em>second</em>, in week two, and put the Daybreak scroll on your phone before section 03 exists; you must
+      <em>feel</em> the act break, not evaluate a static frame. And <strong>naming SurePay and Geidea</strong> in
+      the comparison is comparative advertising against two larger licensed competitors — every row needs a source,
+      a date and legal sign-off, with a no-names fallback kept one commit away.
+    </p>
+  </section>
+
+  <!-- ══════════════ 9 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">09</span><h2>What I need from you</h2></div>
+    <p>Nothing here is a nice-to-have. The <span class="pill bad"><i></i>blocker</span> items stop week one.</p>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>Which company are you?</b> Concepts 01–05 say R.Pay <em>is</em> the region's largest arcade operator; 07–08 say it <em>serves</em> it. Those are opposite companies, and if R.Pay is the operator then every competing operator is being asked to fund a competitor. Everything downstream of the homepage depends on this answer.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>The five figures, with the date they were measured</b> — and a decision: live endpoint later, or explicitly dated static? Also: which are commercially safe to publish? The hero reads three counters.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>Thirty minutes each with three real customers, recorded.</b> What did you worry about before R.Pay, what do you check first every morning, what nearly stopped you buying. Section 02 is where this deal closes and it must be their words. <strong>This is the single highest-value input in the whole project.</strong></p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>Written logo permission for the thirteen clients</b> — Roshn, Dar Al Arkan and LuLu especially. Or we drop to text-only venue names, which honestly reads almost as well in the format I have chosen.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>A 40-second silent screen recording of the real dashboard</b>, or a demo tenant plus permission to record, plus the list of fields to redact. A mockup here would destroy the honesty thesis the whole concept is staked on.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>The vector of the R.Pay mark.</b> The repo has a 142×128 raster and nothing else.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>Figma Professional with a Full/Edit seat</b>, if you want Figma in the workflow at all. Your current View seat on Starter cannot author anything.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>What is actually behind <em class="ar">احجز جولة في غرفة التحكم</em>?</b> Who runs the walkthrough, on what days, with what response time? We are naming a concrete offer and it has to be real.</p></div>
+
+    <div class="ask"><span class="tag need">Needed</span><p class="body"><b>The venue proposition, in your own words.</b> What does R.Pay offer a mall or developer who <em>hosts</em> machines? Revenue share, footfall data, install terms? This content does not exist anywhere in the current site and Act II is built for it.</p></div>
+
+    <div class="ask"><span class="tag need">Needed</span><p class="body"><b>The terminal's manufacturer spec sheet</b> — or an explicit decision to publish no specifications. And the commercial truth: do you <em>design</em>, <em>specify</em>, or <em>resell</em> the device? I will not imply engineering that didn't happen. Publishing an IP rating or EMV level you cannot evidence is a legal exposure, not a design detail.</p></div>
+
+    <div class="ask"><span class="tag need">Needed</span><p class="body"><b>CR number, VAT number, registered address, official Arabic company name</b>, and a privacy policy — the estimator captures personal data and cannot ship without a PDPL position.</p></div>
+
+    <div class="ask"><span class="tag need">Needed</span><p class="body"><b>Three budget decisions, each with a date:</b> licensed Arabic display face (~$400–1,500/yr, or free via your Creative Cloud) by end of week 1 · Arabic typographer, 3 days · logo re-trace, 2–3 days.</p></div>
+
+    <div class="ask"><span class="tag nice">Optional</span><p class="body"><b>One half-day photo shoot</b> in a live venue with permission, for the single photograph in Act II. If it isn't funded, Act II ships with pure type and no photography — a perfectly good outcome. <strong>AI imagery in that slot is not</strong>; Arabic signage, hands and faces are exactly where generated images get caught.</p></div>
+
+    <div class="ask"><span class="tag block">Blocker</span><p class="body"><b>One named decision-maker with authority to approve, and a weekly review.</b> Eight concepts exist not because the work was wrong, but because nobody was empowered to say yes.</p></div>
+  </section>
+
+  <!-- ══════════════ 10 ══════════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">10</span><h2>If you approve</h2></div>
+    <p>Six weeks, one engineer and one designer, plus the specialist days above.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th class="mono">Week</th><th>Work</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">0</td><td>Delete 65 MB and <code>three</code>. Token layer + cascade layers. Font decision locked. Logo re-trace starts. <strong>Your data commitment.</strong></td></tr>
+          <tr><td class="mono">1</td><td>Hero and rail — and the breach repaint tested on a real Galaxy A and Redmi Note. If it janks we swap the approach now, not in week five.</td></tr>
+          <tr><td class="mono">2</td><td>The radar, the share card, and <strong>Daybreak on your phone.</strong> You feel the act break before anything else is built.</td></tr>
+          <tr><td class="mono">3</td><td>Money line, the returning riyal, the fleet, the approval scrub.</td></tr>
+          <tr><td class="mono">4</td><td>Act II in full — manifest, timetable, the venue path.</td></tr>
+          <tr><td class="mono">5</td><td>Estimator, white label, footer, the two flat pages, the PDF.</td></tr>
+          <tr><td class="mono">6</td><td>Performance, accessibility, Arabic typography QA, CI gates, English locale.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      I have written <strong>no code and touched nothing</strong> beyond cloning the repo and installing
+      dependencies. The eight existing concepts are all intact on <code>main</code>, and
+      <code>v1-original</code> is untouched. Nothing here is committed until you say so.
+    </p>
+    <p style="font-family:var(--f-display);font-size:1.32rem;line-height:1.4;color:var(--ink);border-inline-start:2px solid var(--accent);padding-inline-start:18px;margin-top:32px">
+      Build the bridge. Turn the lights on in the middle.<br>Ship the truth with a timestamp on it.
+    </p>
+  </section>
+
+  <footer>
+    <span>R.PAY · CREATIVE DIRECTION BRIEF</span>
+    <span>21 SPECIALIST REVIEWS · 2 INDEPENDENT PANELS</span>
+    <span>AWAITING APPROVAL</span>
+  </footer>
+
+</div>
