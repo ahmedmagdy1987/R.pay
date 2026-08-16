@@ -8,8 +8,11 @@ export const metadata: Metadata = {
   // Repetition test 3: the peg grammar as the mark.
   icons: {
     icon: [
-      { url: "/brand/mark.svg", type: "image/svg+xml" },
+      // 16px gets its own optical cut: at that size the three-peg mark closes its
+      // joints, and the joint is the feature doing the identifying.
+      { url: "/brand/mark-16.png", sizes: "16x16", type: "image/png" },
       { url: "/brand/mark-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/mark.svg", type: "image/svg+xml" },
     ],
     apple: [{ url: "/brand/mark-180.png", sizes: "180x180" }],
   },

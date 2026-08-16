@@ -7,6 +7,7 @@ import Horizon from "./_c/Horizon";
 import Radar from "./_c/Radar";
 import SpineRail from "./_c/SpineRail";
 import JointRule from "./_c/JointRule";
+import Questions from "./_c/Questions";
 
 /**
  * MILESTONE 1 — THE HORIZON
@@ -130,7 +131,11 @@ export default function RedesignPage() {
         </div>
       </main>
 
-      {/* Repetition test 2 — the joint as the section divider */}
+      {/* Section 02 — the non-data test, preceded by its own transition */}
+      <Questions en={en} />
+
+      {/* The joint as the section divider — used once, where the ground changes
+          from explanation to demonstration */}
       <div className="divider-slot">
         <JointRule tone="breach" at={0.31} label={en ? "PROTECTION" : "الحماية"} />
       </div>

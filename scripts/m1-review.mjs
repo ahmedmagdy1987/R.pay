@@ -246,6 +246,94 @@ async function main() {
       log("repetition captures written");
     }
 
+    /* ── 2d. Section 02 — the non-data grammar test ─────────────────────── */
+    for (const [label, vp, dpr] of [
+      ["desktop", { width: 1440, height: 900 }, 2],
+      ["mobile", { width: 390, height: 844 }, 3],
+    ]) {
+      const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: dpr });
+      const page = await ctx.newPage();
+      await page.goto(BASE + ROUTE, { waitUntil: "networkidle" });
+      await page.waitForTimeout(RESOLVED);
+
+      // Full sequence: hero -> transition -> section 02
+      await page.screenshot({ path: path.join(SHOTS, `seq-${label}-full.png`), fullPage: true });
+
+      // The transition itself
+      await page.locator(".hang").scrollIntoViewIfNeeded();
+      await page.waitForTimeout(250);
+      await page.screenshot({ path: path.join(SHOTS, `s02-${label}-transition.png`) });
+
+      // Section 02 alone — no masthead, no logo, no brand name
+      await page.locator(".qs").screenshot({ path: path.join(SHOTS, `s02-${label}-no-logo.png`) });
+
+      // Rail in real scrolling context
+      await page.evaluate(() => {
+        const d = document.documentElement;
+        window.scrollTo(0, (d.scrollHeight - d.clientHeight) * 0.45);
+      });
+      await page.waitForTimeout(400);
+      await page.screenshot({
+        path: path.join(SHOTS, `rail-context-${label}.png`),
+        clip: { x: 0, y: 0, width: vp.width, height: Math.round(vp.height * 0.55) },
+      });
+
+      if (label === "desktop") {
+        expectAtLeast("s02: question pegs", await page.locator(".qs-list .q").count(), 4);
+        expectAtLeast("s02: peg nodes", await page.locator(".qs-list .q-node").count(), 4);
+        expectAtLeast("s02: transition stem", await page.locator(".hang-stem").count(), 1);
+
+        /* DESIGN LAW 1 — cyan means live. A question is not live state, so no
+           element inside Section 02 may carry the signal colour. */
+        const cyanUses = await page.evaluate(() => {
+          const sec = document.querySelector(".qs");
+          if (!sec) return -1;
+          const signal = getComputedStyle(document.querySelector(".rp"))
+            .getPropertyValue("--signal").trim().toLowerCase();
+          const toRgb = (h) => {
+            const m = h.replace("#", "");
+            return `rgb(${parseInt(m.slice(0,2),16)}, ${parseInt(m.slice(2,4),16)}, ${parseInt(m.slice(4,6),16)})`;
+          };
+          const target = toRgb(signal);
+          let hits = 0;
+          for (const el of sec.querySelectorAll("*")) {
+            const cs = getComputedStyle(el);
+            for (const prop of ["color","backgroundColor","borderTopColor","borderInlineEndColor","fill","stroke"]) {
+              const v = cs[prop];
+              if (v && v.replace(/\s/g, "") === target.replace(/\s/g, "")) hits++;
+            }
+          }
+          return hits;
+        });
+        report.law_cyanInSection02 = cyanUses;
+        if (cyanUses !== 0) {
+          failures.push(`LAW cyan-means-live: ${cyanUses} cyan use(s) inside Section 02`);
+          log(`FAIL  law: ${cyanUses} cyan use(s) in Section 02`);
+        } else {
+          log("ok    law: no cyan in Section 02");
+        }
+
+        /* DESIGN LAW 3 — nothing moves unless it is reporting. Explanation does
+           not report, so Section 02 must have zero running animations. */
+        const anims = await page.evaluate(() => {
+          const sec = document.querySelector(".qs");
+          let n = 0;
+          for (const el of [sec, ...sec.querySelectorAll("*")]) {
+            n += el.getAnimations({ subtree: false }).length;
+          }
+          return n;
+        });
+        report.law_animationsInSection02 = anims;
+        if (anims !== 0) {
+          failures.push(`LAW nothing-moves: ${anims} animation(s) in Section 02`);
+          log(`FAIL  law: ${anims} animation(s) in Section 02`);
+        } else {
+          log("ok    law: no animation in Section 02");
+        }
+      }
+      await ctx.close();
+    }
+
     /* ── 3. The geofence interaction, step by step ──────────────────────── */
     for (const [label, vpName, vp] of [
       ["desktop", "1440", { width: 1440, height: 900 }],
