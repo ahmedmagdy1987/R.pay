@@ -238,6 +238,17 @@ export default function Radar({ en }: { en: boolean }) {
           {en ? "Interactive simulation · no real device is affected" : "محاكاة تفاعلية · لا يتم إيقاف أي جهاز حقيقي"}
         </span>
 
+        {/* THE PRIMARY CTA, FIRST APPEARANCE.
+            Peak intent on the page: the visitor has just broken something and
+            watched the system stop it. Asking here is asking at the moment the
+            product has finished proving itself, which is the only argument for
+            a mid-page CTA that is not just "the section ended". */}
+        <p className="r-cta">
+          <a className="ghost-link" href="#handover">
+            {en ? "See it running on a real fleet" : "شاهده يعمل على أسطول حقيقي"}
+          </a>
+        </p>
+
         <ul className="r-log" aria-live="polite">
           {log.map((l) => (
             <li key={l.id} data-tone={l.tone}>

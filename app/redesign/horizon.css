@@ -982,8 +982,8 @@
 }
 
 /* ── Daylight ──────────────────────────────────────────────────────────── */
-.rp .daylight {
-  /* Day tokens, scoped. Nothing outside this section may read them. */
+.rp .day {
+  /* Day tokens, scoped to the paper act. Nothing in the night may read them. */
   --paper:      #F2EFE9;   /* Riyadh limestone — warm, so the ink sits */
   --rule-day:   #CFC9BC;
   --ink-day:    #12110F;
@@ -992,8 +992,8 @@
 
   background: var(--paper);
   color: var(--ink-day);
-  padding-block: 0 clamp(72px, 12vh, 148px);
 }
+.rp .daylight { padding-block: 0 clamp(56px, 9vh, 104px); }
 
 .rp .dl-col { position: relative; margin-inline-start: var(--axis); max-width: var(--w-max); }
 
@@ -1095,3 +1095,275 @@
   .rp .dl-more { padding-inline-start: 24px; }
   .rp .dl-title { max-width: 20ch; }
 }
+
+/* ═════════════════════════════ PRODUCTION SECTIONS ═══════════════════════
+   All of them inherit the same discipline: the column sits on --axis, the
+   measure is Arabic-first, mono is the system and Readex is the person, and
+   nothing moves. Identity comes from proportion, alignment and interruption
+   before it comes from repeating a mark.
+   ======================================================================== */
+
+/* Shared column geometry. Everything below the hero registers on one axis. */
+.rp .ml-col, .rp .rf-col, .rp .fl-col,
+.rp .au-col, .rp .wr-col,
+.rp .wl-col, .rp .hv-col, .rp .si-col {
+  margin-inline-start: var(--axis);
+  max-width: var(--w-max);
+  position: relative;
+}
+
+/* Night sections share a rhythm. */
+.rp .ml-sec, .rp .rf-sec, .rp .fl-sec, .rp .wl-sec, .rp .hv-sec {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(56px, 9vh, 112px) 0;
+}
+
+.rp .ml-title, .rp .rf-title, .rp .fl-title, .rp .wl-title, .rp .hv-title {
+  font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.34;
+  margin-block: 14px 0;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+.rp .ml-title em, .rp .rf-title em, .rp .fl-title em,
+.rp .wl-title em, .rp .hv-title em { font-style: normal; color: var(--brass); }
+
+.rp .ml-note, .rp .rf-note, .rp .fl-lede, .rp .wl-note, .rp .hv-lede {
+  font-size: clamp(.98rem, 1.5vw, 1.06rem);
+  line-height: 1.8;
+  color: var(--ink-muted);
+  max-width: 54ch;
+}
+
+/* ── 03 · the money line ───────────────────────────────────────────────── */
+.rp .ml-paths {
+  margin-block-start: clamp(30px, 5vh, 54px);
+  display: grid;
+  gap: clamp(30px, 5vh, 52px);
+}
+@media (min-width: 900px) { .rp .ml-paths { grid-template-columns: 1fr 1fr; gap: 56px; } }
+
+.rp .ml-path { display: grid; gap: 10px; }
+.rp .ml-path svg { width: 100%; height: 34px; overflow: visible; }
+.rp .ml-path-k { font-size: 10.5px; letter-spacing: .16em; color: var(--brass); }
+
+/* R.Pay's run is unbroken, and mint at the end: the money arrived. */
+.rp .ml-run { stroke: var(--brass); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.rp .ml-dim { stroke: var(--ink-faint); stroke-width: 1.5; }
+.rp .ml-from { fill: var(--brass); }
+.rp .ml-to { fill: var(--settled); }
+.rp .ml-dim-f { fill: var(--ink-faint); }
+/* The intermediary is a box that INTERRUPTS the run. Everywhere else on this
+   page a break is structure; here it is the delay, and it reads because the
+   reader has been taught for four sections what an unbroken line means. */
+.rp .ml-block { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+
+.rp .ml-ends {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em;
+  color: var(--ink-faint);
+}
+.rp .ml-arrive { color: var(--settled); }
+.rp .ml-mid { color: var(--ink-muted); }
+.rp .ml-path[data-kind="broken"] .ml-note { color: var(--ink-faint); }
+
+/* ── 04 · the riyal that came back ─────────────────────────────────────── */
+.rp .rf-path { margin-block: clamp(26px, 4vh, 42px) 0; display: grid; gap: 8px; }
+.rp .rf-path svg { width: 100%; height: 30px; overflow: visible; }
+.rp .rf-run { stroke: var(--warn); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.rp .rf-back { fill: var(--warn); }
+.rp .rf-from { fill: var(--ink-faint); }
+.rp .rf-ends {
+  display: flex; justify-content: space-between;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em; color: var(--ink-faint);
+}
+.rp .rf-ends-to { color: var(--warn); }
+
+.rp .rf-log {
+  margin-block-start: 20px;
+  display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline;
+  font-size: 11.5px; letter-spacing: .1em;
+  border-block-start: 1px solid var(--hairline);
+  padding-block-start: 12px;
+}
+.rp .rf-log-k { color: var(--warn); }
+.rp .rf-log-t { color: var(--ink-faint); }
+.rp .rf-note { margin-block-start: 18px; }
+
+/* ── 06 · the fleet ────────────────────────────────────────────────────── */
+.rp .fl-grid {
+  margin-block-start: clamp(30px, 5vh, 54px);
+  display: grid; gap: clamp(26px, 4vh, 44px);
+  align-items: start;
+}
+@media (min-width: 860px) { .rp .fl-grid { grid-template-columns: minmax(0, 340px) 1fr; gap: 56px; } }
+
+/* Treated as schematics, not photography. Desaturated and darkened toward the
+   hull so a 720x964 render never invites inspection. */
+.rp .fl-terminal img,
+.rp .fl-class img {
+  filter: saturate(.28) brightness(.82) contrast(1.06);
+  mix-blend-mode: luminosity;
+  opacity: .92;
+}
+.rp .fl-terminal { display: grid; gap: 10px; max-width: 340px; }
+.rp .fl-terminal img { width: 100%; height: auto; }
+.rp .fl-cap { font-size: 10px; letter-spacing: .18em; color: var(--brass); }
+
+.rp .fl-classes { list-style: none; display: grid; gap: 18px; }
+.rp .fl-class {
+  display: grid; grid-template-columns: 72px 1fr; gap: 16px; align-items: center;
+  border-block-start: 1px solid var(--hairline);
+  padding-block-start: 16px;
+}
+.rp .fl-class img { width: 72px; height: auto; }
+.rp .fl-class h3 { font-size: 1rem; font-weight: 700; margin-block-end: 4px; }
+.rp .fl-class p { font-size: .92rem; line-height: 1.7; color: var(--ink-muted); }
+
+.rp .fl-prizes {
+  margin-block-start: clamp(28px, 4vh, 48px);
+  border-block-start: 1px solid var(--hairline);
+  padding-block-start: 16px;
+  max-width: 54ch;
+}
+.rp .fl-prizes-n { font-size: 1.3rem; color: var(--ink); }
+.rp .fl-prizes-l, .rp .fl-prizes-alt { font-size: .96rem; line-height: 1.75; color: var(--ink-muted); }
+
+/* ── DAYLIGHT · who this is for, and where it runs ─────────────────────── */
+.rp .au-sec, .rp .wr-sec {
+  max-width: var(--w-inst);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(52px, 8vh, 96px) 0;
+}
+.rp .au-title, .rp .wr-title {
+  font-size: clamp(1.4rem, 3.1vw, 2.1rem);
+  font-weight: 400;
+  line-height: 1.44;
+  color: var(--ink-day);
+  margin-block: 16px 0;
+  max-width: 22ch;
+  padding-inline-start: 34px;
+}
+.rp .au-grid {
+  margin-block-start: clamp(30px, 5vh, 52px);
+  display: grid; gap: clamp(34px, 5vh, 56px);
+}
+@media (min-width: 900px) { .rp .au-grid { grid-template-columns: 1fr 1fr; gap: 56px; } }
+
+.rp .au-card { position: relative; padding-inline-start: 34px; max-width: 46ch; }
+.rp .au-rule { inset-block-start: 2px; height: calc(100% - 4px); }
+.rp .au-node { inset-block-start: 2px; }
+.rp .au-h {
+  font-size: clamp(1.1rem, 2vw, 1.32rem);
+  font-weight: 700; line-height: 1.44;
+  color: var(--ink-day);
+  margin-block: 8px 10px;
+}
+.rp .au-lede { font-size: 1rem; line-height: 1.85; color: var(--ink-day-60); }
+.rp .au-points { list-style: none; margin-block-start: 18px; display: grid; gap: 12px; }
+.rp .au-points li {
+  font-size: .96rem; line-height: 1.8; color: var(--ink-day);
+  padding-inline-start: 16px; position: relative;
+}
+.rp .au-points li::before {
+  content: ""; position: absolute; inset-inline-start: 0; inset-block-start: .72em;
+  width: 7px; height: 1.5px; background: var(--brass-day);
+}
+.rp .au-foot {
+  margin-block-start: clamp(30px, 4vh, 48px);
+  padding-inline-start: 34px;
+  font-size: .96rem; line-height: 1.85; color: var(--ink-day-60); max-width: 52ch;
+}
+
+.rp .wr-lede {
+  padding-inline-start: 34px; margin-block-start: 20px;
+  font-size: 1rem; line-height: 1.9; color: var(--ink-day-60); max-width: 54ch;
+}
+.rp .wr-list { list-style: none; margin-block-start: clamp(28px, 4vh, 46px); }
+.rp .wr-row {
+  display: grid; grid-template-columns: auto 1fr; gap: 18px;
+  padding-block: 18px;
+  border-block-start: 1px solid var(--rule-day);
+  padding-inline-start: 34px;
+  max-width: 62ch;
+}
+.rp .wr-row:last-child { border-block-end: 1px solid var(--rule-day); }
+.rp .wr-n { font-size: 10.5px; letter-spacing: .14em; color: var(--brass-day); padding-block-start: .4em; }
+.rp .wr-h { font-size: 1.06rem; font-weight: 700; color: var(--ink-day); margin-block-end: 5px; }
+.rp .wr-note { font-size: .94rem; line-height: 1.75; color: var(--ink-day-60); }
+.rp .wr-pending {
+  margin-block-start: 22px; padding-inline-start: 34px;
+  font-size: .86rem; line-height: 1.7; color: var(--ink-day-60);
+  max-width: 52ch; font-style: italic;
+}
+
+/* ── ACT III · white label, handover, station ident ────────────────────── */
+.rp .wl-note { margin-block-start: 16px; }
+
+.rp .hv-sec { padding-block: clamp(64px, 11vh, 128px) 0; }
+.rp .hv-lede { margin-block-start: 16px; }
+.rp .hv-actions {
+  margin-block-start: clamp(26px, 4vh, 40px);
+  display: flex; flex-wrap: wrap; gap: 12px;
+}
+.rp .btn-primary, .rp .btn-ghost {
+  min-height: 46px; padding: 12px 22px;
+  font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: filter var(--d-1) var(--e-report), border-color var(--d-1) var(--e-report);
+}
+.rp .btn-primary { background: var(--settled); color: #02201C; }
+.rp .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.rp .btn-ghost { border: 1px solid var(--hairline); color: var(--ink); }
+.rp .btn-ghost:hover:not(:disabled) { border-color: var(--brass-dim); }
+.rp .btn-primary:disabled, .rp .btn-ghost:disabled { opacity: .45; cursor: not-allowed; }
+
+.rp .hv-pending {
+  margin-block-start: 16px; max-width: 52ch;
+  font-size: .86rem; line-height: 1.7; color: var(--warn); font-style: italic;
+}
+.rp .hv-fine { margin-block-start: 14px; font-size: 12.5px; color: var(--ink-faint); }
+
+.rp .si-sec {
+  max-width: var(--w-inst); margin-inline: auto;
+  padding-inline: var(--pad-x);
+  padding-block: clamp(64px, 10vh, 120px) clamp(40px, 6vh, 72px);
+}
+.rp .si-rule { display: block; height: 1.5px; background: var(--brass-dim); margin-block-end: 26px; }
+.rp .si-grid { display: grid; gap: 22px; }
+@media (min-width: 760px) { .rp .si-grid { grid-template-columns: 1fr auto; align-items: end; } }
+.rp .si-mark { font-size: 15px; letter-spacing: .2em; color: var(--brass); }
+.rp .si-line { margin-block-start: 8px; font-size: .92rem; line-height: 1.75; color: var(--ink-muted); max-width: 44ch; }
+.rp .si-sa { color: var(--ink-faint); }
+.rp .si-pending { font-size: 10.5px; letter-spacing: .1em; color: var(--ink-faint); }
+
+/* ── The development marker. Deliberately ugly: a tasteful one gets ignored,
+      and the whole point is that a placeholder must be impossible to miss. */
+.rp .dev-fact { position: relative; display: inline; }
+.rp .dev-fact-tag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 5px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  color: var(--hull);
+  background: var(--warn);
+  vertical-align: middle;
+}
+.rp .prov-dev { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+.rp .prov-dev::before { background: var(--warn); }
+
+@media (max-width: 700px) {
+  .rp .au-title, .rp .wr-title, .rp .au-card,
+  .rp .au-foot, .rp .wr-lede, .rp .wr-row, .rp .wr-pending { padding-inline-start: 24px; }
+  .rp .fl-class { grid-template-columns: 56px 1fr; gap: 12px; }
+  .rp .fl-class img { width: 56px; }
+}
+
+.rp .r-cta { margin-block-start: 18px; }
+.rp .hv-sec { scroll-margin-block-start: 24px; }

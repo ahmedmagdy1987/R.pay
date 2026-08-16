@@ -122,11 +122,9 @@ async function main() {
           reducedMotion: "no-preference",
         });
         const page = await ctx.newPage();
-        await page.goto(BASE + ROUTE, { waitUntil: "networkidle" });
-
-        if (lang === "en") {
-          await page.getByRole("button", { name: /toggle language/i }).click();
-        }
+        await page.goto(BASE + (lang === "en" ? ROUTE + "/en" : ROUTE), {
+          waitUntil: "networkidle",
+        });
         await page.waitForTimeout(RESOLVED);
 
         const file = path.join(SHOTS, `${vp.name}-${lang}.png`);
@@ -689,7 +687,6 @@ async function main() {
       const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
       const page = await ctx.newPage();
       await page.goto(BASE + ROUTE, { waitUntil: "networkidle" });
-      if (lang === "en") await page.getByRole("button", { name: /toggle language/i }).click();
       await page.waitForTimeout(RESOLVED);
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

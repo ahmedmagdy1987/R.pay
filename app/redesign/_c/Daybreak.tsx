@@ -55,7 +55,7 @@ export default function Daybreak({ en }: { en: boolean }) {
       </div>
 
       {/* ── Daylight ────────────────────────────────────────────────────── */}
-      <section className="daylight" id="about" aria-labelledby="dl-title">
+      <section className="daylight day" id="about" aria-labelledby="dl-title">
         <div className="stack">
           <div className="dl-col">
             {/* The rule resumes after the joint, now registering instead of
