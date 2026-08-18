@@ -3,9 +3,10 @@
 import { useEffect, useRef } from "react";
 import ScrubSequence, { type SeqSet } from "@/components/ScrubSequence";
 
-/* Placeholder frames, extracted from concept 07's master.mp4 with ffmpeg.
-   Real files at real weights — the point is to measure transfer and decode,
-   not to look at them. Task 3 swaps the directory contents, not this shape. */
+/* Frames are the orbit→Riyadh test clip (Seedance 2.0, 5s, s1a → s3c),
+   sampled off a mpdecimate'd stream. The raw clip is 20fps of unique content
+   padded to 24, so sampling it directly would have put duplicate stills next
+   to each other and made the scrub hitch — see scripts/clip-analyse.mjs. */
 const WIDE: SeqSet = { dir: "/assets/lab/seq/w", count: 60, width: 1600, height: 900 };
 const TALL: SeqSet = { dir: "/assets/lab/seq/t", count: 40, width: 900, height: 1600 };
 
