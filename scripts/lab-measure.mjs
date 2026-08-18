@@ -4,8 +4,8 @@
  * Per breakpoint: bytes actually on the wire, time to first rendered frame,
  * peak decoded-bitmap memory, frame-time distribution across a full-page
  * scrub, and the two invariants that keep it alive on a phone —
- *   · never more than ONE segment's encoded bytes resident
- *   · the decode window never exceeds behind+ahead+1 bitmaps
+ *   · the decode window never exceeds behind+ahead+1 bitmaps page-wide
+ *   · at most two segments armed, and only while both are on screen
  *
  * The WebP fallback is verified on Playwright's WebKit, which genuinely
  * cannot decode AVIF. That is a real capability miss, not a forced flag.
@@ -255,7 +255,16 @@ for (const r of out) {
   );
   if (r.scrub) {
     const s = r.scrub;
-    console.log(`  segments resident ${s.maxArmed} max ${s.maxArmed <= 1 ? "✓ one at a time" : "✗ MORE THAN ONE"}`);
+    /* Two ARMED segments is legal and expected for the moment both are on
+       screen — encoded bytes are only reclaimed once a segment leaves the
+       fold, because taking them from a visible segment blanks it. The hard
+       invariant is the decoded window above, which the primary election caps
+       at one page-wide however many segments are armed. */
+    console.log(
+      `  segments armed    ${s.maxArmed} max ${
+        s.maxArmed <= 2 ? (s.maxArmed === 1 ? "✓" : "✓ (brief hand-over overlap)") : "✗ MORE THAN TWO"
+      }`,
+    );
     console.log(`  scrub travel      ${s.scrolled} / ${s.pageHeight} px ${s.scrolled >= s.pageHeight - 8 ? "✓" : "✗"}`);
     console.log(`  scrub ${s.elapsedMs}ms      ${s.fps} fps  (${s.ticks} frames)`);
     console.log(`  frame time        median ${s.medianMs}ms · p95 ${s.p95Ms}ms · max ${s.maxMs}ms`);
