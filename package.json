@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "shoot": "node scripts/shoot.mjs",
-    "moments": "node scripts/moments.mjs"
+    "moments": "node scripts/moments.mjs",
+    "ocr": "node scripts/frames-ocr.mjs"
   },
   "dependencies": {
     "next": "^14.2.35",
@@ -26,6 +27,7 @@
     "ffprobe-static": "^3.1.0",
     "playwright": "^1.61.1",
     "sharp": "^0.35.3",
+    "tesseract.js": "^7.0.0",
     "typescript": "5.4.5"
   }
 }

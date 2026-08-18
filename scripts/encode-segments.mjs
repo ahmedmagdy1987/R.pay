@@ -14,13 +14,15 @@
  * WebP q64's 0.9826 and level with WebP q72's 0.9844 — for 29% fewer bytes
  * than q64 and 36% fewer than q72.
  *
- * Usage: node scripts/encode-segments.mjs <pngRootDir>
+ * Usage: node scripts/encode-segments.mjs <pngRootDir> [segments...]
+ *        node scripts/encode-segments.mjs /tmp/scratch a    # just segment A
  */
 import sharp from "sharp";
 import { mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const SP = process.argv[2];
+const ONLY = process.argv.slice(3).filter((a) => /^[abc]$/.test(a));
 if (!SP) {
   console.error("usage: node scripts/encode-segments.mjs <scratchpad-with-png-*-dirs>");
   process.exit(1);
@@ -32,7 +34,7 @@ const WEBP = { quality: 64 };
 
 const totals = {};
 
-for (const segName of ["a", "b", "c"]) {
+for (const segName of (ONLY.length ? ONLY : ["a", "b", "c"])) {
   for (const v of ["w", "t"]) {
     const src = join(SP, `png-${segName}-${v}`);
     const dst = join(OUT, segName, v);

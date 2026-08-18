@@ -20,3 +20,7 @@ tsconfig.tsbuildinfo
 # ~34 MB of PNGs would bloat history permanently. Written reviews and the summary
 # comparison images ARE tracked, because they carry the argument.
 docs/redesign-2026/*/shots/
+
+# tesseract.js downloads its language model at runtime; not a source artefact
+eng.traineddata
+*.traineddata
