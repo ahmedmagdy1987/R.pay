@@ -1,0 +1,113 @@
+/* ============================================================
+   /concepts/lab — throwaway proving ground for ScrubSequence.
+   Not linked from the hub. Not a concept. Scoped under .lab.
+   ============================================================ */
+
+.lab {
+  --void: #05070a;
+  --ink: #eaf6ff;
+  --mute: rgba(224, 240, 255, 0.58);
+  --cyan: #00aeef;
+  --mint: #1fd3b8;
+  --line: rgba(126, 196, 255, 0.14);
+  --fm: "IBM Plex Mono", ui-monospace, monospace;
+  --padx: clamp(1.25rem, 5vw, 4rem);
+
+  position: relative;
+  background: var(--void);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+.lab-slate {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: clamp(3rem, 8vw, 6rem) var(--padx);
+}
+
+.lab-slate.tail { min-height: 80vh; }
+
+.lab-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.46);
+}
+.lab-kicker::before {
+  content: "";
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+
+.lab-h {
+  font-size: clamp(2rem, 5.5vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  max-width: 18ch;
+}
+.lab-h em {
+  font-style: normal;
+  background: linear-gradient(100deg, var(--cyan), var(--mint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lab-p {
+  color: var(--mute);
+  font-size: clamp(0.95rem, 1.4vw, 1.075rem);
+  line-height: 1.8;
+  max-width: 62ch;
+}
+
+/* Spec readout — the component's own data-* attributes, mirrored so the
+   numbers can be read off the page instead of the console. */
+.lab-spec {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  background: var(--line);
+  max-width: 780px;
+}
+.lab-spec div {
+  background: var(--void);
+  padding: 14px 16px;
+}
+.lab-spec dt {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.46);
+  margin-bottom: 6px;
+}
+.lab-spec dd {
+  font-family: var(--fm);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.lab-caption {
+  position: absolute;
+  inset-inline-end: var(--padx);
+  bottom: clamp(1.25rem, 5vw, 3rem);
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.42);
+  pointer-events: none;
+}
