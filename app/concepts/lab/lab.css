@@ -471,3 +471,15 @@ html:not(.en) .stats .cap { letter-spacing: 0.06em; }
   background: var(--warm);
 }
 html:not(.en) .stats .provenance { letter-spacing: 0.04em; }
+
+/* A placeholder standing in for a figure must not inherit the figure's size —
+   at clamp(2rem,5.5vw,3.4rem) the chip is wider than its own grid cell and
+   spills out of the stat row. */
+.stats .fig .pending {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  max-width: 100%;
+  flex-wrap: wrap;
+  -webkit-text-fill-color: var(--warm);
+}
+.stats .fig:has(.pending) { line-height: 1.4; }
