@@ -7,6 +7,8 @@ import ScrubSequence, {
   type SeqSet,
   type TitleCard,
 } from "@/components/ScrubSequence";
+import Pending from "@/components/Pending";
+import { claimMode, devValue } from "@/lib/content";
 import { LOGOS } from "@/lib/assets/logos";
 import { R_MARK } from "@/lib/assets/brand";
 
@@ -30,34 +32,26 @@ const C = seg("c");
    segment B's climax is a dark machine on black that encodes cheap while
    changing fast. Delta measures change, which is what scroll should buy.  */
 
-/* A: two quiet runs. 0.12-0.24 is the cloud interior (delta 2.7-8, and the
-   cheapest frames on the page at ~850 B). 0.38-0.47 is a detailed aerial
-   plate that barely moves — expensive to encode, nearly static to watch.
-   0.58-0.78 is the plunge into the mall and earns the room. */
 const PACING_A: PacingRange[] = [
   { from: 0.12, to: 0.24, weight: 0.45 },
   { from: 0.38, to: 0.47, weight: 0.6 },
   { from: 0.58, to: 0.78, weight: 1.55 },
 ];
-
-/* B: the corridor glide is dense, the long approach across the empty hall is
-   not, and the crawl across the machine's face into the touch is the peak of
-   the whole film — it gets the most scroll distance on the page. */
 const PACING_B: PacingRange[] = [
   { from: 0.03, to: 0.2, weight: 1.2 },
   { from: 0.24, to: 0.68, weight: 0.6 },
   { from: 0.72, to: 0.9, weight: 1.6 },
   { from: 0.9, to: 1.0, weight: 0.7 },
 ];
-
-/* C: measured almost perfectly even — no run breaches 150% or drops below
-   50% of the mean except the first two frames. Left near-linear on purpose;
-   inventing a curve here would be decoration, not pacing. */
 const PACING_C: PacingRange[] = [
   { from: 0.0, to: 0.04, weight: 0.6 },
   { from: 0.76, to: 0.95, weight: 1.2 },
 ];
 
+/* NOTE: the "97" in this card is content/claims.json `fleet.machines`, which
+   is unverified and blocks launch. It is baked into the film's frames, so it
+   cannot be gated the way the DOM figures below are — it has to be resolved
+   or the title card has to be re-cut before this goes public. */
 const TITLE_A: TitleCard = {
   from: 0.13,
   to: 0.235,
@@ -68,51 +62,45 @@ const TITLE_A: TitleCard = {
 const WA =
   "https://wa.me/966550796555?text=%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%AD%D8%AC%D8%B2%20%D8%B9%D8%B1%D8%B6%20%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A%20%D9%84%D9%80%20R.Pay";
 
-const PROPS = [
-  {
-    n: "01",
-    ar: "دفع بلا تلامس",
-    en: "Contactless payment",
-    arP: "وحدة دفع مدمجة في كل ماكينة تقبل البطاقات والمحافظ الرقمية في أقل من ثانيتين.",
-    enP: "An embedded payment unit in every machine, taking cards and wallets in under two seconds.",
-  },
-  {
-    n: "02",
-    ar: "تشغيل لحظي",
-    en: "Live operations",
-    arP: "كل عملية تصل إلى لوحة التحكم فور حدوثها — المخزون، الأعطال، التحصيل.",
-    enP: "Every transaction lands on the dashboard as it happens — stock, faults, settlement.",
-  },
-  {
-    n: "03",
-    ar: "تغطية المملكة",
-    en: "Kingdom-wide",
-    arP: "شبكة تعمل عبر المولات والمرافق والمواقع الترفيهية في مدن المملكة.",
-    enP: "A network running across malls, facilities and leisure venues nationwide.",
-  },
-];
+/* Only the seven named accounts, in the order given. Every one resolves to an
+   asset already in the repo from concepts 01-07 — nothing recreated. */
+const NAMED = ["Roshn", "Dar Al Arkan", "LuLu", "Boulevard City", "Kinan", "Sela", "Hamat"];
+const NAMED_AR: Record<string, string> = {
+  Roshn: "روشن",
+  "Dar Al Arkan": "دار الأركان",
+  LuLu: "لولو",
+  "Boulevard City": "بوليفارد سيتي",
+  Kinan: "كنان",
+  Sela: "سلا",
+  Hamat: "حمات",
+};
+const CLIENT_LOGOS = NAMED.map((n) => LOGOS.find((l) => l.alt === n)).filter(
+  (l): l is { alt: string; uri: string } => Boolean(l),
+);
 
 const SECTORS = [
-  { ar: "ألعاب الأركيد", en: "Arcade" },
-  { ar: "المشروبات والوجبات", en: "Vending" },
-  { ar: "القهوة", en: "Coffee" },
-  { ar: "المولات", en: "Malls" },
-  { ar: "المرافق", en: "Facilities" },
-  { ar: "الترفيه", en: "Leisure" },
+  { ar: "مولات", en: "Malls" },
+  { ar: "مجمعات سكنية", en: "Residential compounds" },
+  { ar: "مقرات شركات", en: "Corporate headquarters" },
+  { ar: "صالات رياضية", en: "Gyms" },
 ];
-
-const TARGET = 465255;
 
 export default function LabPage() {
   const [en, setEn] = useState(false);
   const [fmt, setFmt] = useState<SeqFormat>("auto");
   const progRef = useRef<HTMLDivElement>(null);
   const specRef = useRef<HTMLDivElement>(null);
-  const countRefAr = useRef<HTMLSpanElement>(null);
-  const countRefEn = useRef<HTMLSpanElement>(null);
+  const txAr = useRef<HTMLSpanElement>(null);
+  const txEn = useRef<HTMLSpanElement>(null);
 
-  /* Optional format override, so the WebP fallback path can be exercised on a
-     browser that does support AVIF: /concepts/lab?fmt=webp */
+  /* Both headline figures are declared, unverified, launch-blocking claims.
+     In a production content build they render their designed absence instead
+     of the number; here they render the number behind a provenance chip. */
+  const txMode = claimMode("totals.transactions");
+  const machinesMode = claimMode("fleet.machines");
+  const TX = devValue<number>("totals.transactions");
+  const MACHINES = devValue<number>("fleet.machines");
+
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("fmt");
     if (q === "webp" || q === "avif" || q === "auto") setFmt(q);
@@ -125,8 +113,6 @@ export default function LabPage() {
     h.setAttribute("lang", en ? "en" : "ar");
   }, [en]);
 
-  /* One client island owns the page chrome: progress hairline, reveals, the
-     counter, and the dev readout. Nothing here sets React state on scroll. */
   useEffect(() => {
     const bar = progRef.current;
     let ticking = false;
@@ -153,30 +139,27 @@ export default function LabPage() {
     );
     document.querySelectorAll(".lab .rv").forEach((el) => io.observe(el));
 
-    /* Counter runs once, on approach. */
-    const cEl = document.querySelector(".counter");
-    let cDone = false;
+    const counter = document.querySelector(".js-tx");
+    let counted = false;
     const cIo = new IntersectionObserver(
       (es) => {
-        if (cDone || !es.some((e) => e.isIntersecting)) return;
-        cDone = true;
+        if (counted || !es.some((e) => e.isIntersecting)) return;
+        counted = true;
         const t0 = performance.now();
-        const DUR = 1600;
+        const DUR = 1700;
         const step = (now: number) => {
           const p = Math.min(1, (now - t0) / DUR);
-          // ease-out so it decelerates into the real figure
-          const v = Math.round(TARGET * (1 - Math.pow(1 - p, 3)));
-          if (countRefAr.current) countRefAr.current.textContent = v.toLocaleString("ar-EG");
-          if (countRefEn.current) countRefEn.current.textContent = v.toLocaleString("en-US");
+          const v = Math.round(TX * (1 - Math.pow(1 - p, 3)));
+          if (txAr.current) txAr.current.textContent = v.toLocaleString("ar-EG");
+          if (txEn.current) txEn.current.textContent = v.toLocaleString("en-US");
           if (p < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
       },
       { threshold: 0.3 },
     );
-    if (cEl) cIo.observe(cEl);
+    if (counter) cIo.observe(counter);
 
-    /* Dev readout: which codec, which segment is armed, live bitmap count. */
     const spec = specRef.current;
     const syncSpec = () => {
       if (!spec) return;
@@ -188,10 +171,8 @@ export default function LabPage() {
       const bh = Number(segs.find((s) => s.dataset.bmh)?.dataset.bmh ?? 0);
       const mb = bw ? ((live * bw * bh * 4) / 1048576).toFixed(1) : "0";
       spec.innerHTML =
-        `<span>fmt <b>${fmtNow}</b></span>` +
-        `<span>seg <b>${armed < 0 ? "—" : "ABC"[armed]}</b></span>` +
-        `<span>decoded <b>${live}</b></span>` +
-        `<span>mem <b>${mb} MB</b></span>`;
+        `<span>fmt <b>${fmtNow}</b></span><span>seg <b>${armed < 0 ? "—" : "ABC"[armed]}</b></span>` +
+        `<span>decoded <b>${live}</b></span><span>mem <b>${mb} MB</b></span>`;
     };
     const specTimer = setInterval(syncSpec, 250);
     syncSpec();
@@ -202,7 +183,7 @@ export default function LabPage() {
       cIo.disconnect();
       clearInterval(specTimer);
     };
-  }, []);
+  }, [TX]);
 
   return (
     <>
@@ -219,20 +200,17 @@ export default function LabPage() {
         </button>
       </header>
 
-      {/* Pinned from the first viewport — 700vh of film should never be the
-          price of finding a way to talk to someone. */}
       <a className="lab-dock" href={WA}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1a13 13 0 0 1-5-4.4c-.4-.6-1-1.5-1-2.9 0-1.3.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.4.5c-.1.2-.3.3-.1.6.5.8 1 1.4 1.8 2 .3.2.5.2.7 0l.8-.9c.2-.2.3-.2.6-.1l1.9.9c.3.1.4.2.5.3 0 .2 0 .8-.2 1.4Z" />
         </svg>
-        <span className="ar-t">تحدّث إلى المبيعات</span>
-        <span className="en-t">Talk to sales</span>
+        <span className="ar-t">تحدّث إلينا</span>
+        <span className="en-t">Talk to us</span>
       </a>
 
       <div className="lab-spec" ref={specRef} aria-hidden="true" />
 
       <main id="top">
-        {/* ── SEGMENT A — orbit to the mall entrance ─────────────────── */}
         <ScrubSequence
           key={`a-${fmt}`}
           {...A}
@@ -246,6 +224,7 @@ export default function LabPage() {
           <span className="lab-caption">01 · Orbit → Riyadh → the floor</span>
         </ScrubSequence>
 
+        {/* ── DOM A ─────────────────────────────────────────────────────── */}
         <section className="act">
           <span className="kicker rv">
             <span className="ar-t">آر باي · المملكة العربية السعودية</span>
@@ -253,34 +232,29 @@ export default function LabPage() {
           </span>
           <h1 className="h-display rv">
             <span className="ar-t">
-              لمسة واحدة. <em>تحكّم كامل.</em>
+              مساحتك الفارغة… <em>تبيع الآن.</em>
             </span>
             <span className="en-t">
-              One tap. <em>Total control.</em>
+              Your empty space <em>is now selling.</em>
             </span>
           </h1>
           <p className="p-body rv">
             <span className="ar-t">
-              شبكة دفع ذاتية الخدمة تعمل عبر المملكة. كل ماكينة متصلة، وكل عملية مرئية، من أول لمسة.
+              أجهزة بيع ذاتية بالدفع التلامسي. نركّب ونشغّل ونصون — وأنت تستلم عائدك.
             </span>
             <span className="en-t">
-              A self-service payment network running across the Kingdom. Every machine connected,
-              every transaction visible, from the first tap.
+              Self-service machines with contactless payment. We install, operate and maintain. You
+              collect.
             </span>
           </p>
           <div className="rv">
             <a className="cta-warm" href={WA}>
-              <span className="ar-t">احجز عرض تجريبي</span>
-              <span className="en-t">Book a demo</span>
-            </a>
-            <a className="cta-ghost" href="#network">
-              <span className="ar-t">كيف يعمل</span>
-              <span className="en-t">How it works</span>
+              <span className="ar-t">تحدّث إلينا</span>
+              <span className="en-t">Talk to us</span>
             </a>
           </div>
         </section>
 
-        {/* ── SEGMENT B — the corridor to the touch ──────────────────── */}
         <ScrubSequence
           key={`b-${fmt}`}
           {...B}
@@ -293,34 +267,51 @@ export default function LabPage() {
           <span className="lab-caption">02 · Corridor → machine → the tap</span>
         </ScrubSequence>
 
-        <section className="act" id="network">
+        {/* ── DOM B ─────────────────────────────────────────────────────── */}
+        <section className="act" id="platform">
           <span className="kicker rv">
-            <span className="ar-t">المنصّة</span>
-            <span className="en-t">The platform</span>
+            <span className="ar-t">ما الذي تحصل عليه</span>
+            <span className="en-t">What you get</span>
           </span>
-          <h2 className="h-display rv">
-            <span className="ar-t">
-              ماكينة تعمل. <em>ومشغّل يعرف.</em>
-            </span>
-            <span className="en-t">
-              A machine that works. <em>An operator who knows.</em>
-            </span>
-          </h2>
           <div className="props">
-            {PROPS.map((p) => (
-              <article className="rv" key={p.n}>
-                <span className="n">{p.n}</span>
-                <h3>
-                  <span className="ar-t">{p.ar}</span>
-                  <span className="en-t">{p.en}</span>
-                </h3>
-                <p>
-                  <span className="ar-t">{p.arP}</span>
-                  <span className="en-t">{p.enP}</span>
-                </p>
-              </article>
-            ))}
+            <article className="rv">
+              <span className="n">01</span>
+              <h3>
+                <span className="ar-t">صفر تشغيل عليك</span>
+                <span className="en-t">Zero operational load</span>
+              </h3>
+              <p>
+                <span className="ar-t">التركيب والتعبئة والصيانة والدعم — كلها علينا.</span>
+                <span className="en-t">
+                  Installation, restocking, maintenance and support — all on us.
+                </span>
+              </p>
+            </article>
+            <article className="rv">
+              <span className="n">02</span>
+              <h3>
+                <span className="ar-t">دخل من مساحة كانت معطّلة</span>
+                <span className="en-t">Revenue from dead space</span>
+              </h3>
+              <p>
+                <Pending id="REVENUE_MODEL" note="Ahmed to supply" />
+              </p>
+            </article>
+            <article className="rv">
+              <span className="n">03</span>
+              <h3>
+                <span className="ar-t">رؤية مباشرة</span>
+                <span className="en-t">Live visibility</span>
+              </h3>
+              <p>
+                <span className="ar-t">كل عملية وكل جهاز، لحظة بلحظة، من لوحة واحدة.</span>
+                <span className="en-t">
+                  Every transaction, every machine, in real time, from one dashboard.
+                </span>
+              </p>
+            </article>
           </div>
+
           <div className="sectors rv">
             {SECTORS.map((s) => (
               <span key={s.en}>
@@ -328,10 +319,10 @@ export default function LabPage() {
                 <span className="en-t">{s.en}</span>
               </span>
             ))}
+            <Pending id="SECTORS" note="Ahmed to confirm which are real" />
           </div>
         </section>
 
-        {/* ── SEGMENT C — the pulse out to orbit ─────────────────────── */}
         <ScrubSequence
           key={`c-${fmt}`}
           {...C}
@@ -344,35 +335,82 @@ export default function LabPage() {
           <span className="lab-caption">03 · Pulse → the constellation</span>
         </ScrubSequence>
 
+        {/* ── DOM C ─────────────────────────────────────────────────────── */}
         <section className="act">
           <span className="kicker rv">
-            <span className="ar-t">حتى اليوم</span>
-            <span className="en-t">To date</span>
+            <span className="ar-t">الشبكة اليوم</span>
+            <span className="en-t">The network today</span>
           </span>
-          <div className="counter rv">
-            <span className="ar-t" ref={countRefAr}>
-              ٠
-            </span>
-            <span className="en-t" ref={countRefEn}>
-              0
-            </span>
-          </div>
-          <div className="counter-cap rv">
-            <span className="ar-t">عملية دفع عبر الشبكة</span>
-            <span className="en-t">Transactions across the network</span>
+
+          <div className="stats rv">
+            <div className={txMode === "publish" ? undefined : "unverified"}>
+              {txMode === "omit" ? (
+                /* content/claims.json: "Remove the figure." */
+                <div className="fig">—</div>
+              ) : (
+                <div className="fig js-tx">
+                  <span className="ar-t" ref={txAr}>
+                    ٠
+                  </span>
+                  <span className="en-t" ref={txEn}>
+                    0
+                  </span>
+                </div>
+              )}
+              <div className="cap">
+                <span className="ar-t">عملية مكتملة</span>
+                <span className="en-t">Transactions</span>
+              </div>
+              {txMode === "dev" && (
+                <div className="provenance">
+                  <span className="ar-t">غير موثّق — totals.transactions</span>
+                  <span className="en-t">unverified — totals.transactions</span>
+                </div>
+              )}
+            </div>
+
+            <div className={machinesMode === "publish" ? undefined : "unverified"}>
+              {/* claims.json: "Drop the exact count." */}
+              <div className="fig">{machinesMode === "omit" ? "—" : MACHINES}</div>
+              <div className="cap">
+                <span className="ar-t">جهاز يعمل الآن</span>
+                <span className="en-t">Machines live</span>
+              </div>
+              {machinesMode === "dev" && (
+                <div className="provenance">
+                  <span className="ar-t">غير موثّق — fleet.machines</span>
+                  <span className="en-t">unverified — fleet.machines</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="fig">
+                <Pending id="LOCATIONS_COUNT" note="Ahmed to supply" />
+              </div>
+              <div className="cap">
+                <span className="ar-t">موقع</span>
+                <span className="en-t">Locations</span>
+              </div>
+            </div>
           </div>
 
           <div className="logos rv">
-            {LOGOS.slice(0, 12).map((l) => (
+            {CLIENT_LOGOS.map((l) => (
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img key={l.alt} src={l.uri} alt={l.alt} loading="lazy" />
+              <img
+                key={l.alt}
+                src={l.uri}
+                alt={en ? l.alt : (NAMED_AR[l.alt] ?? l.alt)}
+                loading="lazy"
+              />
             ))}
           </div>
 
           <div className="rv">
             <a className="cta-warm" href={WA}>
-              <span className="ar-t">احجز عرض تجريبي</span>
-              <span className="en-t">Book a demo</span>
+              <span className="ar-t">احجز مكالمة</span>
+              <span className="en-t">Book a call</span>
             </a>
           </div>
         </section>

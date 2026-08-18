@@ -385,3 +385,89 @@ html:not(.en) .counter-cap { letter-spacing: 0.08em; }
 }
 .lab-spec b { color: var(--mint); font-weight: 500; }
 @media (max-width: 620px) { .lab-spec { display: none; } }
+
+/* ── unresolved commercial copy ─────────────────────────────────────────────
+   Deliberately ugly. A placeholder that blends in is a placeholder that
+   ships. In a production content build this never renders — the component
+   throws and the build stops. */
+.pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 9px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 182, 92, 0.55);
+  background: rgba(255, 182, 92, 0.09);
+  color: var(--warm);
+  font-family: var(--fm);
+  font-size: 0.78em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.pending i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warm);
+  flex: none;
+}
+.pending em {
+  font-style: normal;
+  opacity: 0.62;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── the stat row in DOM C ──────────────────────────────────────────────── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1px;
+  margin-top: 48px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.stats > div { background: var(--void); padding: 28px 26px; }
+.stats .fig {
+  font-family: var(--fm);
+  font-weight: 500;
+  font-size: clamp(2rem, 5.5vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(100deg, var(--cyan), var(--mint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stats .cap {
+  margin-top: 12px;
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.46);
+}
+html:not(.en) .stats .cap { letter-spacing: 0.06em; }
+
+/* An unverified figure is never allowed to look like a fact. */
+.stats .unverified .fig { -webkit-text-fill-color: rgba(226, 240, 252, 0.5); color: rgba(226, 240, 252, 0.5); background: none; }
+.stats .provenance {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  font-family: var(--fm);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 182, 92, 0.8);
+}
+.stats .provenance::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+html:not(.en) .stats .provenance { letter-spacing: 0.04em; }

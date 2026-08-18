@@ -107,6 +107,21 @@ const CONCEPTS: Concept[] = [
     descAr: "لمسة واحدة توقظ الماكينة، وتضيء الشبكة، وتصل إلى المشغّل لحظيًا. تحكّم كامل من أول لمسة.",
     descEn: "One tap wakes the machine, lights the network, and lands on the operator's screen in real time. Total control from the first tap.",
   },
+  /* PREPARED, NOT LIVE. The film at /concepts/lab — six generated clips cut
+     into three canvas scrub segments. Numbered 09 only because 08 is already
+     taken by One Tap above; if this supersedes that concept rather than
+     joining it, renumber and drop the other entry. */
+  {
+    num: "09",
+    href: "/concepts/lab",
+    img: "/assets/concept-08/hub-orbit-touch.webp",
+    status: "live",
+    statusAr: "جديد", statusEn: "New",
+    eyebrowAr: "سينمائي · تمرير", eyebrowEn: "Cinematic · Scroll",
+    titleAr: "من المدار إلى اللمسة", titleEn: "From Orbit to Touch",
+    descAr: "رحلة واحدة متصلة من الفضاء إلى بصمة إصبع. الاسكرول هو النزول.",
+    descEn: "One unbroken descent from space to a fingertip. The scroll is the fall.",
+  },
 ];
 
 export default function Hub() {
