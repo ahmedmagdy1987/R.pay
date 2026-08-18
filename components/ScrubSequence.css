@@ -4,6 +4,24 @@
    the only colour is the #05070A letterbox behind the canvas.
    ============================================================ */
 
+/* Self-hosted, same files the flow/one-tap/horizon routes vendor. Declared
+   here so the component carries its own display face wherever it is mounted
+   instead of inheriting whatever the host route happens to define. */
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 .scrubseq {
   position: relative;
   height: calc(var(--seq-vh, 500) * 1vh);
@@ -26,6 +44,33 @@
   width: 100%;
   height: 100%;
 }
+
+/* ---- title card ----
+   Type over the film, nothing behind it. Opacity and the 10px rise are driven
+   from the rAF loop, not from a CSS transition: the card is a position in the
+   sequence, so scrubbing backwards has to take it away again exactly the way
+   scrubbing forwards brought it in. A transition would fight the scrub. */
+.scrubseq-title {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 clamp(1.25rem, 6vw, 5rem);
+  text-align: center;
+  pointer-events: none;
+  will-change: opacity, transform;
+
+  font-family: "Readex Pro", var(--font-plex), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 4.2vw, 3.25rem);
+  line-height: 1.35;
+  color: #f2f6fa;
+  text-shadow: 0 2px 40px rgba(5, 7, 10, 0.75);
+}
+/* Latin gets the tracking; Arabic never does — letter-spacing severs the
+   cursive joins. Same rule the rest of the site follows. */
+.scrubseq-title .en-t { letter-spacing: 0.14em; }
+.scrubseq-title .ar-t { letter-spacing: normal; }
 
 /* ---- progressive preload indicator ----
    Sits over the canvas, never gates it: the first decoded frame paints

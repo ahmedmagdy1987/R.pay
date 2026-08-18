@@ -169,6 +169,33 @@ async function run(browser, p) {
     });
   }
 
+  /* Peak decoded-bitmap memory. An ImageBitmap is uncompressed RGBA, so the
+     resident cost is width*height*4 per frame no matter what the WebP weighs
+     on disk. Read AFTER the scrub, which is what exercises the window. */
+  const mem = await page.evaluate(() => {
+    const el = document.querySelector(".scrubseq");
+    return {
+      peakFrames: Number(el?.dataset.peak ?? 0),
+      liveFrames: Number(el?.dataset.live ?? 0),
+      bmw: Number(el?.dataset.bmw ?? 0),
+      bmh: Number(el?.dataset.bmh ?? 0),
+      globalPeak: window.__scrubPeak ?? 0,
+    };
+  });
+  const peakBytes = mem.peakFrames * mem.bmw * mem.bmh * 4;
+
+  /* Release check: unmount the component and confirm every bitmap was closed.
+     Read from window, not the element — the element no longer exists. */
+  const released = await page.evaluate(async () => {
+    if (typeof window.__labUnmount !== "function") return null;
+    window.__labUnmount();
+    await new Promise((r) => setTimeout(r, 400));
+    return {
+      live: window.__scrubLive ?? -1,
+      stillInDom: document.querySelectorAll(".scrubseq").length,
+    };
+  });
+
   const seqReqs = wire.filter((w) => w.url.includes(SEQ));
   const bytes = seqReqs.reduce((a, w) => a + w.bytes, 0);
   const wrongSet = wire.filter((w) => w.url.includes(p.forbidDir)).length;
@@ -187,6 +214,12 @@ async function run(browser, p) {
     fullDecodeMs: Math.round(decodeDone),
     videoElements: videoCount,
     wrongSetRequests: wrongSet,
+    peakFrames: mem.peakFrames,
+    peakBytes,
+    peakMB: +(peakBytes / 1048576).toFixed(1),
+    frameDims: `${mem.bmw}x${mem.bmh}`,
+    perFrameMB: +((mem.bmw * mem.bmh * 4) / 1048576).toFixed(2),
+    released,
     scrub,
   };
 }
@@ -207,7 +240,21 @@ for (const r of out) {
   console.log(`  frame requests    ${r.requests}`);
   console.log(`  bytes on wire     ${r.bytesLabel}  (${r.bytes})`);
   console.log(`  first frame       ${r.tffEngineMs} ms from engine start / ${r.tffNavMs} ms from navigation`);
-  console.log(`  full set decoded  ${r.fullDecodeMs} ms from navigation`);
+  console.log(`  full set fetched  ${r.fullDecodeMs} ms from navigation`);
+  console.log(
+    `  PEAK DECODED      ${r.peakMB} MB  (${r.peakFrames} bitmaps x ${r.frameDims} x 4B = ${r.perFrameMB} MB each) ${
+      r.peakMB < 80 ? "✓ under 80 MB" : "✗ OVER BUDGET"
+    }`,
+  );
+  console.log(
+    `  released on unmount ${
+      r.released === null
+        ? "no hook"
+        : `${r.released.live} bitmaps retained, ${r.released.stillInDom} in DOM ${
+            r.released.live === 0 && r.released.stillInDom === 0 ? "✓" : "✗ LEAK"
+          }`
+    }`,
+  );
   if (r.scrub) {
     const s = r.scrub;
     console.log(`  scrub travel      ${s.scrolledPx} / ${s.spanPx} px ${s.scrolledPx >= s.spanPx - 4 ? "✓" : "✗ SCROLL DID NOT COMPLETE"}`);
