@@ -59,6 +59,10 @@ const TITLE_A: TitleCard = {
   en: "97 machines. One kingdom.",
 };
 
+/* EVERY call to action on this page opens the same WhatsApp thread. There is
+   no booking system anywhere in the repo — no Calendly, no cal.com, no
+   /book route, nothing. Labels must therefore say WhatsApp, not "book a
+   call", which promises a calendar that does not exist. */
 const WA =
   "https://wa.me/966550796555?text=%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%AD%D8%AC%D8%B2%20%D8%B9%D8%B1%D8%B6%20%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A%20%D9%84%D9%80%20R.Pay";
 
@@ -204,8 +208,8 @@ export default function LabPage() {
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1a13 13 0 0 1-5-4.4c-.4-.6-1-1.5-1-2.9 0-1.3.7-2 1-2.3.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.4.5c-.1.2-.3.3-.1.6.5.8 1 1.4 1.8 2 .3.2.5.2.7 0l.8-.9c.2-.2.3-.2.6-.1l1.9.9c.3.1.4.2.5.3 0 .2 0 .8-.2 1.4Z" />
         </svg>
-        <span className="ar-t">تحدّث إلينا</span>
-        <span className="en-t">Talk to us</span>
+        <span className="ar-t">واتساب</span>
+        <span className="en-t">WhatsApp</span>
       </a>
 
       <div className="lab-spec" ref={specRef} aria-hidden="true" />
@@ -266,6 +270,40 @@ export default function LabPage() {
         >
           <span className="lab-caption">02 · Corridor → machine → the tap</span>
         </ScrubSequence>
+
+        {/* ── PEAK CTA — straight off the back of the tap ───────────────── */}
+        <section className="act cta-block peak">
+          <span className="kicker rv">
+            <span className="ar-t">هكذا تبدأ</span>
+            <span className="en-t">This is how it starts</span>
+          </span>
+          <h2 className="rv">
+            <span className="ar-t">
+              لمسة واحدة في مساحتك. <em>ابدأ بواحدة.</em>
+            </span>
+            <span className="en-t">
+              One tap, in your space. <em>Start with one.</em>
+            </span>
+          </h2>
+          <p className="sub rv">
+            <span className="ar-t">
+              نزوركم، نحدّد الموقع المناسب، ونركّب أول جهاز دون تكلفة عليكم.
+            </span>
+            <span className="en-t">
+              We visit, agree the right spot, and install the first machine at no cost to you.
+            </span>
+          </p>
+          <div className="rv">
+            <a className="cta-warm" href={WA}>
+              <span className="ar-t">اطلب عرضًا عبر واتساب</span>
+              <span className="en-t">Request a demo on WhatsApp</span>
+            </a>
+          </div>
+          <div className="reassure rv">
+            <span className="ar-t">ردّ خلال يوم عمل واحد · بدون التزام</span>
+            <span className="en-t">Reply within one business day · no commitment</span>
+          </div>
+        </section>
 
         {/* ── DOM B ─────────────────────────────────────────────────────── */}
         <section className="act" id="platform">
@@ -401,17 +439,43 @@ export default function LabPage() {
               <img
                 key={l.alt}
                 src={l.uri}
+                data-logo={l.uri.split("/").pop()?.replace(/\.\w+$/, "")}
                 alt={en ? l.alt : (NAMED_AR[l.alt] ?? l.alt)}
                 loading="lazy"
               />
             ))}
           </div>
 
+        </section>
+
+        {/* ── FINAL CTA ─────────────────────────────────────────────────── */}
+        <section className="act cta-block final">
+          <h2 className="rv">
+            <span className="ar-t">
+              مساحة واحدة. <em>جهاز واحد.</em> ابدأ من هنا.
+            </span>
+            <span className="en-t">
+              One space. <em>One machine.</em> Start here.
+            </span>
+          </h2>
+          <p className="sub rv">
+            <span className="ar-t">
+              أرسل لنا موقعك ومساحتك التقريبية، ونعود إليك بالخطوة التالية.
+            </span>
+            <span className="en-t">
+              Send us your location and roughly how much space you have, and we will come back
+              with the next step.
+            </span>
+          </p>
           <div className="rv">
             <a className="cta-warm" href={WA}>
-              <span className="ar-t">احجز مكالمة</span>
-              <span className="en-t">Book a call</span>
+              <span className="ar-t">تحدّث إلينا على واتساب</span>
+              <span className="en-t">Talk to us on WhatsApp</span>
             </a>
+          </div>
+          <div className="reassure rv">
+            <span className="ar-t">يفتح محادثة واتساب مباشرة — لا نموذج ولا تسجيل</span>
+            <span className="en-t">Opens a WhatsApp chat directly — no form, no sign-up</span>
           </div>
         </section>
 

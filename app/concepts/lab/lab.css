@@ -309,15 +309,47 @@ html:not(.en) .counter-cap { letter-spacing: 0.08em; }
   padding-top: 44px;
   border-top: 1px solid var(--line);
 }
+/* ── client logos ───────────────────────────────────────────────────────────
+   WHY brightness(0) invert(1) AND NOT grayscale+brightness. Every one of the
+   seven assets is transparent — audited, none has a baked background — but
+   their artwork colour ranges from mean luma 78.9 (LuLu) down to 0.0 (Kinan
+   is solid black). grayscale(1) brightness(1.7) multiplies, so black stays
+   black however far you push it, and five of the seven were invisible on a
+   dark ground. brightness(0) crushes any colour to black, invert(1) lifts it
+   to white, and the alpha channel is untouched by both. Every mark ends up
+   the same white regardless of what it started as.
+
+   OPTICAL SIZING, not box height. Matching by pixel height makes a compact
+   monogram read far heavier than a wide wordmark. --lo is a per-mark scale
+   derived from each asset's measured INK box and ink coverage after trimming
+   its transparent padding: Boulevard City is a 53x70 monogram at 12.8%
+   coverage, Kinan is 123x60 at 39.9%, Dar Al Arkan 112x71 at 17.8%. */
 .logos img {
+  --lo: 1;
   width: 100%;
-  height: 34px;
+  max-width: 132px;
+  height: calc(30px * var(--lo));
   object-fit: contain;
-  opacity: 0.42;
-  filter: grayscale(1) brightness(1.7);
-  transition: opacity 0.3s, filter 0.3s;
+  opacity: 0.6;
+  filter: brightness(0) invert(1);
+  transition: opacity 0.3s ease;
 }
-.logos img:hover { opacity: 0.85; filter: grayscale(0) brightness(1); }
+.logos img:hover,
+.logos img:focus-visible { opacity: 1; }
+
+.logos img[data-logo="kinan"]          { --lo: 0.84; }  /* heaviest ink, 39.9%   */
+.logos img[data-logo="hamat"]          { --lo: 0.9; }   /* 34.8%                 */
+.logos img[data-logo="lulu"]           { --lo: 0.95; }  /* widest wordmark, 2.85 */
+.logos img[data-logo="roshn"]          { --lo: 0.95; }  /* dense pattern mark    */
+.logos img[data-logo="sela"]           { --lo: 1; }     /* 25.3%, the reference  */
+.logos img[data-logo="dar-al-arkan"]   { --lo: 1.08; }  /* 17.8%, light          */
+/* Corrected after looking at the rendered row: this was scaled DOWN as a
+   "monogram", but its ink coverage is 12.8% — the lightest of the seven — so
+   at reduced height it read smaller than everything around it. Coverage wins
+   over the shape label. */
+.logos img[data-logo="boulevard-city"] { --lo: 1.05; }  /* 12.8%, narrow + light */
+
+@media (prefers-reduced-motion: reduce) { .logos img { transition: none; } }
 
 .foot {
   padding: 40px var(--padx) calc(80px + env(safe-area-inset-bottom, 0px));
@@ -483,3 +515,90 @@ html:not(.en) .stats .provenance { letter-spacing: 0.04em; }
   -webkit-text-fill-color: var(--warm);
 }
 .stats .fig:has(.pending) { line-height: 1.4; }
+
+/* ── CTA blocks ─────────────────────────────────────────────────────────────
+   The page had three links to the same WhatsApp thread and no CTA that read
+   as one: a floating pill, an inline button under the headline, and another
+   inline button at the very bottom. A block is centred, has air around it,
+   states what happens, and is the only thing in its band of the page. */
+.cta-block {
+  text-align: center;
+  padding: clamp(4rem, 9vw, 7.5rem) var(--padx);
+  max-width: 760px;
+  margin-inline: auto;
+}
+.cta-block.peak {
+  /* Sits directly under the tap. The warm wash is the gold of the contact
+     seam bleeding out of the film into the page. */
+  background:
+    radial-gradient(80% 120% at 50% 0%, rgba(255, 182, 92, 0.11), transparent 62%);
+  max-width: none;
+  border-bottom: 1px solid var(--line);
+}
+.cta-block .kicker { justify-content: center; margin-bottom: 18px; }
+.cta-block .kicker::before { display: none; }
+
+.cta-block h2 {
+  font-family: var(--fd);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 4.6vw, 3.1rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 22ch;
+  margin-inline: auto;
+}
+html:not(.en) .cta-block h2 { letter-spacing: 0; line-height: 1.4; }
+/* Not gold. Concept 07/08's accent contract reserves --warm for human action,
+   and a gold phrase sitting above a gold button spends the button's whole
+   advantage. The emphasis takes the system accent; the button keeps the gold
+   to itself. */
+.cta-block h2 em {
+  font-style: normal;
+  background: linear-gradient(100deg, var(--cyan), var(--mint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cta-block .sub {
+  margin-top: 18px;
+  color: var(--mute);
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  line-height: 1.8;
+  max-width: 46ch;
+  margin-inline: auto;
+}
+
+.cta-block .cta-warm {
+  margin-top: 36px;
+  padding: 18px 40px;
+  font-size: 1.05rem;
+}
+.cta-block.final .cta-warm { padding: 20px 48px; font-size: 1.12rem; }
+
+.cta-block .reassure {
+  margin-top: 18px;
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.42);
+}
+html:not(.en) .cta-block .reassure { letter-spacing: 0.04em; text-transform: none; font-size: 12px; }
+
+/* The pill is a chat affordance, not the page's CTA. Quieter than a button:
+   outline only, no fill, so it never competes with the gold blocks. */
+.lab-dock {
+  border-color: var(--line);
+  background: rgba(10, 12, 16, 0.7);
+  color: rgba(226, 240, 252, 0.78);
+  font-weight: 500;
+  font-size: 0.84rem;
+  padding: 9px 15px;
+}
+.lab-dock:hover {
+  border-color: rgba(255, 182, 92, 0.5);
+  background: rgba(10, 12, 16, 0.85);
+  color: var(--warm);
+}
+.lab-dock svg { width: 15px; height: 15px; opacity: 0.9; }
