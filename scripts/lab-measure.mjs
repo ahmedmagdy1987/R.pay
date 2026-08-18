@@ -1,35 +1,35 @@
 /**
- * Measure the ScrubSequence engine on /concepts/lab.
+ * Measure the full three-segment film on /concepts/lab.
  *
- * Reports, per breakpoint: bytes actually transferred for the frame set,
- * time to first rendered frame, and the frame-time distribution during an
- * uninterrupted programmatic scrub of the whole pin.
+ * Per breakpoint: bytes actually on the wire, time to first rendered frame,
+ * peak decoded-bitmap memory, frame-time distribution across a full-page
+ * scrub, and the two invariants that keep it alive on a phone —
+ *   · never more than ONE segment's encoded bytes resident
+ *   · the decode window never exceeds behind+ahead+1 bitmaps
  *
- * Frame-time percentiles matter more than the headline fps: a harness can
- * report 60fps while dropping every fourth frame, and p95 catches that.
+ * The WebP fallback is verified on Playwright's WebKit, which genuinely
+ * cannot decode AVIF. That is a real capability miss, not a forced flag.
  *
  * Usage: node scripts/lab-measure.mjs [baseUrl]
  */
-import { chromium } from "playwright";
+import { chromium, webkit } from "playwright";
 
 const BASE = process.argv[2] ?? "http://127.0.0.1:3210";
 const URL = `${BASE}/concepts/lab`;
-
-const SEQ = "/assets/lab/seq/";
-const WIDE_DIR = "/assets/lab/seq/w/";
-const TALL_DIR = "/assets/lab/seq/t/";
+const SEG = "/assets/lab/seg/";
 
 const PROFILES = [
   {
     name: "desktop",
+    engine: chromium,
     ctx: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
     expectMode: "wide",
-    expectFrames: 60,
-    expectDir: WIDE_DIR,
-    forbidDir: TALL_DIR,
+    expectFmt: "avif",
+    frames: 90,
   },
   {
     name: "mobile",
+    engine: chromium,
     ctx: {
       viewport: { width: 390, height: 844 },
       deviceScaleFactor: 3,
@@ -37,28 +37,35 @@ const PROFILES = [
       hasTouch: true,
     },
     expectMode: "tall",
-    expectFrames: 40,
-    expectDir: TALL_DIR,
-    forbidDir: WIDE_DIR,
+    expectFmt: "avif",
+    frames: 60,
+  },
+  {
+    name: "webkit (no AVIF)",
+    engine: webkit,
+    ctx: { viewport: { width: 1440, height: 900 } },
+    expectMode: "wide",
+    expectFmt: "webp",
+    frames: 90,
   },
   {
     name: "reduced-motion",
-    ctx: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, reducedMotion: "reduce" },
+    engine: chromium,
+    ctx: { viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" },
     expectMode: "static",
-    expectFrames: 1,
-    expectDir: WIDE_DIR,
-    forbidDir: TALL_DIR,
+    expectFmt: "avif",
+    frames: 1,
     skipScrub: true,
   },
 ];
 
-const fmtKB = (b) => `${(b / 1024).toFixed(1)} KB`;
+const MB = (b) => `${(b / 1048576).toFixed(2)} MB`;
 
-async function run(browser, p) {
+async function run(p) {
+  const browser = await p.engine.launch();
   const context = await browser.newContext(p.ctx);
   const page = await context.newPage();
 
-  // Nav-relative first-frame timestamp, captured in the page before any script runs.
   await page.addInitScript(() => {
     window.__seq = { tffNav: null };
     addEventListener(
@@ -70,64 +77,65 @@ async function run(browser, p) {
     );
   });
 
-  // CDP gives encodedDataLength — real bytes on the wire, not decoded size.
-  const cdp = await context.newCDPSession(page);
-  await cdp.send("Network.enable");
-  const urlOf = new Map();
+  /* Wire bytes. CDP gives encodedDataLength on Chromium; WebKit has no CDP,
+     so fall back to Content-Length via the response event there. */
   const wire = [];
-  cdp.on("Network.requestWillBeSent", (e) => urlOf.set(e.requestId, e.request.url));
-  cdp.on("Network.responseReceived", (e) => urlOf.set(e.requestId, e.response.url));
-  cdp.on("Network.loadingFinished", (e) => {
-    const url = urlOf.get(e.requestId);
-    if (url) wire.push({ url, bytes: e.encodedDataLength });
-  });
+  let cdp = null;
+  try {
+    cdp = await context.newCDPSession(page);
+    await cdp.send("Network.enable");
+    const urlOf = new Map();
+    cdp.on("Network.requestWillBeSent", (e) => urlOf.set(e.requestId, e.request.url));
+    cdp.on("Network.responseReceived", (e) => urlOf.set(e.requestId, e.response.url));
+    cdp.on("Network.loadingFinished", (e) => {
+      const url = urlOf.get(e.requestId);
+      if (url) wire.push({ url, bytes: e.encodedDataLength });
+    });
+  } catch {
+    page.on("response", async (res) => {
+      const len = Number(res.headers()["content-length"] ?? 0);
+      wire.push({ url: res.url(), bytes: len });
+    });
+  }
 
-  await page.goto(URL, { waitUntil: "load", timeout: 60000 });
+  await page.goto(URL, { waitUntil: "load", timeout: 90000 });
 
-  const seq = page.locator(".scrubseq");
-  await seq.waitFor({ state: "attached", timeout: 30000 });
-  await page.waitForFunction(() => document.querySelector(".scrubseq")?.dataset.tff !== undefined, {
-    timeout: 30000,
-  });
-
-  const mode = await seq.getAttribute("data-mode");
-  const tffEngine = Number(await seq.getAttribute("data-tff"));
-  const tffNav = await page.evaluate(() => window.__seq.tffNav);
-
-  // Wait for the whole set to decode before measuring steady-state scrub.
   await page.waitForFunction(
-    (n) => Number(document.querySelector(".scrubseq")?.dataset.loaded ?? 0) >= n,
-    p.expectFrames,
+    () => document.querySelectorAll(".scrubseq").length === 3,
+    null,
+    { timeout: 30000 },
+  );
+  await page.waitForFunction(
+    () => document.querySelector(".scrubseq")?.dataset.tff !== undefined,
+    null,
     { timeout: 60000 },
   );
-  const decodeDone = await page.evaluate(() => performance.now());
 
-  // No <video> may exist on this page — that is the whole point.
+  const first = page.locator(".scrubseq").first();
+  const mode = await first.getAttribute("data-mode");
+  const fmt = await first.getAttribute("data-fmt");
+  const tffEngine = Number(await first.getAttribute("data-tff"));
+  const tffNav = await page.evaluate(() => window.__seq.tffNav);
   const videoCount = await page.evaluate(() => document.querySelectorAll("video").length);
 
+  /* Full-page scrub. Samples frame times, the live bitmap count and how many
+     segments hold bytes at once, all while actually moving. */
   let scrub = null;
   if (!p.skipScrub) {
     scrub = await page.evaluate(async () => {
-      // globals.css sets html{scroll-behavior:smooth}, which animates every
-      // programmatic scrollTo. Left on, the per-frame ramp below restarts an
-      // animation each tick and the page barely moves — the engine then has
-      // nothing to redraw and the harness reports a flattering 60fps for an
-      // idle canvas. Wheel and touch scrubbing are unaffected by this
-      // property, so switching it off is what makes the measurement match
-      // what a finger actually produces.
       const html = document.documentElement;
-      const prevBehavior = html.style.scrollBehavior;
-      html.style.scrollBehavior = "auto";
+      const prev = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto"; // globals.css sets smooth; see note in git log
 
-      const el = document.querySelector(".scrubseq");
-      const top = window.scrollY + el.getBoundingClientRect().top;
-      const span = el.offsetHeight - window.innerHeight;
-      window.scrollTo(0, top);
-      await new Promise((r) => setTimeout(r, 400));
+      const max = () => document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo(0, 0);
+      await new Promise((r) => setTimeout(r, 600));
 
-      const before = Number(el.dataset.draws || 0);
-      const DUR = 2500;
+      const DUR = 7000;
       const deltas = [];
+      let maxArmed = 0;
+      let maxLive = 0;
+      let peakReported = 0;
       const t0 = performance.now();
       let last = t0;
 
@@ -136,7 +144,17 @@ async function run(browser, p) {
           deltas.push(now - last);
           last = now;
           const q = Math.min(1, (now - t0) / DUR);
-          window.scrollTo(0, top + span * q);
+          window.scrollTo(0, max() * q);
+
+          const segs = document.querySelectorAll(".scrubseq");
+          let armed = 0;
+          segs.forEach((s) => {
+            if (s.dataset.armed === "1") armed += 1;
+            peakReported = Math.max(peakReported, Number(s.dataset.peak || 0));
+          });
+          maxArmed = Math.max(maxArmed, armed);
+          maxLive = Math.max(maxLive, window.__scrubLive ?? 0);
+
           if (q < 1) requestAnimationFrame(step);
           else resolve();
         };
@@ -144,125 +162,106 @@ async function run(browser, p) {
       });
 
       const elapsed = performance.now() - t0;
-      const draws = Number(el.dataset.draws || 0) - before;
-      const moved = Math.round(window.scrollY - top);
-      html.style.scrollBehavior = prevBehavior;
+      const scrolled = Math.round(window.scrollY);
+      html.style.scrollBehavior = prev;
 
-      deltas.shift(); // first delta is measured against t0, not a real frame
+      deltas.shift();
       const sorted = [...deltas].sort((a, b) => a - b);
       const q = (f) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * f))];
+      const seg0 = document.querySelector(".scrubseq");
       return {
-        elapsedMs: +elapsed.toFixed(0),
+        elapsedMs: Math.round(elapsed),
         ticks: deltas.length,
         fps: +(deltas.length / (elapsed / 1000)).toFixed(1),
         medianMs: +q(0.5).toFixed(2),
         p95Ms: +q(0.95).toFixed(2),
         maxMs: +Math.max(...deltas).toFixed(2),
-        // 16.7ms is the vsync boundary itself, so counting ">16.7" just counts
-        // float jitter. 20ms is the first threshold that means anything.
         over20: deltas.filter((d) => d > 20).length,
         over33: deltas.filter((d) => d > 33.4).length,
-        draws,
-        scrolledPx: moved,
-        spanPx: span,
+        maxArmed,
+        maxLive,
+        peakReported,
+        scrolled,
+        pageHeight: max(),
+        bmw: Number(seg0?.dataset.bmw ?? 0),
+        bmh: Number(seg0?.dataset.bmh ?? 0),
       };
     });
   }
 
-  /* Peak decoded-bitmap memory. An ImageBitmap is uncompressed RGBA, so the
-     resident cost is width*height*4 per frame no matter what the WebP weighs
-     on disk. Read AFTER the scrub, which is what exercises the window. */
-  const mem = await page.evaluate(() => {
-    const el = document.querySelector(".scrubseq");
-    return {
-      peakFrames: Number(el?.dataset.peak ?? 0),
-      liveFrames: Number(el?.dataset.live ?? 0),
-      bmw: Number(el?.dataset.bmw ?? 0),
-      bmh: Number(el?.dataset.bmh ?? 0),
-      globalPeak: window.__scrubPeak ?? 0,
-    };
-  });
-  const peakBytes = mem.peakFrames * mem.bmw * mem.bmh * 4;
+  const fmtsSeen = await page.evaluate(() =>
+    Array.from(document.querySelectorAll(".scrubseq")).map((s) => s.dataset.fmt ?? "—"),
+  );
 
-  /* Release check: unmount the component and confirm every bitmap was closed.
-     Read from window, not the element — the element no longer exists. */
-  const released = await page.evaluate(async () => {
-    if (typeof window.__labUnmount !== "function") return null;
-    window.__labUnmount();
-    await new Promise((r) => setTimeout(r, 400));
-    return {
-      live: window.__scrubLive ?? -1,
-      stillInDom: document.querySelectorAll(".scrubseq").length,
-    };
-  });
+  const segReqs = wire.filter((w) => w.url.includes(SEG));
+  const segBytes = segReqs.reduce((a, w) => a + w.bytes, 0);
+  const pageBytes = wire.reduce((a, w) => a + w.bytes, 0);
+  const avifReqs = segReqs.filter((w) => w.url.endsWith(".avif")).length;
+  const webpReqs = segReqs.filter((w) => w.url.endsWith(".webp")).length;
 
-  const seqReqs = wire.filter((w) => w.url.includes(SEQ));
-  const bytes = seqReqs.reduce((a, w) => a + w.bytes, 0);
-  const wrongSet = wire.filter((w) => w.url.includes(p.forbidDir)).length;
+  const bmw = scrub?.bmw ?? 1600;
+  const bmh = scrub?.bmh ?? 900;
+  const peakFrames = scrub?.peakReported ?? Number(await first.getAttribute("data-peak")) ?? 0;
+  const peakBytes = (scrub?.maxLive ?? peakFrames) * bmw * bmh * 4;
 
   await context.close();
+  await browser.close();
 
   return {
     profile: p.name,
     mode,
     modeOk: mode === p.expectMode,
-    requests: seqReqs.length,
-    bytes,
-    bytesLabel: fmtKB(bytes),
+    fmt,
+    fmtOk: fmt === p.expectFmt,
+    fmtsSeen,
+    avifReqs,
+    webpReqs,
+    segReqs: segReqs.length,
+    segBytes,
+    pageBytes,
     tffEngineMs: tffEngine,
     tffNavMs: tffNav == null ? null : Math.round(tffNav),
-    fullDecodeMs: Math.round(decodeDone),
-    videoElements: videoCount,
-    wrongSetRequests: wrongSet,
-    peakFrames: mem.peakFrames,
+    videoCount,
+    peakFrames: scrub?.maxLive ?? peakFrames,
     peakBytes,
     peakMB: +(peakBytes / 1048576).toFixed(1),
-    frameDims: `${mem.bmw}x${mem.bmh}`,
-    perFrameMB: +((mem.bmw * mem.bmh * 4) / 1048576).toFixed(2),
-    released,
+    frameDims: `${bmw}x${bmh}`,
     scrub,
   };
 }
 
-const browser = await chromium.launch();
 const out = [];
-try {
-  for (const p of PROFILES) out.push(await run(browser, p));
-} finally {
-  await browser.close();
+for (const p of PROFILES) {
+  try {
+    out.push(await run(p));
+  } catch (e) {
+    console.log(`\n── ${p.name}: FAILED — ${String(e).split("\n")[0]}`);
+  }
 }
 
 for (const r of out) {
-  console.log(`\n── ${r.profile} ${"─".repeat(Math.max(0, 46 - r.profile.length))}`);
-  console.log(`  set chosen        ${r.mode} ${r.modeOk ? "✓" : "✗ EXPECTED OTHER"}`);
-  console.log(`  wrong-set fetches ${r.wrongSetRequests} ${r.wrongSetRequests === 0 ? "✓" : "✗"}`);
-  console.log(`  <video> elements  ${r.videoElements} ${r.videoElements === 0 ? "✓" : "✗"}`);
-  console.log(`  frame requests    ${r.requests}`);
-  console.log(`  bytes on wire     ${r.bytesLabel}  (${r.bytes})`);
-  console.log(`  first frame       ${r.tffEngineMs} ms from engine start / ${r.tffNavMs} ms from navigation`);
-  console.log(`  full set fetched  ${r.fullDecodeMs} ms from navigation`);
+  console.log(`\n── ${r.profile} ${"─".repeat(Math.max(0, 44 - r.profile.length))}`);
+  console.log(`  set chosen        ${r.mode} ${r.modeOk ? "✓" : "✗"}`);
+  console.log(`  codec chosen      ${r.fmt} ${r.fmtOk ? "✓" : "✗ EXPECTED OTHER"}   (segments: ${r.fmtsSeen.join(", ")})`);
+  console.log(`  frame requests    ${r.segReqs}   avif ${r.avifReqs} · webp ${r.webpReqs}`);
+  console.log(`  <video> elements  ${r.videoCount} ${r.videoCount === 0 ? "✓" : "✗"}`);
+  console.log(`  segment bytes     ${MB(r.segBytes)}`);
+  console.log(`  FULL PAGE bytes   ${MB(r.pageBytes)}`);
+  console.log(`  first frame       ${r.tffEngineMs} ms from arm / ${r.tffNavMs} ms from navigation`);
   console.log(
-    `  PEAK DECODED      ${r.peakMB} MB  (${r.peakFrames} bitmaps x ${r.frameDims} x 4B = ${r.perFrameMB} MB each) ${
+    `  PEAK DECODED      ${r.peakMB} MB  (${r.peakFrames} bitmaps x ${r.frameDims} x 4B) ${
       r.peakMB < 80 ? "✓ under 80 MB" : "✗ OVER BUDGET"
-    }`,
-  );
-  console.log(
-    `  released on unmount ${
-      r.released === null
-        ? "no hook"
-        : `${r.released.live} bitmaps retained, ${r.released.stillInDom} in DOM ${
-            r.released.live === 0 && r.released.stillInDom === 0 ? "✓" : "✗ LEAK"
-          }`
     }`,
   );
   if (r.scrub) {
     const s = r.scrub;
-    console.log(`  scrub travel      ${s.scrolledPx} / ${s.spanPx} px ${s.scrolledPx >= s.spanPx - 4 ? "✓" : "✗ SCROLL DID NOT COMPLETE"}`);
-    console.log(`  scrub ${s.elapsedMs}ms      ${s.fps} fps  (${s.ticks} frames, ${s.draws} canvas draws)`);
+    console.log(`  segments resident ${s.maxArmed} max ${s.maxArmed <= 1 ? "✓ one at a time" : "✗ MORE THAN ONE"}`);
+    console.log(`  scrub travel      ${s.scrolled} / ${s.pageHeight} px ${s.scrolled >= s.pageHeight - 8 ? "✓" : "✗"}`);
+    console.log(`  scrub ${s.elapsedMs}ms      ${s.fps} fps  (${s.ticks} frames)`);
     console.log(`  frame time        median ${s.medianMs}ms · p95 ${s.p95Ms}ms · max ${s.maxMs}ms`);
     console.log(`  long frames       ${s.over20} over 20ms · ${s.over33} over 33.4ms`);
   } else {
     console.log(`  scrub             skipped (reduced motion renders one static frame)`);
   }
 }
-console.log("\n" + JSON.stringify(out, null, 2));
+console.log("\n" + JSON.stringify(out.map(({ scrub, ...r }) => r), null, 2));

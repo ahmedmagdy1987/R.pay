@@ -1,118 +1,131 @@
 /* ============================================================
-   /concepts/lab — throwaway proving ground for ScrubSequence.
-   Not linked from the hub. Not a concept. Scoped under .lab.
+   /concepts/lab — the full film, three scrub segments with DOM
+   between them. Throwaway harness: not linked from the hub, not
+   a concept route. Scoped under .lab.
    ============================================================ */
 
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-600.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Readex Pro";
+  src: url("/fonts/readex-pro-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Plex Mono";
+  src: url("/fonts/plex-mono-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Plex Mono";
+  src: url("/fonts/plex-mono-500.woff2") format("woff2");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+
 .lab {
+  /* Concept 07's palette, unchanged — this is the same film. */
   --void: #05070a;
+  --deep: #0a1220;
   --ink: #eaf6ff;
   --mute: rgba(224, 240, 255, 0.58);
   --cyan: #00aeef;
   --mint: #1fd3b8;
+  --warm: #ffb65c;
   --line: rgba(126, 196, 255, 0.14);
-  --fm: "IBM Plex Mono", ui-monospace, monospace;
+
+  --fd: "Readex Pro", var(--font-plex), system-ui, sans-serif;
+  --fm: "Plex Mono", ui-monospace, monospace;
+
+  --r: 18px;
   --padx: clamp(1.25rem, 5vw, 4rem);
+  --pad-block: clamp(4.5rem, 10vw, 9rem);
+  --w-content: 1240px;
+  --w-text: 62ch;
 
   position: relative;
   background: var(--void);
   color: var(--ink);
+  font-family: var(--font-plex), system-ui, sans-serif;
   min-height: 100vh;
   overflow-x: clip;
 }
 
-.lab-slate {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 18px;
-  padding: clamp(3rem, 8vw, 6rem) var(--padx);
-}
+.lab :focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
 
-.lab-slate.tail { min-height: 80vh; }
+/* ── persistent chrome ──────────────────────────────────────────────────── */
 
-.lab-kicker {
+/* The compact CTA is pinned from the first viewport. On a 700vh film nobody
+   should have to reach the bottom to find a way to talk to sales. */
+.lab-dock {
+  position: fixed;
+  z-index: 60;
+  bottom: calc(clamp(14px, 3vw, 24px) + env(safe-area-inset-bottom, 0px));
+  inset-inline-end: clamp(14px, 3vw, 24px);
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--fm);
-  font-size: 11px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: rgba(198, 218, 240, 0.46);
+  padding: 11px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 182, 92, 0.34);
+  background: rgba(10, 12, 16, 0.74);
+  color: var(--warm);
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.25s, transform 0.25s, background 0.25s;
 }
-.lab-kicker::before {
-  content: "";
-  width: 26px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--cyan), transparent);
+.lab-dock:hover {
+  border-color: var(--warm);
+  background: rgba(255, 182, 92, 0.1);
+  transform: translateY(-2px);
 }
+.lab-dock svg { width: 16px; height: 16px; fill: currentColor; flex: none; }
 
-.lab-h {
-  font-size: clamp(2rem, 5.5vw, 3.6rem);
+.lab-top {
+  position: fixed;
+  z-index: 60;
+  top: clamp(12px, 3vw, 22px);
+  inset-inline: clamp(14px, 3vw, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.lab-top > * { pointer-events: auto; }
+
+.lab-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--fd);
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
-  max-width: 18ch;
-}
-.lab-h em {
-  font-style: normal;
-  background: linear-gradient(100deg, var(--cyan), var(--mint));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.lab-p {
-  color: var(--mute);
-  font-size: clamp(0.95rem, 1.4vw, 1.075rem);
-  line-height: 1.8;
-  max-width: 62ch;
-}
-
-/* Spec readout — the component's own data-* attributes, mirrored so the
-   numbers can be read off the page instead of the console. */
-.lab-spec {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1px;
-  margin-top: 14px;
-  border: 1px solid var(--line);
-  background: var(--line);
-  max-width: 780px;
-}
-.lab-spec div {
-  background: var(--void);
-  padding: 14px 16px;
-}
-.lab-spec dt {
-  font-family: var(--fm);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(198, 218, 240, 0.46);
-  margin-bottom: 6px;
-}
-.lab-spec dd {
-  font-family: var(--fm);
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
   color: var(--ink);
+  text-decoration: none;
+  text-shadow: 0 2px 20px rgba(5, 7, 10, 0.8);
 }
+.lab-mark img { width: 26px; height: 26px; object-fit: contain; }
 
 .lab-lang {
-  position: fixed;
-  top: clamp(14px, 3vw, 26px);
-  inset-inline-end: clamp(14px, 3vw, 26px);
-  z-index: 30;
-  width: 40px;
-  height: 40px;
+  width: 38px; height: 38px;
   border-radius: 50%;
   border: 1px solid var(--line);
-  background: rgba(5, 7, 10, 0.72);
+  background: rgba(5, 7, 10, 0.66);
   color: var(--ink);
   font-family: var(--fm);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   -webkit-backdrop-filter: blur(10px);
@@ -121,14 +134,254 @@
 }
 .lab-lang:hover { border-color: var(--cyan); color: var(--cyan); }
 
+/* thin progress hairline for the whole film */
+.lab-prog {
+  position: fixed;
+  top: 0; inset-inline-start: 0;
+  height: 2px; width: 0;
+  z-index: 70;
+  background: linear-gradient(90deg, var(--cyan), var(--mint));
+}
+
+/* ── DOM acts between the segments ──────────────────────────────────────── */
+
+.act {
+  position: relative;
+  z-index: 2;
+  padding: var(--pad-block) var(--padx);
+  max-width: var(--w-content);
+  margin-inline: auto;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.46);
+  margin-bottom: 22px;
+}
+.kicker::before {
+  content: "";
+  width: 26px; height: 1px;
+  background: linear-gradient(to left, var(--cyan), transparent);
+}
+html:not(.en) .kicker { letter-spacing: 0.1em; }
+
+.h-display {
+  font-family: var(--fd);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 6vw, 4.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  max-width: 20ch;
+}
+.h-display em {
+  font-style: normal;
+  background: linear-gradient(100deg, var(--cyan), var(--mint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+html:not(.en) .h-display { letter-spacing: 0; line-height: 1.25; }
+
+.p-body {
+  margin-top: 20px;
+  color: var(--mute);
+  font-size: clamp(1rem, 1.5vw, 1.14rem);
+  line-height: 1.85;
+  max-width: var(--w-text);
+}
+
+/* the only filled button on the page besides the dock */
+.cta-warm {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 34px;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--warm);
+  color: #1a1004;
+  font-family: var(--fd);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s;
+}
+.cta-warm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px -14px rgba(255, 182, 92, 0.6);
+}
+
+.cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 34px;
+  margin-inline-start: 14px;
+  padding: 15px 26px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: border-color 0.25s;
+}
+.cta-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* value props */
+.props {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1px;
+  margin-top: 52px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.props article { background: var(--void); padding: 30px 26px; }
+.props h3 {
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: 1.14rem;
+  margin-bottom: 12px;
+}
+.props p { color: var(--mute); font-size: 0.95rem; line-height: 1.8; }
+.props .n {
+  display: block;
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  margin-bottom: 16px;
+}
+
+/* sectors */
+.sectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 40px;
+}
+.sectors span {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 0.88rem;
+  color: var(--mute);
+}
+
+/* the counter */
+.counter {
+  font-family: var(--fm);
+  font-weight: 500;
+  font-size: clamp(3rem, 12vw, 8.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(100deg, var(--cyan), var(--mint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.counter-cap {
+  margin-top: 14px;
+  font-family: var(--fm);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.46);
+}
+html:not(.en) .counter-cap { letter-spacing: 0.08em; }
+
+/* client logos */
+.logos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 26px 32px;
+  align-items: center;
+  margin-top: 56px;
+  padding-top: 44px;
+  border-top: 1px solid var(--line);
+}
+.logos img {
+  width: 100%;
+  height: 34px;
+  object-fit: contain;
+  opacity: 0.42;
+  filter: grayscale(1) brightness(1.7);
+  transition: opacity 0.3s, filter 0.3s;
+}
+.logos img:hover { opacity: 0.85; filter: grayscale(0) brightness(1); }
+
+.foot {
+  padding: 40px var(--padx) calc(80px + env(safe-area-inset-bottom, 0px));
+  max-width: var(--w-content);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  color: rgba(198, 218, 240, 0.4);
+  font-size: 0.82rem;
+}
+.foot .fmark {
+  font-family: var(--fd);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(198, 218, 240, 0.22);
+}
+
+/* reveal-on-scroll: one law — 420ms, 12px rise */
+.lab .rv {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lab .rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .lab .rv { opacity: 1; transform: none; transition: none; }
+}
+
+/* caption over a segment */
 .lab-caption {
   position: absolute;
   inset-inline-end: var(--padx);
   bottom: clamp(1.25rem, 5vw, 3rem);
   font-family: var(--fm);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(198, 218, 240, 0.42);
+  color: rgba(198, 218, 240, 0.34);
   pointer-events: none;
 }
+
+/* dev readout — harness only */
+.lab-spec {
+  position: fixed;
+  z-index: 55;
+  bottom: calc(clamp(14px, 3vw, 24px) + env(safe-area-inset-bottom, 0px));
+  inset-inline-start: clamp(14px, 3vw, 24px);
+  display: flex;
+  gap: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(5, 7, 10, 0.7);
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(198, 218, 240, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.lab-spec b { color: var(--mint); font-weight: 500; }
+@media (max-width: 620px) { .lab-spec { display: none; } }
