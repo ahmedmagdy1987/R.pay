@@ -103,6 +103,11 @@ const DECODE_POOL = 2;
 const AVIF_1PX =
   "data:image/avif;base64,AAAAHGZ0eXBhdmlmAAAAAG1pZjFhdmlmbWlhZgAAANRtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAACJpbG9jAAAAAERAAAEAAQAAAAAA+AABAAAAAAAAAB4AAAAjaWluZgAAAAAAAQAAABVpbmZlAgAAAAABAABhdjAxAAAAAA5waXRtAAAAAAABAAAAVGlwcnAAAAA2aXBjbwAAAAxhdjFDgSACAAAAABRpc3BlAAAAAAAAAAEAAAABAAAADnBpeGkAAAAAAQgAAAAWaXBtYQAAAAAAAAABAAEDgQIDAAAAJm1kYXQSAAoHOAAGkBDQaTIRH/JihO////Fn4ACQNY48ftw=";
 
+/* Opt-in arbiter trace: /concepts/lab?trace=1 . Deliberately available on a
+   deployed build — the segment bug only reproduced on one. */
+const TRACE =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).has("trace");
+
 let avifProbe: Promise<boolean> | null = null;
 
 /** Resolved once per page. Every segment awaits this same promise. */
@@ -122,46 +127,112 @@ export function supportsAvif(): Promise<boolean> {
   return avifProbe;
 }
 
-/* --------------------------------------------------- single-resident guard */
+/* ------------------------------------------------------- the arbiter ----- */
 
 type Registered = {
+  id: string;
+  arm: () => void;
   release: () => void;
-  visibleArea: () => number;
+  rect: () => DOMRect;
+  setRunning: (on: boolean) => void;
+  trace: (...m: unknown[]) => void;
 };
 const registry = new Set<Registered>();
 
 /**
- * Two separate budgets, because the two caches cost two very different things.
+ * ONE page-level arbiter, driven by scroll position.
  *
- * ENCODED BYTES (blobs) — released from any segment that is fully off screen.
- * They are NOT taken from a segment the reader can still see: under
- * prefers-reduced-motion every segment collapses to 100vh and two sit in the
- * viewport at once, and evicting a visible one left it permanently blank.
- * Worst case is therefore two segments' encoded bytes during the moment one
- * hands over to the next — single-digit MB, and it resolves itself as soon as
- * the outgoing segment clears the fold.
+ * THE BUG THIS REPLACES. Arming used to be an IntersectionObserver with a
+ * `rootMargin: 100%`, so a segment armed a full viewport BEFORE it was
+ * visible — which is the point, the bytes should be there before you arrive.
+ * Reclaiming used to take encoded bytes from any segment with zero visible
+ * area. Those two rules contradict each other exactly: the segment that just
+ * armed early is, by definition, the one not yet on screen, so whichever
+ * segment was currently ticking released it within the same frame. Worse,
+ * IntersectionObserver is EDGE triggered — the segment was already inside the
+ * margin, so no second arm event ever came and it stayed empty forever. Only
+ * the segment you happened to load on ever painted.
  *
- * DECODED BITMAPS — hard-capped to ONE window, page-wide, by electing the
- * segment with the most pixels on screen. Everyone else evicts to zero. This
- * is the budget that actually decides whether iOS keeps the tab: a decoded
- * frame is ~5.5 MB against ~40 KB encoded, so two live windows would be
- * 130 MB while two blob sets are barely 8 MB.
+ * The replacement is level-triggered and continuous: every scroll frame, each
+ * segment is measured in pixels from the fold and told what it should be. Two
+ * distances with HYSTERESIS between them, which is what stops the oscillation:
+ * arm inside one viewport, release only beyond two and a half. A segment
+ * cannot be inside the arm band and outside the release band at once, so
+ * nothing can arm and be reclaimed in the same breath. Being level-triggered
+ * also means a segment scrolled back into view re-arms and refetches by
+ * itself — there is no event to miss.
  */
-function releaseOffScreen(me: Registered) {
-  registry.forEach((other) => {
-    if (other !== me && other.visibleArea() <= 0) other.release();
-  });
+const ARM_VH = 1.0;
+const RELEASE_VH = 2.5;
+
+/** Pixels between a rect and the viewport; 0 while any part is on screen. */
+function gapPx(r: DOMRect) {
+  const vh = window.innerHeight;
+  if (r.bottom < 0) return -r.bottom;
+  if (r.top > vh) return r.top - vh;
+  return 0;
 }
 
-/** True when no other mounted segment has more of itself on screen. */
-function isPrimary(me: Registered) {
-  const mine = me.visibleArea();
-  if (mine <= 0) return false;
-  let best = mine;
-  registry.forEach((o) => {
-    if (o !== me) best = Math.max(best, o.visibleArea());
+function visiblePx(r: DOMRect) {
+  return Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
+}
+
+let driverAttached = false;
+let driverRaf = 0;
+let driverQueued = false;
+
+function arbitrate() {
+  driverQueued = false;
+  const vh = window.innerHeight || 1;
+  let best: Registered | null = null;
+  let bestArea = 0;
+
+  registry.forEach((e) => {
+    const r = e.rect();
+    const gap = gapPx(r);
+    const area = visiblePx(r);
+
+    if (gap <= ARM_VH * vh) e.arm();
+    else if (gap > RELEASE_VH * vh) e.release();
+
+    // The draw loop follows visibility, not an observer threshold.
+    e.setRunning(area > 0);
+
+    if (area > bestArea) {
+      bestArea = area;
+      best = e;
+    }
   });
-  return mine >= best;
+
+  primaryOwner = bestArea > 0 ? best : null;
+}
+
+/** Whoever currently has the most pixels on screen. Recomputed every frame. */
+let primaryOwner: Registered | null = null;
+const isPrimary = (me: Registered) => primaryOwner === me;
+
+function scheduleArbitrate() {
+  if (driverQueued) return;
+  driverQueued = true;
+  driverRaf = requestAnimationFrame(arbitrate);
+}
+
+function attachDriver() {
+  if (driverAttached) return;
+  driverAttached = true;
+  addEventListener("scroll", scheduleArbitrate, { passive: true });
+  addEventListener("resize", scheduleArbitrate);
+  arbitrate();
+}
+
+function detachDriver() {
+  if (!driverAttached || registry.size) return;
+  driverAttached = false;
+  removeEventListener("scroll", scheduleArbitrate);
+  removeEventListener("resize", scheduleArbitrate);
+  cancelAnimationFrame(driverRaf);
+  driverQueued = false;
+  primaryOwner = null;
 }
 
 /* -------------------------------------------------------------- decoding */
@@ -235,6 +306,10 @@ export default function ScrubSequence({
 
     const set = mode === "tall" ? tall : wide;
     const N = Math.max(1, set.count);
+    const SID = set.dir.split("/").slice(-2, -1)[0] ?? label;
+    const tr = (...m: unknown[]) => {
+      if (TRACE) console.log(`[seq] ${SID} y=${Math.round(window.scrollY)}`, ...m);
+    };
 
     let alive = true;
     let armed = false;
@@ -257,6 +332,11 @@ export default function ScrubSequence({
     let peak = 0;
     let lastTitleOpacity = -1;
     let ac = new AbortController();
+    let poster: HTMLImageElement | null = null;
+    /* Assigned at registration in both the static and scrub paths, so async
+       work started earlier can ask whether this segment still owns the window. */
+    let selfReg: Registered | null = null;
+    const ownsWindow = () => mode === "static" || (selfReg !== null && isPrimary(selfReg));
 
     let blobs: (Blob | null)[] = new Array(N).fill(null);
     const bmps: (Decoded | null)[] = new Array(N).fill(null);
@@ -338,6 +418,7 @@ export default function ScrubSequence({
       drawn = j;
       draws += 1;
       root.dataset.draws = String(draws);
+      if (root.dataset.poster) delete root.dataset.poster;
 
       if (!dimsReported) {
         dimsReported = true;
@@ -352,6 +433,15 @@ export default function ScrubSequence({
           new CustomEvent("scrubseq:firstframe", { bubbles: true, detail: { tff, mode, ext } }),
         );
       }
+    };
+
+    /** Blit an image straight to the canvas, cover-fit. Used by the poster,
+     *  which must be able to paint before a single ImageBitmap exists. */
+    const blit = (src: CanvasImageSource, w: number, h: number) => {
+      if (!w || !h || !cw || !ch) return false;
+      const s = Math.max(cw / w, ch / h);
+      ctx.drawImage(src, (cw - w * s) / 2, (ch - h * s) / 2, w * s, h * s);
+      return true;
     };
 
     const size = () => {
@@ -402,7 +492,11 @@ export default function ScrubSequence({
       inflight.add(i);
       try {
         const d = await decodeBlob(blob);
-        if (!alive || !armed || !inWindow(i) || bmps[i]) {
+        /* Ownership can move while a decode is in flight. Keeping the result
+           anyway was a real leak: the segment then stops its loop on going off
+           screen, so no later maintain() ever evicts it and the page carried
+           two partial windows — 93 MB on mobile against a 66 MB ceiling. */
+        if (!alive || !armed || !inWindow(i) || bmps[i] || !ownsWindow()) {
           d.close();
           return;
         }
@@ -433,6 +527,7 @@ export default function ScrubSequence({
       // frames. This is what keeps peak memory at one window rather than one
       // window per segment during a hand-over.
       if (!isPrimary(me)) {
+        if (live > 0) tr("LOSE OWNERSHIP -> evict", live, "bitmaps");
         evictAll();
         return;
       }
@@ -494,6 +589,7 @@ export default function ScrubSequence({
 
     const release = () => {
       if (!armed) return;
+      tr("RELEASE  (had", fetched, "blobs,", live, "bitmaps)");
       armed = false;
       ac.abort();
       ac = new AbortController();
@@ -505,7 +601,11 @@ export default function ScrubSequence({
           bumpLive(-1);
         }
       }
+      /* The canvas is deliberately NOT cleared. Whatever was last painted
+         stays until a real frame replaces it, so a reclaimed segment scrolled
+         back into view shows a stale picture rather than a hole. */
       blobs = new Array(N).fill(null);
+      poster = null;
       fetched = 0;
       drawn = -1;
       lastC = -1;
@@ -513,27 +613,36 @@ export default function ScrubSequence({
       root.dataset.armed = "0";
     };
 
-    /** Pixels of this segment currently inside the viewport. */
-    const visibleArea = () => {
-      const r = root.getBoundingClientRect();
-      return Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
-    };
-
-    const me: Registered = { release, visibleArea };
-    registry.add(me);
-
     const arm = () => {
       if (armed || !alive) return;
+      tr("ARM");
       armed = true;
       t0 = performance.now();
       root.dataset.armed = "1";
-      releaseOffScreen(me); // reclaim from anything the reader has left behind
 
       void (async () => {
         const useAvif = format === "auto" ? await supportsAvif() : format === "avif";
         if (!alive || !armed) return;
         ext = useAvif ? "avif" : "webp";
         root.dataset.fmt = ext;
+
+        /* Poster. The gap between arming and the first decoded frame is a
+           black canvas, and a segment the reader has just scrolled into must
+           never be black. This is the set's own frame 1 through a plain <img>,
+           so it shares the cache entry the blob fetch is about to make and
+           costs nothing extra. It only ever paints if no real frame has. */
+        if (!firstDrawn && !poster) {
+          poster = new Image();
+          poster.decoding = "async";
+          poster.onload = () => {
+            if (!alive || firstDrawn || !poster) return;
+            if (blit(poster, poster.naturalWidth, poster.naturalHeight)) {
+              tr("poster painted");
+              root.dataset.poster = "1";
+            }
+          };
+          poster.src = frameSrc(0);
+        }
 
         if (mode === "static") {
           winLo = N - 1;
@@ -560,26 +669,32 @@ export default function ScrubSequence({
       })();
     };
 
-    /* Arm on approach: `preloadVh` viewports of runway before the pin. */
-    const armIO = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) arm();
-      },
-      { rootMargin: `${Math.round(preloadVh * 100)}% 0px` },
-    );
-    armIO.observe(root);
+    /* No arm observer. The page-level arbiter arms and releases on continuous
+       scroll position with hysteresis — see the note above `arbitrate`. */
 
     /* -------------------------------------------------------- static path */
 
     if (mode === "static") {
+      const me: Registered = {
+        id: SID,
+        arm: () => arm(),
+        release,
+        rect: () => root.getBoundingClientRect(),
+        setRunning: () => {}, // nothing animates under reduced motion
+        trace: tr,
+      };
+      selfReg = me;
+      registry.add(me);
+      attachDriver();
+
       size();
       progress();
       const onResizeStatic = () => size();
       window.addEventListener("resize", onResizeStatic);
       return () => {
         alive = false;
-        armIO.disconnect();
         registry.delete(me);
+        detachDriver();
         window.removeEventListener("resize", onResizeStatic);
         ac.abort();
         for (let i = 0; i < N; i += 1) {
@@ -610,11 +725,11 @@ export default function ScrubSequence({
       cur = Math.abs(d) < 0.0008 ? t : cur + d * damping;
       const c = Math.round(cur);
       const primary = isPrimary(me);
+      if (primary !== wasPrimary) tr(primary ? "GAIN OWNERSHIP" : "lost ownership");
       if (c !== lastC || primary !== wasPrimary) {
         lastC = c;
         wasPrimary = primary;
         maintain(c);
-        if (primary) releaseOffScreen(me);
       }
       draw(c);
       paintTitle(cur);
@@ -629,16 +744,28 @@ export default function ScrubSequence({
       if (!running) return;
       running = false;
       cancelAnimationFrame(raf);
+      /* Off screen means no window. The canvas is not cleared, so the last
+         picture stays up if the reader scrolls back before frames return. */
+      if (live > 0) {
+        tr("stop -> evict", live, "bitmaps");
+        evictAll();
+      }
     };
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) start();
-        else stop();
-      },
-      { threshold: 0 },
-    );
-    io.observe(root);
+    /* Registered only now that `start`/`stop` exist — the arbiter calls
+       setRunning synchronously on attach, and hoisting would hit the TDZ. */
+    const me: Registered = {
+      id: SID,
+      arm: () => arm(),
+      release,
+      rect: () => root.getBoundingClientRect(),
+      setRunning: (on) => (on ? start() : stop()),
+      trace: tr,
+    };
+    selfReg = me;
+    registry.add(me);
+    attachDriver();
+
 
     let resizeT: ReturnType<typeof setTimeout> | undefined;
     const onResize = () => {
@@ -655,9 +782,8 @@ export default function ScrubSequence({
       armed = false;
       ac.abort();
       stop();
-      io.disconnect();
-      armIO.disconnect();
       registry.delete(me);
+      detachDriver();
       window.removeEventListener("resize", onResize);
       clearTimeout(resizeT);
       inflight.clear();
