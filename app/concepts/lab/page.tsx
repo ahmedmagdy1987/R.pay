@@ -96,10 +96,13 @@ const WA =
 /* Only the seven named accounts, in the order given. Every one resolves to an
    asset already in the repo from concepts 01-07 — nothing recreated. */
 /* Verified before wiring: /cm30/ is a real product page — R Pay CM30, full
-   spec sheet, 1,600.00 SAR inc. VAT, a working add-to-cart and a live
-   /checkout/ route. Two caveats in the report: their own button says
-   "أضِف إلى السلة", not "اشترِ الآن", and the price is marked
-   "أسعار توضيحية" (indicative). */
+   spec sheet, a working add-to-cart and a live /checkout/ route.
+
+   LABELLED "تصفّح الجهاز / View the device", NOT "buy". Their homepage does
+   link here under "اشترِ الآن / Buy Now" — the phrase is theirs — but the
+   page it lands on offers add-to-cart against a price marked
+   "أسعار توضيحية" (indicative). A button that says buy should reach a
+   committed price. This page states no price at all for the same reason. */
 const BUY = "https://www.rpay.sa/cm30/";
 
 /* All thirteen, the same set their own site displays publicly. Every file was
@@ -330,8 +333,8 @@ export default function LabPage() {
             </a>
             <a className="cta-buy" href={BUY} target="_blank" rel="noopener noreferrer">
               <CartIcon />
-              <span className="ar-t">اشترِ الآن</span>
-              <span className="en-t">Buy the device</span>
+              <span className="ar-t">تصفّح الجهاز</span>
+              <span className="en-t">View the device</span>
             </a>
           </div>
         </section>
@@ -377,8 +380,8 @@ export default function LabPage() {
             </a>
             <a className="cta-buy" href={BUY} target="_blank" rel="noopener noreferrer">
               <CartIcon />
-              <span className="ar-t">اشترِ الآن</span>
-              <span className="en-t">Buy the device</span>
+              <span className="ar-t">تصفّح الجهاز</span>
+              <span className="en-t">View the device</span>
             </a>
           </div>
           <div className="reassure rv">
@@ -539,12 +542,12 @@ export default function LabPage() {
           <div className="objections">
             <article className="rv">
               <h3>
-                <span className="ar-t">لو الجهاز عطل؟</span>
+                <span className="ar-t">ماذا لو تعطّل الجهاز؟</span>
                 <span className="en-t">What if a machine fails?</span>
               </h3>
               <p>
                 <span className="ar-t">
-                  تنبيهات فورية عند انقطاع الاتصال، واسترجاع نقدي تلقائي بدون تدخل بشري، وتسجيل
+                  تنبيهات فورية عند انقطاع الاتصال، واسترجاع نقدي تلقائي دون تدخل بشري، وتسجيل
                   الحالة في لوحة التحكم.
                 </span>
                 <span className="en-t">
@@ -555,7 +558,7 @@ export default function LabPage() {
             </article>
             <article className="rv">
               <h3>
-                <span className="ar-t">فلوسي بتوصل إزاي؟</span>
+                <span className="ar-t">كيف يصل إليّ الدخل؟</span>
                 <span className="en-t">How does my money reach me?</span>
               </h3>
               <p>
@@ -570,7 +573,7 @@ export default function LabPage() {
             </article>
             <article className="rv">
               <h3>
-                <span className="ar-t">مين بيركّب ويدرّب؟</span>
+                <span className="ar-t">من يتولّى التركيب والتدريب؟</span>
                 <span className="en-t">Who installs and trains?</span>
               </h3>
               <p>
@@ -582,7 +585,7 @@ export default function LabPage() {
             </article>
             <article className="rv">
               <h3>
-                <span className="ar-t">لو الجهاز اتنقل؟</span>
+                <span className="ar-t">ماذا لو نُقل الجهاز؟</span>
                 <span className="en-t">What if a device is moved?</span>
               </h3>
               <p>
@@ -716,8 +719,8 @@ export default function LabPage() {
             </a>
             <a className="cta-buy" href={BUY} target="_blank" rel="noopener noreferrer">
               <CartIcon />
-              <span className="ar-t">اشترِ الآن</span>
-              <span className="en-t">Buy the device</span>
+              <span className="ar-t">تصفّح الجهاز</span>
+              <span className="en-t">View the device</span>
             </a>
           </div>
           <div className="reassure rv">
