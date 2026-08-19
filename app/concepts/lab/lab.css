@@ -584,6 +584,13 @@ html:not(.en) .cta-block h2 { letter-spacing: 0; line-height: 1.4; }
   font-size: 1.05rem;
 }
 .cta-block.final .cta-warm { padding: 20px 48px; font-size: 1.12rem; }
+/* Wider than the other blocks so the seven payment marks sit on one line.
+   The headline and supporting line keep their own ch measures, so widening
+   the block changes nothing but the room available to that row. Setting a
+   width on the row itself instead overflowed the parent asymmetrically —
+   auto inline margins collapse to zero once the child is the wider of the
+   two. */
+.cta-block.final { max-width: 980px; }
 
 .cta-block .reassure {
   margin-top: 18px;
@@ -746,10 +753,6 @@ html:not(.en) .plabel { letter-spacing: 0.04em; text-transform: none; font-size:
    which is not something to copy into this repo — see the report. */
 .paymarks {
   margin-top: 26px;
-  /* Escapes the CTA block's 760px measure — seven marks will not sit on one
-     line inside it, and the row is meant to be one quiet line, not two. */
-  width: min(94vw, 940px);
-  margin-inline: auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
