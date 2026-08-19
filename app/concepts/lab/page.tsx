@@ -73,13 +73,17 @@ const PACING_C: PacingRange[] = [
 ];
 
 /* NOTE: the "97" in this card is content/claims.json `fleet.machines`, which
-   is unverified and blocks launch. It is baked into the film's frames, so it
-   cannot be gated the way the DOM figures below are — it has to be resolved
-   or the title card has to be re-cut before this goes public. */
+   is unverified and blocks launch. The card is DOM, not pixels — the frames it
+   sits over carry no text at all — so it CAN be gated the way the DOM figures
+   below are. It simply is not: this string bypasses the honesty layer and
+   states an unverified figure as fact. Gate it, or resolve the claim.
+
+   The unit is جهاز, matching their own أجهزة and the stat tile below. It read
+   ماكينة until 2026-08-19, which had the page using two words for one thing. */
 const TITLE_A: TitleCard = {
   from: 0.14,
   to: 0.26,
-  ar: "٩٧ ماكينة. مملكة واحدة.",
+  ar: "٩٧ جهازًا. مملكة واحدة.",
   en: "97 machines. One kingdom.",
 };
 
@@ -119,20 +123,20 @@ const NAMED_AR: Record<string, string> = {
   "Boulevard City": "بوليفارد سيتي",
   Kinan: "كنان",
   Sela: "سلا",
-  Hamat: "حمات",
+  Hamat: "هامات",
   "Al Nadej": "النادج",
   "Boulevard World": "بوليفارد وورلد",
   "Al Deera": "الديرة",
-  "Al Khozama": "الخزامى",
+  "Al Khozama": "الخزامي",
   Malahi: "ملاهي",
-  "Shawarma House": "شاورما هاوس",
+  "Shawarma House": "بيت الشاورما",
 };
 const CLIENT_LOGOS = NAMED.map((n) => LOGOS.find((l) => l.alt === n)).filter(
   (l): l is { alt: string; uri: string } => Boolean(l),
 );
 
 const SECTORS = [
-  { ar: "مولات", en: "Malls" },
+  { ar: "مراكز تجارية", en: "Malls" },
   { ar: "مجمعات سكنية", en: "Residential compounds" },
   { ar: "مقرات شركات", en: "Corporate headquarters" },
   { ar: "صالات رياضية", en: "Gyms" },
@@ -319,7 +323,7 @@ export default function LabPage() {
           </h1>
           <p className="p-body rv">
             <span className="ar-t">
-              أجهزة بيع ذاتية بالدفع التلامسي. نركّب ونشغّل ونصون — وأنت تستلم عائدك.
+              آلات البيع الذاتي بالدفع اللاتلامسي. نركّب ونشغّل ونصون — وأنت تستلم عائدك.
             </span>
             <span className="en-t">
               Self-service machines with contactless payment. We install, operate and maintain. You
@@ -367,10 +371,10 @@ export default function LabPage() {
           </h2>
           <p className="sub rv">
             <span className="ar-t">
-              نزوركم، نحدّد الموقع المناسب، ونركّب أول جهاز دون تكلفة عليكم.
+              نزورك، نحدّد الموقع المناسب، ونركّب أول جهاز.
             </span>
             <span className="en-t">
-              We visit, agree the right spot, and install the first machine at no cost to you.
+              We visit, agree the right spot, and install the first machine.
             </span>
           </p>
           <div className="rv cta-pair">
@@ -385,8 +389,8 @@ export default function LabPage() {
             </a>
           </div>
           <div className="reassure rv">
-            <span className="ar-t">ردّ خلال يوم عمل واحد · بدون التزام</span>
-            <span className="en-t">Reply within one business day · no commitment</span>
+            <span className="ar-t">بدون التزام</span>
+            <span className="en-t">No commitment</span>
           </div>
         </section>
 
@@ -400,7 +404,7 @@ export default function LabPage() {
             <article className="rv">
               <span className="n">01</span>
               <h3>
-                <span className="ar-t">صفر تشغيل عليك</span>
+                <span className="ar-t">لا عبء تشغيليّ عليك</span>
                 <span className="en-t">Zero operational load</span>
               </h3>
               <p>
@@ -426,13 +430,13 @@ export default function LabPage() {
             <article className="rv">
               <span className="n">03</span>
               <h3>
-                <span className="ar-t">رؤية مباشرة</span>
-                <span className="en-t">Live visibility</span>
+                <span className="ar-t">تقارير لحظية</span>
+                <span className="en-t">Real-time reporting</span>
               </h3>
               <p>
-                <span className="ar-t">كل عملية وكل جهاز، لحظة بلحظة، من لوحة واحدة.</span>
+                <span className="ar-t">كل عملية وكل جهاز، لحظة بلحظة، من لوحة تحكم متكاملة.</span>
                 <span className="en-t">
-                  Every transaction, every machine, in real time, from one dashboard.
+                  Every transaction, every machine, in real time, from one integrated dashboard.
                 </span>
               </p>
             </article>

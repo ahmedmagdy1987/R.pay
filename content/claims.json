@@ -222,14 +222,27 @@
       "fallback": "Already applied: the site claims neither. Copy describes what the system does, never who is largest."
     },
     {
+      "id": "company.legalName",
+      "label": "Official Arabic entity name",
+      "value": "شركة آر باي السعودية",
+      "verified": true,
+      "asOf": "2026-08-19",
+      "source": "rpay.sa footer, retrieved 2026-08-19: «جميع الحقوق محفوظة © 2026 شركة آر باي السعودية.» — the same line, with the same hamza-alif spelling of آر باي, is what the site publishes about itself.",
+      "location": "Footer, every route",
+      "why": "The name the company puts its own copyright behind. Split out of company.registration so the registration numbers keep blocking on their own.",
+      "blocksImplementation": false,
+      "blocksLaunch": false,
+      "fallback": "n/a — resolved."
+    },
+    {
       "id": "company.registration",
-      "label": "CR number, VAT number, registered address, official Arabic name",
+      "label": "CR number, VAT number, registered address",
       "value": null,
       "verified": false,
       "asOf": null,
       "source": null,
       "location": "Station ident (footer)",
-      "why": "Legally required on a Saudi commercial site, and the cheapest trust signal available.",
+      "why": "Legally required on a Saudi commercial site, and the cheapest trust signal available. The entity NAME is resolved separately — see company.legalName; these three are not.",
       "blocksImplementation": false,
       "blocksLaunch": true,
       "fallback": "Footer renders without the registration block. It is built to omit, not to show blanks."
