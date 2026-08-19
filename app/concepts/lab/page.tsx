@@ -158,7 +158,14 @@ export default function LabPage() {
 
   /* Both headline figures are declared, unverified, launch-blocking claims.
      In a production content build they render their designed absence instead
-     of the number; here they render the number behind a provenance chip. */
+     of the number; here they render the number behind a provenance chip.
+
+     465,255 IS CURRENCY. It comes from the TOTAL PURCHASES tile of their
+     dashboard, shown with a riyal symbol beside TOTAL REVERSALS 32,567.85 and
+     TOTAL PROFIT 162,839.25 — while the count tiles on the same screen
+     (97 machines, 9 branches, 2 users) carry no symbol. This page previously
+     rendered it as "465,255 عملية مكتملة", a transaction count, which
+     overstated activity by an unknown multiple. */
   const txMode = claimMode("totals.transactions");
   const machinesMode = claimMode("fleet.machines");
   const TX = devValue<number>("totals.transactions");
@@ -618,22 +625,26 @@ export default function LabPage() {
                 <div className="fig">—</div>
               ) : (
                 <div className="fig js-tx">
-                  <span className="ar-t" ref={txAr}>
-                    ٠
+                  <span className="ar-t">
+                    <span ref={txAr}>٠</span> <span className="riyal">﷼</span>
                   </span>
-                  <span className="en-t" ref={txEn}>
-                    0
+                  <span className="en-t">
+                    <span ref={txEn}>0</span> <span className="riyal">SAR</span>
                   </span>
                 </div>
               )}
               <div className="cap">
-                <span className="ar-t">عملية مكتملة</span>
-                <span className="en-t">Transactions</span>
+                <span className="ar-t">إجمالي المشتريات · ريال</span>
+                <span className="en-t">Total purchases · SAR</span>
               </div>
               {txMode === "dev" && (
                 <div className="provenance">
-                  <span className="ar-t">غير موثّق — totals.transactions</span>
-                  <span className="en-t">unverified — totals.transactions</span>
+                  <span className="ar-t">
+                    غير موثّق · شهر واحد ١–٣١ مايو ٢٠٢٥ · حساب بمستخدمَين
+                  </span>
+                  <span className="en-t">
+                    unverified · single month 1–31 May 2025 · 2-user account
+                  </span>
                 </div>
               )}
             </div>
