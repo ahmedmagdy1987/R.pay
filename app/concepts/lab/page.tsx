@@ -135,12 +135,11 @@ const CLIENT_LOGOS = NAMED.map((n) => LOGOS.find((l) => l.alt === n)).filter(
   (l): l is { alt: string; uri: string } => Boolean(l),
 );
 
-const SECTORS = [
-  { ar: "مراكز تجارية", en: "Malls" },
-  { ar: "مجمعات سكنية", en: "Residential compounds" },
-  { ar: "مقرات شركات", en: "Corporate headquarters" },
-  { ar: "صالات رياضية", en: "Gyms" },
-];
+/* The old list — malls, compounds, corporate HQs, gyms — was a list of places
+   a LANDLORD has floor space in. These are the sectors R.Pay's system runs in,
+   ordered by their own evidence: the entertainment names in the company
+   profile and the thirteen client marks on rpay.sa. Lives in the registry
+   now, so it carries its source. */
 
 const CartIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" strokeLinecap="round" strokeLinejoin="round">
@@ -179,6 +178,13 @@ export default function LabPage() {
      honesty layer entirely. */
   const railsMode = claimMode("rails.accepted");
   const RAILS = devValue<string[]>("rails.accepted") ?? [];
+  const sectorsMode = claimMode("sectors.served");
+  const SECTORS = devValue<{ ar: string; en: string }[]>("sectors.served") ?? [];
+  /* "No operational load on you" allocates COST, which is the substance of
+     commercial.venueProposition. The card's heading and body describe the
+     work instead, and stand on their own; this line is additive and appears
+     only once the claim clears. */
+  const venueMode = claimMode("commercial.venueProposition");
   const machinesMode = claimMode("fleet.machines");
   const TX = devValue<number>("totals.transactions");
   const MACHINES = devValue<number>("fleet.machines");
@@ -409,13 +415,25 @@ export default function LabPage() {
             <article className="rv">
               <span className="n">01</span>
               <h3>
-                <span className="ar-t">لا عبء تشغيليّ عليك</span>
-                <span className="en-t">Zero operational load</span>
+                <span className="ar-t">التركيب والتشغيل والصيانة</span>
+                <span className="en-t">Installation, operation, maintenance</span>
               </h3>
               <p>
                 <span className="ar-t">خطوة واحدة، ونتولّى الباقي معك.</span>
                 <span className="en-t">One step, and we take it from there.</span>
               </p>
+              {venueMode !== "omit" && (
+                <p className={`allocation${venueMode === "publish" ? "" : " unverified"}`}>
+                  <span className="ar-t">لا عبء تشغيليّ عليك</span>
+                  <span className="en-t">Zero operational load</span>
+                  {venueMode === "dev" && (
+                    <em className="provenance">
+                      <span className="ar-t">غير مُتحقَّق منه — commercial.venueProposition</span>
+                      <span className="en-t">unverified — commercial.venueProposition</span>
+                    </em>
+                  )}
+                </p>
+              )}
             </article>
             <article className="rv">
               <span className="n">02</span>
@@ -445,15 +463,16 @@ export default function LabPage() {
             </article>
           </div>
 
-          <div className="sectors rv">
-            {SECTORS.map((s) => (
-              <span key={s.en}>
-                <span className="ar-t">{s.ar}</span>
-                <span className="en-t">{s.en}</span>
-              </span>
-            ))}
-            <Pending id="SECTORS" note="Ahmed to confirm which are real" />
-          </div>
+          {sectorsMode !== "omit" && (
+            <div className={`sectors rv${sectorsMode === "publish" ? "" : " unverified"}`}>
+              {SECTORS.map((sec) => (
+                <span key={sec.en}>
+                  <span className="ar-t">{sec.ar}</span>
+                  <span className="en-t">{sec.en}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── REVENUE MODEL ─────────────────────────────

@@ -210,15 +210,15 @@
     {
       "id": "company.identity",
       "label": "Is R.Pay the region's largest arcade operator, or does it serve them?",
-      "value": null,
-      "verified": false,
-      "asOf": null,
-      "source": null,
+      "value": "System provider. R.Pay supplies the payment, operations and remote-control platform to operators of amusement arcades, entertainment venues and self-service machines. It does not operate venues and is not a competitor to its own customers. THE READER IS AN OPERATOR WHO ALREADY OWNS MACHINES.",
+      "verified": true,
+      "asOf": "2026-08-19",
+      "source": "The owner, via Ahmed, 2026-08-19.",
       "location": "Positioning throughout",
-      "why": "Earlier concepts contradict each other. These are opposite companies: if R.Pay IS the operator, every competing operator is being asked to fund a competitor.",
+      "why": "Earlier concepts contradicted each other. These are opposite companies: if R.Pay IS the operator, every competing operator is being asked to fund a competitor. Answered: it is not. See company.profileContradiction — their own profile PDF still says the opposite, and that is open.",
       "blocksImplementation": false,
-      "blocksLaunch": true,
-      "fallback": "Already applied: the site claims neither. Copy describes what the system does, never who is largest."
+      "blocksLaunch": false,
+      "fallback": "n/a — resolved. The page addresses an operator, and never claims to be one."
     },
     {
       "id": "company.legalName",
@@ -234,6 +234,19 @@
       "fallback": "n/a — resolved."
     },
     {
+      "id": "company.profileContradiction",
+      "label": "The company profile says the opposite of what the owner says",
+      "value": null,
+      "verified": false,
+      "asOf": null,
+      "source": "R.Pay company profile PDF: «أكبر مشغّل لمكائن ألعاب الأركيد في المنطقة». Against it, the owner's answer of 2026-08-19: R.Pay is a system provider and does not operate venues.",
+      "location": "Nowhere on any page — this is a consistency question about R.Pay's own material",
+      "why": "The profile calls R.Pay the region's largest arcade OPERATOR. The owner says R.Pay is a system PROVIDER to operators. Those are opposite companies. An operator handed both documents sees a supplier claiming to be their biggest competitor, which is the exact objection this positioning exists to avoid. The site follows the owner. Reconciling the profile is R.Pay's, not this repo's.",
+      "blocksImplementation": false,
+      "blocksLaunch": false,
+      "fallback": "The site states the owner's answer and never repeats the profile sentence."
+    },
+    {
       "id": "company.registration",
       "label": "CR number, VAT number, registered address",
       "value": null,
@@ -245,6 +258,25 @@
       "blocksImplementation": false,
       "blocksLaunch": true,
       "fallback": "Footer renders without the registration block. It is built to omit, not to show blanks."
+    },
+    {
+      "id": "sectors.served",
+      "label": "Which sectors R.Pay's system runs in",
+      "value": [
+        { "ar": "ملاهي ومراكز ترفيه", "en": "Amusement parks and entertainment centres" },
+        { "ar": "صالات ألعاب أركيد", "en": "Arcade halls" },
+        { "ar": "أجهزة بيع ذاتي", "en": "Self-service machines" },
+        { "ar": "مطاعم ومقاهٍ", "en": "Restaurants and cafés" },
+        { "ar": "مراكز تجارية", "en": "Shopping centres" }
+      ],
+      "verified": true,
+      "asOf": "2026-08-19",
+      "source": "Ahmed, 2026-08-19, ordered by R.Pay's own evidence: the entertainment names in the company profile, and the thirteen client marks published on rpay.sa.",
+      "location": "The sector row in DOM B, /concepts/lab",
+      "why": "The list this replaced — malls, residential compounds, corporate HQs, gyms — described places a LANDLORD has floor space in. With the reader settled as an operator, the sectors are the ones their machines already run in.",
+      "blocksImplementation": false,
+      "blocksLaunch": false,
+      "fallback": "The row is omitted. It is a qualifier, not an argument, and the section reads without it."
     },
     {
       "id": "commercial.tour",

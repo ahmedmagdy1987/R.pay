@@ -252,6 +252,42 @@ html:not(.en) .h-display { letter-spacing: 0; line-height: 1.25; }
   margin-bottom: 12px;
 }
 .props p { color: var(--mute); font-size: 0.95rem; line-height: 1.8; }
+
+/* The one line on card 01 that allocates COST rather than describing work.
+   The heading and body above it stand without it; this is additive, and only
+   appears once the host terms behind it are confirmed. */
+.props .allocation {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 600;
+}
+.props .allocation.unverified { color: rgba(226, 240, 252, 0.42); }
+.props .provenance {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-family: var(--fm);
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 182, 92, 0.8);
+}
+.props .provenance::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+html:not(.en) .props .provenance { letter-spacing: 0.04em; }
+
+/* Same rule as everywhere else: an unconfirmed list never looks confirmed. */
+.sectors.unverified span { opacity: 0.5; }
 .props .n {
   display: block;
   font-family: var(--fm);
