@@ -22,6 +22,10 @@
   font-display: swap;
 }
 
+/* THE SCROLL BOX KEEPS vh ON PURPOSE. vh is the large-viewport height and
+   never moves, so the total length of the pin — and therefore the mapping
+   from scroll position to frame — is fixed. Switching this to dvh would make
+   the whole film get longer and shorter as the toolbar animates. */
 .scrubseq {
   position: relative;
   height: calc(var(--seq-vh, 500) * 1vh);
@@ -31,12 +35,19 @@
 /* prefers-reduced-motion collapses the pin to a single screen. */
 .scrubseq[data-mode="static"] { height: 100vh; }
 
+/* THE HOLD TAKES dvh. This one should track the toolbar: it is the frame the
+   reader looks through, and it should fill exactly the visible area rather
+   than leaving a band of background or overflowing behind the chrome. vh is
+   the fallback for engines without dvh. */
 .scrubseq-hold {
   position: sticky;
   top: 0;
   height: 100vh;
   overflow: hidden;
   background: #05070a;
+}
+@supports (height: 100dvh) {
+  .scrubseq-hold { height: 100dvh; }
 }
 
 .scrubseq-hold > canvas {

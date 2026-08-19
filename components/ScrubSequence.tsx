@@ -189,16 +189,93 @@ const registry = new Set<Registered>();
 const ARM_VH = 1.0;
 const RELEASE_VH = 2.5;
 
+/**
+ * A VIEWPORT HEIGHT THAT DOES NOT MOVE WHEN THE TOOLBAR DOES.
+ *
+ * The frame index comes from `sectionHeight - viewportHeight`. Read live,
+ * that denominator changes every time iOS Safari collapses or restores its
+ * URL bar — the reader has not moved, but the film jumps. Measured against
+ * HEAD before this existed: a 110px height change with zero scrolling moved
+ * segment B by 18 frames out of 60, and reversed direction on the way back.
+ *
+ * So the height is measured once and held. A resize that keeps the width and
+ * moves the height by less than a toolbar's worth is discarded outright — that
+ * signature is chrome, not a new viewport. Anything larger is a real resize,
+ * and even then it is committed only once scrolling has stopped, so a gesture
+ * is never retargeted underneath the reader.
+ */
+const TOOLBAR_PX = 120;
+let vpW = 0;
+let vpH = 0;
+let vpPending = 0;
+let vpCommitT: ReturnType<typeof setTimeout> | undefined;
+let lastScrollAt = 0;
+
+function stableVH() {
+  if (vpH) return vpH;
+  return typeof window === "undefined" ? 0 : window.innerHeight;
+}
+
+function commitViewport() {
+  // Never change the denominator in the middle of a gesture.
+  if (performance.now() - lastScrollAt < 160) {
+    vpCommitT = setTimeout(commitViewport, 120);
+    return;
+  }
+  if (vpPending) {
+    vpH = vpPending;
+    vpPending = 0;
+    arbitrate();
+  }
+}
+
+function onViewportChange() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  if (w === vpW && Math.abs(h - vpH) < TOOLBAR_PX) return; // toolbar, not a resize
+  vpW = w;
+  vpPending = h;
+  clearTimeout(vpCommitT);
+  vpCommitT = setTimeout(commitViewport, 200);
+}
+
+/* ── tier probe ────────────────────────────────────────────────────────────
+   navigator.deviceMemory does not exist in Safari, so the low-memory tier
+   could never auto-arm on the one device that most needs it. Instead of
+   sniffing the UA, time the decoder: whatever the cause — a slow device, a
+   slow AVIF path, thermal throttling — a decoder that cannot keep a window
+   fed shows up the same way.
+
+   THRESHOLD 120ms, median of the first two decodes. Derived from both ends:
+     · measured healthy engines — Chromium desktop 20.6ms, Chromium mobile
+       22.1ms, WebKit 41.5ms — so 120ms is 2.9x the slowest one and will not
+       trip on a healthy-but-busy device;
+     · at DECODE_POOL 2, refill runs at 2000/median frames per second, and a
+       brisk scrub of a 60-frame segment demands about 9/s. Starvation begins
+       around 200ms. 120ms sits inside that gap with room on both sides. */
+const DECODE_SLOW_MS = 120;
+let tierProbed = false;
+
+function considerTier(medianMs: number) {
+  if (tierProbed || liteMemo === true) return;
+  tierProbed = true;
+  if (medianMs <= DECODE_SLOW_MS) return;
+  liteMemo = true;
+  dispatchEvent(
+    new CustomEvent("scrubseq:tier", { detail: { lite: true, medianMs } }),
+  );
+}
+
 /** Pixels between a rect and the viewport; 0 while any part is on screen. */
 function gapPx(r: DOMRect) {
-  const vh = window.innerHeight;
+  const vh = stableVH();
   if (r.bottom < 0) return -r.bottom;
   if (r.top > vh) return r.top - vh;
   return 0;
 }
 
 function visiblePx(r: DOMRect) {
-  return Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
+  return Math.max(0, Math.min(r.bottom, stableVH()) - Math.max(r.top, 0));
 }
 
 let driverAttached = false;
@@ -207,7 +284,7 @@ let driverQueued = false;
 
 function arbitrate() {
   driverQueued = false;
-  const vh = window.innerHeight || 1;
+  const vh = stableVH() || 1;
   let best: Registered | null = null;
   let bestArea = 0;
 
@@ -236,6 +313,7 @@ let primaryOwner: Registered | null = null;
 const isPrimary = (me: Registered) => primaryOwner === me;
 
 function scheduleArbitrate() {
+  lastScrollAt = performance.now();
   if (driverQueued) return;
   driverQueued = true;
   driverRaf = requestAnimationFrame(arbitrate);
@@ -297,8 +375,11 @@ function onVisibility() {
 function attachDriver() {
   if (driverAttached) return;
   driverAttached = true;
+  vpW = window.innerWidth;
+  vpH = window.innerHeight;
   addEventListener("scroll", scheduleArbitrate, { passive: true });
-  addEventListener("resize", scheduleArbitrate);
+  addEventListener("resize", onViewportChange);
+  addEventListener("orientationchange", onViewportChange);
   document.addEventListener("visibilitychange", onVisibility);
   addEventListener("pagehide", goHidden);
   addEventListener("pageshow", goVisible);
@@ -314,7 +395,8 @@ function detachDriver() {
   if (!driverAttached || registry.size) return;
   driverAttached = false;
   removeEventListener("scroll", scheduleArbitrate);
-  removeEventListener("resize", scheduleArbitrate);
+  removeEventListener("resize", onViewportChange);
+  removeEventListener("orientationchange", onViewportChange);
   document.removeEventListener("visibilitychange", onVisibility);
   removeEventListener("pagehide", goHidden);
   removeEventListener("pageshow", goVisible);
@@ -455,6 +537,20 @@ export default function ScrubSequence({
       if ((w.__scrubPeak ?? 0) < (w.__scrubLive ?? 0)) w.__scrubPeak = w.__scrubLive;
     };
 
+    /* Decode timings for the tier probe. Fetch is excluded deliberately: a
+       slow network is not a reason to drop frames, a slow DECODER is. */
+    const decodeMs: number[] = [];
+    const recordDecode = (ms: number) => {
+      if (decodeMs.length >= 2) return;
+      decodeMs.push(ms);
+      if (decodeMs.length === 2) {
+        const median = (decodeMs[0] + decodeMs[1]) / 2;
+        root.dataset.decodems = median.toFixed(2);
+        tr("decode probe", decodeMs.map((m) => m.toFixed(1)).join(" / "), "ms");
+        considerTier(median);
+      }
+    };
+
     const frameSrc = (i: number) =>
       `${set.dir}/f_${String(Math.min(set.count, i * STRIDE + 1)).padStart(3, "0")}.${ext}`;
 
@@ -517,6 +613,7 @@ export default function ScrubSequence({
       drawn = j;
       draws += 1;
       root.dataset.draws = String(draws);
+      root.dataset.frame = String(j);
       if (root.dataset.poster) delete root.dataset.poster;
 
       if (!dimsReported) {
@@ -656,7 +753,9 @@ export default function ScrubSequence({
       if (!blob) return;
       inflight.add(i);
       try {
+        const dt0 = performance.now();
         const d = await decodeBlob(blob);
+        recordDecode(performance.now() - dt0);
         /* Ownership can move while a decode is in flight. Keeping the result
            anyway was a real leak: the segment then stops its loop on going off
            screen, so no later maintain() ever evicts it and the page carried
@@ -880,7 +979,7 @@ export default function ScrubSequence({
 
     const targetIndex = () => {
       const r = root.getBoundingClientRect();
-      const span = r.height - window.innerHeight;
+      const span = r.height - stableVH();
       const p = span > 0 ? clamp01(-r.top / span) : 0;
       return frameAt(p);
     };

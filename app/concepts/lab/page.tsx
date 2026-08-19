@@ -92,6 +92,11 @@ const SECTORS = [
 export default function LabPage() {
   const [en, setEn] = useState(false);
   const [fmt, setFmt] = useState<SeqFormat>("auto");
+  /* The decode probe can downgrade the whole page to the lite tier after the
+     first segment has already armed. Frame count is fixed at mount, so the
+     segments are remounted once when that happens — refetches come straight
+     out of the HTTP cache and the poster covers the gap. */
+  const [tier, setTier] = useState<"std" | "lite">("std");
   const progRef = useRef<HTMLDivElement>(null);
   const specRef = useRef<HTMLDivElement>(null);
   const txAr = useRef<HTMLSpanElement>(null);
@@ -108,6 +113,12 @@ export default function LabPage() {
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("fmt");
     if (q === "webp" || q === "avif" || q === "auto") setFmt(q);
+  }, []);
+
+  useEffect(() => {
+    const onTier = () => setTier("lite");
+    window.addEventListener("scrubseq:tier", onTier);
+    return () => window.removeEventListener("scrubseq:tier", onTier);
   }, []);
 
   useEffect(() => {
@@ -216,7 +227,7 @@ export default function LabPage() {
 
       <main id="top">
         <ScrubSequence
-          key={`a-${fmt}`}
+          key={`a-${fmt}-${tier}`}
           {...A}
           scrollVh={250}
           damping={0.12}
@@ -260,7 +271,7 @@ export default function LabPage() {
         </section>
 
         <ScrubSequence
-          key={`b-${fmt}`}
+          key={`b-${fmt}-${tier}`}
           {...B}
           scrollVh={250}
           damping={0.12}
@@ -362,7 +373,7 @@ export default function LabPage() {
         </section>
 
         <ScrubSequence
-          key={`c-${fmt}`}
+          key={`c-${fmt}-${tier}`}
           {...C}
           scrollVh={200}
           damping={0.12}
