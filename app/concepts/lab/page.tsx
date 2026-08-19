@@ -83,16 +83,32 @@ const TITLE_A: TitleCard = {
   en: "97 machines. One kingdom.",
 };
 
-/* EVERY call to action on this page opens the same WhatsApp thread. There is
-   no booking system anywhere in the repo — no Calendly, no cal.com, no
-   /book route, nothing. Labels must therefore say WhatsApp, not "book a
-   call", which promises a calendar that does not exist. */
+/* EVERY call to action here opens the same WhatsApp thread. There is no
+   booking system anywhere in the repo — no Calendly, no cal.com, no /book
+   route — so labels say WhatsApp rather than "book a call".
+
+   THE NUMBER. 966597897092, taken from rpay.sa. The number carried through
+   this repo until now, 966550796555, is not the one on their live site; see
+   the report for the eight other routes that still have it. */
 const WA =
-  "https://wa.me/966550796555?text=%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%AD%D8%AC%D8%B2%20%D8%B9%D8%B1%D8%B6%20%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A%20%D9%84%D9%80%20R.Pay";
+  "https://wa.me/966597897092?text=%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%AD%D8%AC%D8%B2%20%D8%B9%D8%B1%D8%B6%20%D8%AA%D8%AC%D8%B1%D9%8A%D8%A8%D9%8A%20%D9%84%D9%80%20R.Pay";
 
 /* Only the seven named accounts, in the order given. Every one resolves to an
    asset already in the repo from concepts 01-07 — nothing recreated. */
-const NAMED = ["Roshn", "Dar Al Arkan", "LuLu", "Boulevard City", "Kinan", "Sela", "Hamat"];
+/* Verified before wiring: /cm30/ is a real product page — R Pay CM30, full
+   spec sheet, 1,600.00 SAR inc. VAT, a working add-to-cart and a live
+   /checkout/ route. Two caveats in the report: their own button says
+   "أضِف إلى السلة", not "اشترِ الآن", and the price is marked
+   "أسعار توضيحية" (indicative). */
+const BUY = "https://www.rpay.sa/cm30/";
+
+/* All thirteen, the same set their own site displays publicly. Every file was
+   already in this repo from concepts 01-07 — the six that were missing here
+   were missing from THIS page's filter, not from disk. */
+const NAMED = [
+  "Roshn", "Dar Al Arkan", "LuLu", "Boulevard City", "Kinan", "Sela", "Hamat",
+  "Al Nadej", "Boulevard World", "Al Deera", "Al Khozama", "Malahi", "Shawarma House",
+];
 const NAMED_AR: Record<string, string> = {
   Roshn: "روشن",
   "Dar Al Arkan": "دار الأركان",
@@ -101,6 +117,12 @@ const NAMED_AR: Record<string, string> = {
   Kinan: "كنان",
   Sela: "سلا",
   Hamat: "حمات",
+  "Al Nadej": "النادج",
+  "Boulevard World": "بوليفارد وورلد",
+  "Al Deera": "الديرة",
+  "Al Khozama": "الخزامى",
+  Malahi: "ملاهي",
+  "Shawarma House": "شاورما هاوس",
 };
 const CLIENT_LOGOS = NAMED.map((n) => LOGOS.find((l) => l.alt === n)).filter(
   (l): l is { alt: string; uri: string } => Boolean(l),
@@ -112,6 +134,14 @@ const SECTORS = [
   { ar: "مقرات شركات", en: "Corporate headquarters" },
   { ar: "صالات رياضية", en: "Gyms" },
 ];
+
+const CartIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6" />
+    <circle cx="10" cy="20" r="1.2" />
+    <circle cx="18" cy="20" r="1.2" />
+  </svg>
+);
 
 export default function LabPage() {
   const [en, setEn] = useState(false);
@@ -286,10 +316,15 @@ export default function LabPage() {
               collect.
             </span>
           </p>
-          <div className="rv">
+          <div className="rv cta-pair">
             <a className="cta-warm" href={WA}>
               <span className="ar-t">تحدّث إلينا</span>
               <span className="en-t">Talk to us</span>
+            </a>
+            <a className="cta-buy" href={BUY} target="_blank" rel="noopener noreferrer">
+              <CartIcon />
+              <span className="ar-t">اشترِ الآن</span>
+              <span className="en-t">Buy the device</span>
             </a>
           </div>
         </section>
@@ -328,10 +363,15 @@ export default function LabPage() {
               We visit, agree the right spot, and install the first machine at no cost to you.
             </span>
           </p>
-          <div className="rv">
+          <div className="rv cta-pair">
             <a className="cta-warm" href={WA}>
               <span className="ar-t">اطلب عرضًا عبر واتساب</span>
               <span className="en-t">Request a demo on WhatsApp</span>
+            </a>
+            <a className="cta-buy" href={BUY} target="_blank" rel="noopener noreferrer">
+              <CartIcon />
+              <span className="ar-t">اشترِ الآن</span>
+              <span className="en-t">Buy the device</span>
             </a>
           </div>
           <div className="reassure rv">
@@ -367,7 +407,10 @@ export default function LabPage() {
                 <span className="en-t">Revenue from dead space</span>
               </h3>
               <p>
-                <Pending id="REVENUE_MODEL" note="Ahmed to supply" />
+                <span className="ar-t">التحصيل المباشر إلى حساب المالك أو المشغّل.</span>
+                <span className="en-t">
+                  Direct revenue collection to the owner/operator account.
+                </span>
               </p>
             </article>
             <article className="rv">
@@ -393,6 +436,159 @@ export default function LabPage() {
               </span>
             ))}
             <Pending id="SECTORS" note="Ahmed to confirm which are real" />
+          </div>
+        </section>
+
+        {/* ── REVENUE MODEL ─────────────────────────────
+            Their stated number-one differentiator and the first row of their
+            own comparison table. The argument is made by LENGTH: the other
+            path is physically longer and has two nodes in the middle that are
+            not you. Competitors are deliberately unnamed. */}
+        <section className="act" id="revenue">
+          <span className="kicker rv">
+            <span className="ar-t">أين يذهب المال</span>
+            <span className="en-t">Where the money goes</span>
+          </span>
+          <h2 className="h-display rv">
+            <span className="ar-t">
+              التحصيل المباشر إلى <em>حساب المالك أو المشغّل</em>
+            </span>
+            <span className="en-t">
+              Direct revenue collection to the <em>owner/operator account</em>
+            </span>
+          </h2>
+
+          <div className="paths rv">
+            <div className="path">
+              <span className="plabel">
+                <span className="ar-t">مع مزوّدي الدفع التقليديين</span>
+                <span className="en-t">With a traditional processor</span>
+              </span>
+              <div className="track">
+                <span className="node you">
+                  <span className="ar-t">جهازك</span>
+                  <span className="en-t">Your machine</span>
+                </span>
+                <i className="wire" />
+                <span className="node mid">
+                  <span className="ar-t">مزوّد الدفع</span>
+                  <span className="en-t">Processor</span>
+                </span>
+                <i className="wire" />
+                <span className="node mid">
+                  <span className="ar-t">التسوية</span>
+                  <span className="en-t">Settlement</span>
+                </span>
+                <i className="wire" />
+                <span className="node you">
+                  <span className="ar-t">حسابك</span>
+                  <span className="en-t">Your account</span>
+                </span>
+              </div>
+              <p className="path-note">
+                <span className="ar-t">الإيراد يمر عبر وسيط قبل أن يصل إليك.</span>
+                <span className="en-t">
+                  Revenue routes through an intermediary before it reaches you.
+                </span>
+              </p>
+            </div>
+
+            <div className="path ours">
+              <span className="plabel">
+                <span className="ar-t">مع آر باي</span>
+                <span className="en-t">With R.Pay</span>
+              </span>
+              <div className="track">
+                <span className="node you">
+                  <span className="ar-t">جهازك</span>
+                  <span className="en-t">Your machine</span>
+                </span>
+                <i className="wire" />
+                <span className="node you">
+                  <span className="ar-t">حسابك</span>
+                  <span className="en-t">Your account</span>
+                </span>
+              </div>
+              <p className="path-note">
+                <span className="ar-t">
+                  الإيراد يصل مباشرة إلى حساب المالك أو المشغّل.
+                </span>
+                <span className="en-t">
+                  Revenue lands directly in the owner/operator account.
+                </span>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── OBJECTIONS ───────────────────────────────
+            After the touch, not before: doubts get answered once the desire
+            exists. Every answer is their own profile copy, unextended. */}
+        <section className="act" id="questions">
+          <span className="kicker rv">
+            <span className="ar-t">أسئلة المشغّلين</span>
+            <span className="en-t">What operators ask</span>
+          </span>
+          <div className="objections">
+            <article className="rv">
+              <h3>
+                <span className="ar-t">لو الجهاز عطل؟</span>
+                <span className="en-t">What if a machine fails?</span>
+              </h3>
+              <p>
+                <span className="ar-t">
+                  تنبيهات فورية عند انقطاع الاتصال، واسترجاع نقدي تلقائي بدون تدخل بشري، وتسجيل
+                  الحالة في لوحة التحكم.
+                </span>
+                <span className="en-t">
+                  Instant alerts when a device goes offline, an automatic cash refund with no human
+                  intervention, and the incident logged in the dashboard.
+                </span>
+              </p>
+            </article>
+            <article className="rv">
+              <h3>
+                <span className="ar-t">فلوسي بتوصل إزاي؟</span>
+                <span className="en-t">How does my money reach me?</span>
+              </h3>
+              <p>
+                <span className="ar-t">
+                  تحصيل مباشر إلى حسابك، وتقارير لحظية تشغيلية ومالية.
+                </span>
+                <span className="en-t">
+                  Direct collection into your account, with real-time operational and financial
+                  reporting.
+                </span>
+              </p>
+            </article>
+            <article className="rv">
+              <h3>
+                <span className="ar-t">مين بيركّب ويدرّب؟</span>
+                <span className="en-t">Who installs and trains?</span>
+              </h3>
+              <p>
+                <span className="ar-t">تدريب ودعم عن بُعد، وتحكّم وتحديث عن بُعد.</span>
+                <span className="en-t">
+                  Remote training and support, with remote control and updates.
+                </span>
+              </p>
+            </article>
+            <article className="rv">
+              <h3>
+                <span className="ar-t">لو الجهاز اتنقل؟</span>
+                <span className="en-t">What if a device is moved?</span>
+              </h3>
+              <p>
+                <span className="ar-t">
+                  الرادار الجغرافي: موقع ثابت لكل جهاز، تنبيه فوري وإيقاف تلقائي عند الخروج عن
+                  الحدود.
+                </span>
+                <span className="en-t">
+                  Geographic radar: a fixed location for every device, with an instant alert and
+                  automatic shutdown if it leaves its boundary.
+                </span>
+              </p>
+            </article>
           </div>
         </section>
 
@@ -502,15 +698,31 @@ export default function LabPage() {
               with the next step.
             </span>
           </p>
-          <div className="rv">
+          <div className="rv cta-pair">
             <a className="cta-warm" href={WA}>
               <span className="ar-t">تحدّث إلينا على واتساب</span>
               <span className="en-t">Talk to us on WhatsApp</span>
+            </a>
+            <a className="cta-buy" href={BUY} target="_blank" rel="noopener noreferrer">
+              <CartIcon />
+              <span className="ar-t">اشترِ الآن</span>
+              <span className="en-t">Buy the device</span>
             </a>
           </div>
           <div className="reassure rv">
             <span className="ar-t">يفتح محادثة واتساب مباشرة — لا نموذج ولا تسجيل</span>
             <span className="en-t">Opens a WhatsApp chat directly — no form, no sign-up</span>
+          </div>
+          {/* Networks the CM30 accepts, exactly as their own product page
+              lists them. Typographic, matching concepts 01-07. */}
+          <div className="paymarks rv" aria-label="Accepted payment networks">
+            <span>mada</span>
+            <span>GCCNET</span>
+            <span>Visa</span>
+            <span>Mastercard</span>
+            <span>Amex</span>
+            <span>Apple&nbsp;Pay</span>
+            <span>Samsung&nbsp;Pay</span>
           </div>
         </section>
 

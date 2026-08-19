@@ -15,7 +15,6 @@
     "The checklist for gathering these is docs/redesign-2026/CONTENT-REQUIRED.md,",
     "and it is generated from this file so the two cannot drift."
   ],
-
   "claims": [
     {
       "id": "fleet.machines",
@@ -62,7 +61,17 @@
     {
       "id": "fleet.branchNames",
       "label": "The nine branch names",
-      "value": ["Riyadh", "Jeddah", "Dammam", "Khobar", "Makkah", "Madinah", "Qassim", "Abha", "Tabuk"],
+      "value": [
+        "Riyadh",
+        "Jeddah",
+        "Dammam",
+        "Khobar",
+        "Makkah",
+        "Madinah",
+        "Qassim",
+        "Abha",
+        "Tabuk"
+      ],
       "verified": false,
       "asOf": null,
       "source": null,
@@ -87,17 +96,17 @@
     },
     {
       "id": "totals.transactions",
-      "label": "Total transactions processed",
+      "label": "Total purchases (currency), single month",
       "value": 465255,
-      "unit": "transactions",
+      "unit": "SAR",
       "verified": false,
       "asOf": null,
-      "source": "Carried from R.Pay's own production site",
+      "source": "R.Pay operator dashboard, TOTAL PURCHASES tile, 01-31 May 2025. Shown with a riyal symbol alongside TOTAL REVERSALS 32,567.85 SAR and TOTAL PROFIT 162,839.25 SAR. Count tiles on the same dashboard (97 machines, 9 branches, 2 users) carry no currency symbol.",
       "location": "Hero gauges",
-      "why": "The scale claim.",
+      "why": "Previously carried as a transaction COUNT and rendered as \"465,255 عملية مكتملة\". It is a currency total, not a count, so that label overstated activity by an unknown multiple. The dashboard it came from covers one month on an account with 2 users, which reads as demo or pilot data of unverified provenance rather than lifetime platform volume.",
       "blocksImplementation": false,
       "blocksLaunch": true,
-      "fallback": "Remove the figure. The horizon still carries scale visually."
+      "fallback": "Render no figure and no counter. The stat row shows the two remaining tiles and an em dash in this slot; the section still reads because the machines figure and the client logos carry the scale."
     },
     {
       "id": "totals.prizes",
@@ -130,7 +139,14 @@
     {
       "id": "rails.accepted",
       "label": "Accepted payment methods",
-      "value": ["mada", "VISA", "Mastercard", "Apple Pay", "stc pay", "GCCNET"],
+      "value": [
+        "mada",
+        "VISA",
+        "Mastercard",
+        "Apple Pay",
+        "stc pay",
+        "GCCNET"
+      ],
       "verified": false,
       "asOf": null,
       "source": "Carried from R.Pay's own production site",

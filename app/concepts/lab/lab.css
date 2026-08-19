@@ -349,6 +349,15 @@ html:not(.en) .counter-cap { letter-spacing: 0.08em; }
    over the shape label. */
 .logos img[data-logo="boulevard-city"] { --lo: 1.05; }  /* 12.8%, narrow + light */
 
+/* The six restored marks, scaled the same way — from each one's measured ink
+   box after trimming transparent padding, not its file height. */
+.logos img[data-logo="al-nadej"]        { --lo: 0.86; }  /* 31.4% ink, wide 2.79 */
+.logos img[data-logo="al-deera"]        { --lo: 0.98; }  /* 26.8%                */
+.logos img[data-logo="malahi"]          { --lo: 1.03; }  /* 19.3%                */
+.logos img[data-logo="al-khozama"]      { --lo: 1.05; }  /* 18.3%, solid black   */
+.logos img[data-logo="boulevard-world"] { --lo: 1.05; }  /* 16.2%, tall 0.85     */
+.logos img[data-logo="shawarma-house"]  { --lo: 1.05; }  /* 15.8%, square 1.05   */
+
 @media (prefers-reduced-motion: reduce) { .logos img { transition: none; } }
 
 .foot {
@@ -602,3 +611,192 @@ html:not(.en) .cta-block .reassure { letter-spacing: 0.04em; text-transform: non
   color: var(--warm);
 }
 .lab-dock svg { width: 15px; height: 15px; opacity: 0.9; }
+
+/* ── revenue model: the two-path diagram ────────────────────────────────────
+   Their number one differentiator and the first row of their own comparison
+   table. Built from divs and one travelling dot — no new image or video
+   assets, and it themes off the existing tokens. The argument is made by
+   LENGTH: the traditional path is physically longer across the page and has
+   two nodes in the middle that are not you. */
+.paths { margin-top: 52px; display: grid; gap: 26px; }
+
+.path {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 22px clamp(16px, 3vw, 30px) 26px;
+  background: linear-gradient(180deg, rgba(126, 196, 255, 0.03), transparent);
+}
+.path.ours { border-color: rgba(31, 211, 184, 0.34); }
+
+.plabel {
+  display: block;
+  font-family: var(--fm);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.46);
+  margin-bottom: 20px;
+}
+html:not(.en) .plabel { letter-spacing: 0.04em; text-transform: none; font-size: 12px; }
+.path.ours .plabel { color: var(--mint); }
+
+.track { display: flex; align-items: center; gap: 0; }
+
+.node {
+  flex: none;
+  padding: 10px 15px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--void);
+  font-size: clamp(0.72rem, 1.5vw, 0.86rem);
+  white-space: nowrap;
+  color: var(--mute);
+}
+.node.you { color: var(--ink); border-color: rgba(126, 196, 255, 0.3); }
+.path.ours .node.you { color: var(--mint); border-color: rgba(31, 211, 184, 0.5); }
+/* the nodes that are not you */
+.node.mid { color: rgba(198, 218, 240, 0.45); border-style: dashed; }
+
+.wire {
+  flex: 1 1 auto;
+  position: relative;
+  height: 1px;
+  min-width: 18px;
+  background: var(--line);
+  overflow: hidden;
+}
+.path.ours .wire { background: rgba(31, 211, 184, 0.28); }
+
+/* the money, travelling. Starts only once the block is revealed. */
+.wire::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  inset-inline-start: -14px;
+  width: 14px;
+  height: 5px;
+  border-radius: 3px;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(198, 218, 240, 0.7), transparent);
+}
+.path.ours .wire::after {
+  background: linear-gradient(90deg, transparent, var(--warm), transparent);
+  height: 6px;
+  top: -2.5px;
+}
+.rv.in .wire::after { animation: flow 2.6s cubic-bezier(0.5, 0, 0.5, 1) infinite; }
+.rv.in .path.ours .wire::after { animation-duration: 1.15s; }
+.rv.in .wire:nth-of-type(2)::after { animation-delay: 0.35s; }
+.rv.in .wire:nth-of-type(3)::after { animation-delay: 0.7s; }
+
+@keyframes flow {
+  0% { inset-inline-start: -14px; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { inset-inline-start: 100%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv.in .wire::after { animation: none; opacity: 0.85; inset-inline-start: 40%; }
+}
+
+.path-note {
+  margin-top: 14px;
+  font-size: 0.86rem;
+  line-height: 1.75;
+  color: var(--mute);
+}
+.path.ours .path-note { color: rgba(226, 240, 252, 0.78); }
+
+@media (max-width: 700px) {
+  .track { flex-wrap: wrap; gap: 10px; }
+  .wire { min-width: 26px; }
+}
+
+/* ── objection cards ───────────────────────────────────────────────────── */
+.objections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+  gap: 1px;
+  margin-top: 48px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.objections article { background: var(--void); padding: 28px 26px; }
+.objections h3 {
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+.objections h3::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, var(--cyan), var(--mint));
+}
+.objections p { color: var(--mute); font-size: 0.93rem; line-height: 1.85; }
+
+/* ── payment marks ─────────────────────────────────────────────────────────
+   Typographic, matching how concepts 01-07 render these (plain spans, no
+   image files). Their own site hotlinks these marks from third-party CDNs,
+   which is not something to copy into this repo — see the report. */
+.paymarks {
+  margin-top: 26px;
+  /* Escapes the CTA block's 760px measure — seven marks will not sit on one
+     line inside it, and the row is meant to be one quiet line, not two. */
+  width: min(94vw, 940px);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px 16px;
+}
+.paymarks span {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(198, 218, 240, 0.4);
+  white-space: nowrap;
+}
+.paymarks span::after {
+  content: "·";
+  margin-inline-start: 16px;
+  color: rgba(198, 218, 240, 0.2);
+}
+.paymarks span:last-child::after { content: none; }
+
+/* ── secondary CTA ─────────────────────────────────────────────────────────
+   Outline only. It must read as the quieter of the two — the gold button is
+   the page's action, this is the alternative for someone already sold. */
+.cta-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+.cta-block .cta-pair { justify-content: center; }
+
+.cta-buy {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 36px;
+  padding: 17px 30px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: rgba(226, 240, 252, 0.82);
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: border-color 0.25s, color 0.25s;
+}
+.cta-buy:hover { border-color: var(--mint); color: var(--mint); }
+.cta-buy svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+.cta-block.final .cta-buy { padding: 19px 34px; }
