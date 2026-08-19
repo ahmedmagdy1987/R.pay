@@ -122,12 +122,12 @@ const NAMED_AR: Record<string, string> = {
   LuLu: "لولو",
   "Boulevard City": "بوليفارد سيتي",
   Kinan: "كنان",
-  Sela: "سلا",
+  Sela: "صلة",
   Hamat: "هامات",
   "Al Nadej": "النادج",
   "Boulevard World": "بوليفارد وورلد",
   "Al Deera": "الديرة",
-  "Al Khozama": "الخزامي",
+  "Al Khozama": "الخزامى",
   Malahi: "ملاهي",
   "Shawarma House": "بيت الشاورما",
 };
@@ -174,6 +174,11 @@ export default function LabPage() {
      rendered it as "465,255 عملية مكتملة", a transaction count, which
      overstated activity by an unknown multiple. */
   const txMode = claimMode("totals.transactions");
+  /* The payment row used to be seven hardcoded spans. It stated
+     rails.accepted — unverified and launch-blocking — as fact, outside the
+     honesty layer entirely. */
+  const railsMode = claimMode("rails.accepted");
+  const RAILS = devValue<string[]>("rails.accepted") ?? [];
   const machinesMode = claimMode("fleet.machines");
   const TX = devValue<number>("totals.transactions");
   const MACHINES = devValue<number>("fleet.machines");
@@ -315,7 +320,7 @@ export default function LabPage() {
           </span>
           <h1 className="h-display rv">
             <span className="ar-t">
-              مساحتك الفارغة… <em>تبيع الآن.</em>
+              مساحتك الفارغة… <em>تدرّ دخلاً الآن.</em>
             </span>
             <span className="en-t">
               Your empty space <em>is now selling.</em>
@@ -363,7 +368,7 @@ export default function LabPage() {
           </span>
           <h2 className="rv">
             <span className="ar-t">
-              لمسة واحدة في مساحتك. <em>ابدأ بواحدة.</em>
+              لمسة واحدة في مساحتك. <em>ابدأ بجهاز واحد.</em>
             </span>
             <span className="en-t">
               One tap, in your space. <em>Start with one.</em>
@@ -408,16 +413,14 @@ export default function LabPage() {
                 <span className="en-t">Zero operational load</span>
               </h3>
               <p>
-                <span className="ar-t">التركيب والتعبئة والصيانة والدعم — كلها علينا.</span>
-                <span className="en-t">
-                  Installation, restocking, maintenance and support — all on us.
-                </span>
+                <span className="ar-t">خطوة واحدة، ونتولّى الباقي معك.</span>
+                <span className="en-t">One step, and we take it from there.</span>
               </p>
             </article>
             <article className="rv">
               <span className="n">02</span>
               <h3>
-                <span className="ar-t">دخل من مساحة كانت معطّلة</span>
+                <span className="ar-t">دخل من مساحة غير مستغلّة</span>
                 <span className="en-t">Revenue from dead space</span>
               </h3>
               <p>
@@ -647,7 +650,7 @@ export default function LabPage() {
               {txMode === "dev" && (
                 <div className="provenance">
                   <span className="ar-t">
-                    غير موثّق · شهر واحد ١–٣١ مايو ٢٠٢٥ · حساب بمستخدمَين
+                    غير مُتحقَّق منه · شهر واحد ١–٣١ مايو ٢٠٢٥ · حساب بمستخدمَين
                   </span>
                   <span className="en-t">
                     unverified · single month 1–31 May 2025 · 2-user account
@@ -665,7 +668,7 @@ export default function LabPage() {
               </div>
               {machinesMode === "dev" && (
                 <div className="provenance">
-                  <span className="ar-t">غير موثّق — fleet.machines</span>
+                  <span className="ar-t">غير مُتحقَّق منه — fleet.machines</span>
                   <span className="en-t">unverified — fleet.machines</span>
                 </div>
               )}
@@ -731,17 +734,32 @@ export default function LabPage() {
             <span className="ar-t">يفتح محادثة واتساب مباشرة — لا نموذج ولا تسجيل</span>
             <span className="en-t">Opens a WhatsApp chat directly — no form, no sign-up</span>
           </div>
-          {/* Networks the CM30 accepts, exactly as their own product page
-              lists them. Typographic, matching concepts 01-07. */}
-          <div className="paymarks rv" aria-label="Accepted payment networks">
-            <span>mada</span>
-            <span>GCCNET</span>
-            <span>Visa</span>
-            <span>Mastercard</span>
-            <span>Amex</span>
-            <span>Apple&nbsp;Pay</span>
-            <span>Samsung&nbsp;Pay</span>
-          </div>
+          {/* The list their own CM30 spec sheet publishes under
+              "شبكات الدفع المدعومة". That is what the HARDWARE supports, which
+              is not the same thing as what any given deployment is enabled to
+              take — Amex in particular normally needs its own acquirer
+              agreement. Sourced, therefore, but still unverified.
+
+              claims.json: "Show only the methods that can be evidenced. The
+              row degrades cleanly to any subset." With none evidenced the
+              subset is empty and the row is omitted. It is additive trust,
+              never structure — the block reads without it. */}
+          {railsMode !== "omit" && (
+            <div
+              className={`paymarks rv${railsMode === "publish" ? "" : " unverified"}`}
+              aria-label={en ? "Accepted payment networks" : "شبكات الدفع المدعومة"}
+            >
+              {RAILS.map((r) => (
+                <span key={r}>{r.replace(/ /g, " ")}</span>
+              ))}
+              {railsMode === "dev" && (
+                <em className="provenance">
+                  <span className="ar-t">غير مُتحقَّق منه — rails.accepted</span>
+                  <span className="en-t">unverified — rails.accepted</span>
+                </em>
+              )}
+            </div>
+          )}
         </section>
 
         <footer className="foot">

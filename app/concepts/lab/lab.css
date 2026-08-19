@@ -781,7 +781,34 @@ html:not(.en) .plabel { letter-spacing: 0.04em; text-transform: none; font-size:
   margin-inline-start: 16px;
   color: rgba(198, 218, 240, 0.2);
 }
-.paymarks span:last-child::after { content: none; }
+.paymarks span:last-of-type::after { content: none; }
+
+/* While rails.accepted is unverified the row is dimmed and carries the same
+   warm chip the stat tiles use. A capability nobody has confirmed must not
+   look like one that has been. */
+.paymarks.unverified span { color: rgba(198, 218, 240, 0.24); }
+.paymarks .provenance {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 6px;
+  font-family: var(--fm);
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 182, 92, 0.8);
+}
+.paymarks .provenance::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+html:not(.en) .paymarks .provenance { letter-spacing: 0.04em; }
 
 /* ── secondary CTA ─────────────────────────────────────────────────────────
    Outline only. It must read as the quieter of the two — the gold button is

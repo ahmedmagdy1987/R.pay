@@ -141,17 +141,16 @@
       "label": "Accepted payment methods",
       "value": [
         "mada",
-        "VISA",
+        "Visa",
         "Mastercard",
         "Apple Pay",
-        "stc pay",
-        "GCCNET"
+        "Samsung Pay"
       ],
       "verified": false,
       "asOf": null,
-      "source": "Carried from R.Pay's own production site",
-      "location": "Hero rails row",
-      "why": "Answers the first question every operator has.",
+      "source": "The intersection of R.Pay's own two published lists, both retrieved 2026-08-19. rpay.sa homepage mark row: Visa, Mastercard, Apple Pay, Samsung Pay, Mada, STC Pay. rpay.sa/cm30/ spec sheet, row «شبكات الدفع المدعومة»: مدى، GCCNET، فيزا، ماستركارد، أمريكان إكسبريس، Apple Pay، Samsung Pay. Sourced, NOT verified.",
+      "location": "Hero rails row; the payment row in the final CTA of /concepts/lab",
+      "why": "Answers the first question every operator has. Two problems, neither of them ours to settle. (1) R.Pay's own two pages disagree: the homepage shows STC Pay and no GCCNET or Amex; the CM30 sheet shows GCCNET and Amex and no STC Pay. Only five marks appear on both, and those five are the value here. (2) The CM30 sheet describes what the HARDWARE supports, which is not what a deployed machine is enabled to take — scheme acceptance is an acquirer matter and Amex normally needs its own agreement. So the question for R.Pay is specific: are STC Pay, GCCNET and Amex live for a customer today, or only supported by the device?",
       "blocksImplementation": false,
       "blocksLaunch": true,
       "fallback": "Show only the methods that can be evidenced. The row degrades cleanly to any subset."
