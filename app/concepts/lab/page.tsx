@@ -32,20 +32,44 @@ const C = seg("c");
    segment B's climax is a dark machine on black that encodes cheap while
    changing fast. Delta measures change, which is what scroll should buy.  */
 
+/* Ranked by what the shot is worth, then given scroll distance to match.
+   Run `node scripts/pacing-table.mjs` to see these resolved into
+   scroll-pixels per second of footage — relative weights are impossible to
+   argue about, px/s is not. The last band of each segment is a deceleration
+   into the DOM act, so the film settles rather than being cut off. */
+
+/* Establishing. The orbit and the cloud are the two fastest passages on the
+   page — they are setting a place, not saying anything. */
 const PACING_A: PacingRange[] = [
-  { from: 0.12, to: 0.24, weight: 0.45 },
-  { from: 0.38, to: 0.47, weight: 0.6 },
-  { from: 0.58, to: 0.78, weight: 1.55 },
+  { from: 0.0, to: 0.13, weight: 0.7 },    // orbit            146 px/s
+  { from: 0.13, to: 0.27, weight: 0.55 },  // cloud            110 px/s
+  { from: 0.27, to: 0.485, weight: 0.85 }, // aerial Riyadh    172 px/s
+  { from: 0.485, to: 0.75, weight: 1.0 },  // boulevard        208 px/s
+  { from: 0.75, to: 0.93, weight: 1.4 },   // the entrance     286 px/s
+  { from: 0.93, to: 1.0, weight: 1.75 },   // settle           342 px/s
 ];
+
+/* The film's peak. The crawl across the machine's face and the touch itself
+   are the slowest thing on the page by a wide margin — 577 px/s against the
+   cloud's 110, so the same second of footage costs five times the scroll. */
 const PACING_B: PacingRange[] = [
-  { from: 0.03, to: 0.2, weight: 1.2 },
-  { from: 0.24, to: 0.68, weight: 0.6 },
-  { from: 0.72, to: 0.9, weight: 1.6 },
-  { from: 0.9, to: 1.0, weight: 0.7 },
+  { from: 0.0, to: 0.415, weight: 1.0 },   // corridor glide   206 px/s
+  { from: 0.415, to: 0.6, weight: 1.25 },  // machine, wide    254 px/s
+  { from: 0.6, to: 0.82, weight: 2.1 },    // crawl the panel  442 px/s
+  { from: 0.82, to: 0.95, weight: 2.7 },   // the touch        577 px/s
+  { from: 0.95, to: 1.0, weight: 3.2 },    // settle           588 px/s
 ];
+
+/* The pulse is the second-slowest passage. It cannot go much further: segment
+   C carries 10.1s of footage in 1440px, so its average is 143 px/s against
+   segment B's 334, and every pixel the pulse takes comes off the pull-back.
+   At 260vh this is the ceiling — 340vh would buy the pulse ~300 px/s without
+   starving the close. */
 const PACING_C: PacingRange[] = [
-  { from: 0.0, to: 0.04, weight: 0.6 },
-  { from: 0.76, to: 0.95, weight: 1.2 },
+  { from: 0.0, to: 0.5, weight: 2.3 },     // the pulse        200 px/s
+  { from: 0.5, to: 0.82, weight: 0.8 },    // pull back         69 px/s
+  { from: 0.82, to: 0.94, weight: 1.2 },   // constellation    109 px/s
+  { from: 0.94, to: 1.0, weight: 1.6 },    // settle           130 px/s
 ];
 
 /* NOTE: the "97" in this card is content/claims.json `fleet.machines`, which
@@ -53,8 +77,8 @@ const PACING_C: PacingRange[] = [
    cannot be gated the way the DOM figures below are — it has to be resolved
    or the title card has to be re-cut before this goes public. */
 const TITLE_A: TitleCard = {
-  from: 0.13,
-  to: 0.235,
+  from: 0.14,
+  to: 0.26,
   ar: "٩٧ ماكينة. مملكة واحدة.",
   en: "97 machines. One kingdom.",
 };
@@ -229,7 +253,7 @@ export default function LabPage() {
         <ScrubSequence
           key={`a-${fmt}-${tier}`}
           {...A}
-          scrollVh={250}
+          scrollVh={320}
           damping={0.12}
           pacing={PACING_A}
           titleCard={TITLE_A}
@@ -273,7 +297,7 @@ export default function LabPage() {
         <ScrubSequence
           key={`b-${fmt}-${tier}`}
           {...B}
-          scrollVh={250}
+          scrollVh={420}
           damping={0.12}
           pacing={PACING_B}
           format={fmt}
@@ -375,7 +399,7 @@ export default function LabPage() {
         <ScrubSequence
           key={`c-${fmt}-${tier}`}
           {...C}
-          scrollVh={200}
+          scrollVh={260}
           damping={0.12}
           pacing={PACING_C}
           format={fmt}
