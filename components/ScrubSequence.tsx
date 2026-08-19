@@ -108,6 +108,26 @@ const AVIF_1PX =
 const TRACE =
   typeof window !== "undefined" && new URLSearchParams(window.location.search).has("trace");
 
+/**
+ * LOW-MEMORY TIER. Sampling every other frame from the sets already on disk —
+ * no re-encode, no new bytes in git — and halving the decode window. Triggered
+ * by navigator.deviceMemory <= 4, or ?lite=1 to test it by hand. deviceMemory
+ * is Chromium-only and absent on Safari, which is exactly the browser we
+ * cannot measure, so the query param is the honest lever for iOS.
+ */
+let liteMemo: boolean | null = null;
+export function isLite(): boolean {
+  if (liteMemo !== null) return liteMemo;
+  if (typeof window === "undefined") return false;
+  const q = new URLSearchParams(window.location.search).get("lite");
+  if (q === "1" || q === "0") liteMemo = q === "1";
+  else {
+    const dm = (navigator as unknown as { deviceMemory?: number }).deviceMemory;
+    liteMemo = typeof dm === "number" && dm <= 4;
+  }
+  return liteMemo;
+}
+
 let avifProbe: Promise<boolean> | null = null;
 
 /** Resolved once per page. Every segment awaits this same promise. */
@@ -135,6 +155,10 @@ type Registered = {
   release: () => void;
   rect: () => DOMRect;
   setRunning: (on: boolean) => void;
+  /** Tab going away: drop every decoded bitmap, keep the encoded bytes. */
+  onHide: () => void;
+  /** Tab back: repaint from whatever is at hand before decoding resumes. */
+  onShow: () => void;
   trace: (...m: unknown[]) => void;
 };
 const registry = new Set<Registered>();
@@ -217,11 +241,72 @@ function scheduleArbitrate() {
   driverRaf = requestAnimationFrame(arbitrate);
 }
 
+/**
+ * SURVIVING A DISCARDED TAB.
+ *
+ * iOS Safari throws backgrounded tabs away under memory pressure and rebuilds
+ * them on return, and a rebuilt page can come back with a blank canvas and no
+ * event to tell you. Two halves to the defence, and only the first is testable
+ * here: shed the expensive half of the cache the moment we are hidden so the
+ * tab is a smaller target, and repaint from something — anything — the instant
+ * we are visible again rather than waiting on a decode.
+ *
+ * Decoded bitmaps go. Encoded blobs stay: they are ~1% of the memory and
+ * refetching them on every tab switch would be its own bug.
+ */
+const SCROLL_KEY = "rpay-scrub-y";
+
+function saveScroll() {
+  try {
+    sessionStorage.setItem(SCROLL_KEY + location.pathname, String(Math.round(window.scrollY)));
+  } catch {
+    /* private mode, quota — losing the position is not worth throwing over */
+  }
+}
+
+/** Put a restored tab back where the reader left it. */
+function restoreScroll() {
+  try {
+    const v = Number(sessionStorage.getItem(SCROLL_KEY + location.pathname));
+    // Only if the browser has not already restored a position itself.
+    if (v > 0 && window.scrollY === 0) {
+      window.scrollTo(0, v);
+      return v;
+    }
+  } catch {
+    /* ignore */
+  }
+  return 0;
+}
+
+function goHidden() {
+  saveScroll();
+  registry.forEach((e) => e.onHide());
+}
+
+function goVisible() {
+  registry.forEach((e) => e.onShow());
+  arbitrate();
+}
+
+function onVisibility() {
+  if (document.visibilityState === "hidden") goHidden();
+  else goVisible();
+}
+
 function attachDriver() {
   if (driverAttached) return;
   driverAttached = true;
   addEventListener("scroll", scheduleArbitrate, { passive: true });
   addEventListener("resize", scheduleArbitrate);
+  document.addEventListener("visibilitychange", onVisibility);
+  addEventListener("pagehide", goHidden);
+  addEventListener("pageshow", goVisible);
+  /* A seam for the harness: there is no way to make a real browser discard a
+     tab on command, so the test drives the same code path directly. */
+  (window as unknown as { __scrubForceDiscard?: () => void }).__scrubForceDiscard = goHidden;
+  (window as unknown as { __scrubForceRestore?: () => void }).__scrubForceRestore = goVisible;
+  restoreScroll();
   arbitrate();
 }
 
@@ -230,6 +315,9 @@ function detachDriver() {
   driverAttached = false;
   removeEventListener("scroll", scheduleArbitrate);
   removeEventListener("resize", scheduleArbitrate);
+  document.removeEventListener("visibilitychange", onVisibility);
+  removeEventListener("pagehide", goHidden);
+  removeEventListener("pageshow", goVisible);
   cancelAnimationFrame(driverRaf);
   driverQueued = false;
   primaryOwner = null;
@@ -305,8 +393,18 @@ export default function ScrubSequence({
     if (!ctx) return;
 
     const set = mode === "tall" ? tall : wide;
-    const N = Math.max(1, set.count);
+    /* Lite: take every STRIDE-th file from the set already on disk. The pacing
+       curve is normalised so it needs no adjustment, and the poster, window
+       and arbiter all work in the reduced index space unchanged. */
+    const LITE = isLite();
+    const STRIDE = LITE ? 2 : 1;
+    const N = Math.max(1, Math.ceil(set.count / STRIDE));
+    const BEHIND = LITE ? Math.max(1, Math.round(behind / 2)) : behind;
+    const AHEAD = LITE ? Math.max(1, Math.round(ahead / 2)) : ahead;
     const SID = set.dir.split("/").slice(-2, -1)[0] ?? label;
+    root.dataset.lite = LITE ? "1" : "0";
+    root.dataset.frames = String(N);
+    root.dataset.window = String(BEHIND + AHEAD + 1);
     const tr = (...m: unknown[]) => {
       if (TRACE) console.log(`[seq] ${SID} y=${Math.round(window.scrollY)}`, ...m);
     };
@@ -357,7 +455,8 @@ export default function ScrubSequence({
       if ((w.__scrubPeak ?? 0) < (w.__scrubLive ?? 0)) w.__scrubPeak = w.__scrubLive;
     };
 
-    const frameSrc = (i: number) => `${set.dir}/f_${String(i + 1).padStart(3, "0")}.${ext}`;
+    const frameSrc = (i: number) =>
+      `${set.dir}/f_${String(Math.min(set.count, i * STRIDE + 1)).padStart(3, "0")}.${ext}`;
 
     /* ------------------------------------------------------- pacing curve */
 
@@ -403,12 +502,12 @@ export default function ScrubSequence({
       return -1;
     };
 
-    const draw = (want: number, force = false) => {
+    const draw = (want: number, force = false): boolean => {
       const j = nearest(want);
-      if (j < 0) return;
-      if (!force && j === drawn) return;
+      if (j < 0) return false;
+      if (!force && j === drawn) return true;
       const f = bmps[j];
-      if (!f || !f.width || !f.height || !cw || !ch) return;
+      if (!f || !f.width || !f.height || !cw || !ch) return false;
 
       const s = Math.max(cw / f.width, ch / f.height);
       const dw = f.width * s;
@@ -433,6 +532,72 @@ export default function ScrubSequence({
           new CustomEvent("scrubseq:firstframe", { bubbles: true, detail: { tff, mode, ext } }),
         );
       }
+      stamp();
+      return true;
+    };
+
+    /* ── canvas-loss watchdog ─────────────────────────────────────────────
+       Safari can drop a canvas backing store under memory pressure and fires
+       no event. The first version of this compared a central patch against
+       what it measured after the last draw, and it was quietly useless: it
+       had to stand down whenever the previous reading was ~0, which on this
+       film is most of segment B and all of the opening in space. A watchdog
+       that switches itself off over dark material is no watchdog at all.
+
+       So the canvas carries a sentinel instead. Every successful paint stamps
+       one pixel in the bottom-right corner with a fixed, visually undetectable
+       colour. The check reads that single pixel: if it is not exactly the
+       value we wrote, the store is not the one we drew into. No dependence on
+       what the frame contains, no false positives on black. */
+    const SENTINEL = [1, 2, 3];
+    const WATCH_MS = 400;
+    let lastWatch = 0;
+    let recoveries = 0;
+
+    const stamp = () => {
+      ctx.fillStyle = `rgb(${SENTINEL[0]},${SENTINEL[1]},${SENTINEL[2]})`;
+      ctx.fillRect(cw - 1, ch - 1, 1, 1);
+    };
+
+    const sentinelIntact = (): boolean => {
+      if (!canvas.width || !canvas.height) return true;
+      try {
+        const d = ctx.getImageData(canvas.width - 1, canvas.height - 1, 1, 1).data;
+        return d[0] === SENTINEL[0] && d[1] === SENTINEL[1] && d[2] === SENTINEL[2];
+      } catch {
+        return true; // unreadable for some other reason; do not thrash
+      }
+    };
+
+    const watchdog = (now: number) => {
+      if (live <= 0 && !firstDrawn) return;
+      if (now - lastWatch < WATCH_MS) return;
+      lastWatch = now;
+      if (sentinelIntact()) return;
+      recoveries += 1;
+      root.dataset.recovered = String(recoveries);
+      tr("WATCHDOG sentinel gone — canvas lost, repainting");
+      drawn = -1;
+      if (!draw(Math.round(cur), true)) repaintPoster();
+    };
+
+    /** Repaint right now from the best thing available: a held bitmap, else
+     *  the poster. Used on return from a backgrounded tab, where waiting for
+     *  a decode would show a blank canvas for hundreds of milliseconds. */
+    const repaintPoster = () => {
+      if (!poster || !poster.complete || !poster.naturalWidth) return false;
+      const ok = blit(poster, poster.naturalWidth, poster.naturalHeight);
+      if (ok) {
+        root.dataset.poster = "1";
+        stamp();
+      }
+      return ok;
+    };
+
+    const repaintNow = () => {
+      drawn = -1;
+      if (draw(Math.round(cur), true)) return true;
+      return repaintPoster();
     };
 
     /** Blit an image straight to the canvas, cover-fit. Used by the poster,
@@ -532,8 +697,8 @@ export default function ScrubSequence({
         return;
       }
 
-      winLo = Math.max(0, lastDir >= 0 ? c - behind : c - ahead);
-      winHi = Math.min(N - 1, lastDir >= 0 ? c + ahead : c + behind);
+      winLo = Math.max(0, lastDir >= 0 ? c - BEHIND : c - AHEAD);
+      winHi = Math.min(N - 1, lastDir >= 0 ? c + AHEAD : c + BEHIND);
 
       for (let i = 0; i < N; i += 1) {
         if (bmps[i] && !inWindow(i)) {
@@ -545,7 +710,7 @@ export default function ScrubSequence({
 
       if (!armed || inflight.size >= DECODE_POOL) return;
       const order: number[] = [c];
-      const reach = Math.max(behind, ahead);
+      const reach = Math.max(BEHIND, AHEAD);
       for (let d = 1; d <= reach; d += 1) {
         const lead = lastDir >= 0 ? c + d : c - d;
         const trail = lastDir >= 0 ? c - d : c + d;
@@ -639,6 +804,7 @@ export default function ScrubSequence({
             if (blit(poster, poster.naturalWidth, poster.naturalHeight)) {
               tr("poster painted");
               root.dataset.poster = "1";
+              stamp();
             }
           };
           poster.src = frameSrc(0);
@@ -681,6 +847,8 @@ export default function ScrubSequence({
         release,
         rect: () => root.getBoundingClientRect(),
         setRunning: () => {}, // nothing animates under reduced motion
+        onHide: () => {},     // a single frame is not worth shedding
+        onShow: () => {},
         trace: tr,
       };
       selfReg = me;
@@ -717,7 +885,7 @@ export default function ScrubSequence({
       return frameAt(p);
     };
 
-    const tick = () => {
+    const tick = (now: number = performance.now()) => {
       raf = requestAnimationFrame(tick);
       const t = targetIndex();
       const d = t - cur;
@@ -733,6 +901,7 @@ export default function ScrubSequence({
       }
       draw(c);
       paintTitle(cur);
+      watchdog(now);
     };
 
     const start = () => {
@@ -760,6 +929,14 @@ export default function ScrubSequence({
       release,
       rect: () => root.getBoundingClientRect(),
       setRunning: (on) => (on ? start() : stop()),
+      onHide: () => {
+        tr("HIDDEN — shedding", live, "bitmaps, keeping", fetched, "blobs");
+        stop();
+        evictAll();
+      },
+      onShow: () => {
+        tr("VISIBLE — repaint", repaintNow() ? "ok" : "nothing to paint yet");
+      },
       trace: tr,
     };
     selfReg = me;

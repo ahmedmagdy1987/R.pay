@@ -15,7 +15,8 @@
 import { chromium, webkit } from "playwright";
 
 const BASE = process.argv[2] ?? "http://127.0.0.1:3210";
-const URL = `${BASE}/concepts/lab`;
+const LITE = process.argv.includes("--lite");
+const URL = `${BASE}/concepts/lab${LITE ? "?lite=1" : ""}`;
 const SEG = "/assets/lab/seg/";
 
 const PROFILES = [
@@ -241,7 +242,7 @@ for (const p of PROFILES) {
 
 for (const r of out) {
   console.log(`\n── ${r.profile} ${"─".repeat(Math.max(0, 44 - r.profile.length))}`);
-  console.log(`  set chosen        ${r.mode} ${r.modeOk ? "✓" : "✗"}`);
+  console.log(`  set chosen        ${r.mode} ${r.modeOk ? "✓" : "✗"}${LITE ? "  · LITE tier" : ""}`);
   console.log(`  codec chosen      ${r.fmt} ${r.fmtOk ? "✓" : "✗ EXPECTED OTHER"}   (segments: ${r.fmtsSeen.join(", ")})`);
   console.log(`  frame requests    ${r.segReqs}   avif ${r.avifReqs} · webp ${r.webpReqs}`);
   console.log(`  <video> elements  ${r.videoCount} ${r.videoCount === 0 ? "✓" : "✗"}`);

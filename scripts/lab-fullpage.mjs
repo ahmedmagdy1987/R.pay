@@ -59,7 +59,8 @@ const run = async () => {
     if (t.startsWith("[seq]")) events.push(t);
   });
 
-  await page.goto(`${BASE}/concepts/lab`, { waitUntil: "load", timeout: 90000 });
+  const LITE = process.argv.includes("--lite");
+  await page.goto(`${BASE}/concepts/lab${LITE ? "?lite=1" : ""}`, { waitUntil: "load", timeout: 90000 });
   await page.waitForFunction(() => document.querySelectorAll(".scrubseq").length === 3, null, {
     timeout: 30000,
   });
