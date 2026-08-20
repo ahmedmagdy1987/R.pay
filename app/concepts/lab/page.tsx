@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ScrubSequence, {
+  warmSegments,
   type PacingRange,
   type SeqFormat,
   type SeqSet,
@@ -174,7 +175,6 @@ export default function LabPage() {
      out of the HTTP cache and the poster covers the gap. */
   const [tier, setTier] = useState<"std" | "lite">("std");
   const progRef = useRef<HTMLDivElement>(null);
-  const specRef = useRef<HTMLDivElement>(null);
   const txAr = useRef<HTMLSpanElement>(null);
   const txEn = useRef<HTMLSpanElement>(null);
 
@@ -207,6 +207,12 @@ export default function LabPage() {
      reads as a layout that failed to finish. The COUNT is read off the DOM
      rather than hardcoded, so adding or removing a card cannot leave the
      indicator lying about how many there are. */
+  /* INTRO OVERLAY. The film used to open on an empty canvas and fetch while
+     the reader was already scrolling, so the first seconds stuttered. The
+     overlay holds the door shut until segment A can play through, and its bar
+     is driven by real fetched-frame counts, never a timer. */
+  const [intro, setIntro] = useState(true);
+  const [introP, setIntroP] = useState(0);
   const objRef = useRef<HTMLDivElement>(null);
   const [objCount, setObjCount] = useState(0);
   const [objIdx, setObjIdx] = useState(0);
@@ -223,6 +229,38 @@ export default function LabPage() {
 
   useEffect(() => {
     if (objRef.current) setObjCount(objRef.current.children.length);
+  }, []);
+
+  useEffect(() => {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* Warm A fully and pull B in behind it, rather than waiting for the
+       reader to scroll into range. */
+    warmSegments(2);
+
+    const first = document.querySelector(".scrubseq");
+    const done = () => setIntro(false);
+
+    const onProgress = (ev: Event) => {
+      const e = ev as CustomEvent<{ fetched: number; total: number }>;
+      if (!first || ev.target !== first) return;
+      const { fetched, total } = e.detail;
+      if (!total) return;
+      setIntroP(Math.min(100, Math.round((fetched / total) * 100)));
+      /* CAN PLAY THROUGH, not merely started: every frame of A is in hand. */
+      if (fetched >= total) done();
+    };
+    /* Reduced motion: no bar to watch, leave on the first painted frame. */
+    const onFirst = () => { if (reduce) done(); };
+
+    window.addEventListener("scrubseq:progress", onProgress, true);
+    window.addEventListener("scrubseq:firstframe", onFirst, true);
+    /* Nobody gets trapped behind a stalled network. */
+    const bail = setTimeout(done, 8000);
+    return () => {
+      window.removeEventListener("scrubseq:progress", onProgress, true);
+      window.removeEventListener("scrubseq:firstframe", onFirst, true);
+      clearTimeout(bail);
+    };
   }, []);
 
   const onObjScroll = () => {
@@ -308,33 +346,24 @@ export default function LabPage() {
     );
     if (counter) cIo.observe(counter);
 
-    const spec = specRef.current;
-    const syncSpec = () => {
-      if (!spec) return;
-      const segs = Array.from(document.querySelectorAll<HTMLElement>(".scrubseq"));
-      const armed = segs.findIndex((s) => s.dataset.armed === "1");
-      const fmtNow = segs.find((s) => s.dataset.fmt)?.dataset.fmt ?? "…";
-      const live = (window as unknown as { __scrubLive?: number }).__scrubLive ?? 0;
-      const bw = Number(segs.find((s) => s.dataset.bmw)?.dataset.bmw ?? 0);
-      const bh = Number(segs.find((s) => s.dataset.bmh)?.dataset.bmh ?? 0);
-      const mb = bw ? ((live * bw * bh * 4) / 1048576).toFixed(1) : "0";
-      spec.innerHTML =
-        `<span>fmt <b>${fmtNow}</b></span><span>seg <b>${armed < 0 ? "—" : "ABC"[armed]}</b></span>` +
-        `<span>decoded <b>${live}</b></span><span>mem <b>${mb} MB</b></span>`;
-    };
-    const specTimer = setInterval(syncSpec, 250);
-    syncSpec();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       io.disconnect();
       cIo.disconnect();
-      clearInterval(specTimer);
     };
   }, [TX]);
 
   return (
     <>
+      {intro && (
+        <div className="lab-intro" role="status" aria-live="polite">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={R_MARK} alt="R.Pay" />
+          <span className="lab-intro-bar"><i style={{ width: introP + "%" }} /></span>
+        </div>
+      )}
+
       <div className="lab-prog" ref={progRef} aria-hidden="true" />
 
       <header className="lab-top">
@@ -356,7 +385,6 @@ export default function LabPage() {
         <span className="en-t">WhatsApp</span>
       </a>
 
-      <div className="lab-spec" ref={specRef} aria-hidden="true" />
 
       <main id="top">
         <ScrubSequence

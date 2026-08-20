@@ -164,6 +164,20 @@ type Registered = {
 const registry = new Set<Registered>();
 
 /**
+ * Fetch-warm the first `count` segments regardless of where the reader is.
+ * The intro overlay uses this so segment A is fully decoded before the film is
+ * ever shown, and B is already arriving behind it — otherwise the first scrub
+ * is a fetch, and it stutters.
+ */
+export function warmSegments(count = 2) {
+  let i = 0;
+  registry.forEach((e) => {
+    if (i < count) e.arm();
+    i += 1;
+  });
+}
+
+/**
  * ONE page-level arbiter, driven by scroll position.
  *
  * THE BUG THIS REPLACES. Arming used to be an IntersectionObserver with a
@@ -830,6 +844,12 @@ export default function ScrubSequence({
       if (fillRef.current) fillRef.current.style.width = `${p}%`;
       if (pctRef.current) pctRef.current.textContent = `${p}%`;
       root.dataset.loaded = String(fetched);
+      root.dispatchEvent(
+        new CustomEvent("scrubseq:progress", {
+          bubbles: true,
+          detail: { label, fetched, total: totalFrames },
+        }),
+      );
       if (loadRef.current) loadRef.current.dataset.done = fetched >= totalFrames ? "1" : "0";
     };
 
