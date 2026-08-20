@@ -343,27 +343,30 @@ html:not(.en) .props .provenance { letter-spacing: 0.04em; }
 
 /* Breadth, after the argument. Machine types only — the venue axis is a
    different question and is deliberately not mixed back in here. */
-.sectors-lead {
-  margin-top: 36px;
-  font-size: 0.85rem;
-  color: var(--mute);
-}
-.sectors-lead.unverified { opacity: 0.5; }
-.sectors-lead + .sectors { margin-top: 14px; }
-
-/* sectors */
+/* One continuous line: label, colon, items. Inline flow rather than flex,
+   so it wraps like a sentence and RTL keeps the opener next to what
+   completes it instead of pushing them to opposite edges. */
 .sectors {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 40px;
-}
-.sectors span {
-  padding: 9px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  font-size: 0.88rem;
+  margin-top: 36px;
+  font-size: 0.9rem;
+  line-height: 2;
   color: var(--mute);
+}
+.sectors.unverified { opacity: 0.5; }
+
+/* Was --mute at 0.58 and 0.85rem, which next to bordered items read as a
+   disabled control rather than as the start of a sentence. */
+.sectors-lead {
+  color: var(--ink);
+  margin-inline-end: 4px;
+}
+
+/* NO BORDER, NO PILL, NO HIT AREA — these are categories, not controls. */
+.sector { color: var(--mute); }
+.sector + .sector::before {
+  content: "·";
+  margin: 0 9px;
+  color: var(--line);
 }
 
 /* the counter */
@@ -826,15 +829,49 @@ html:not(.en) .plabel { letter-spacing: 0.04em; text-transform: none; font-size:
 }
 
 /* ── objection cards ───────────────────────────────────────────────────── */
+/* FIVE CARDS, AND THE GRID USED TO EXPECT FOUR. auto-fit gave four columns
+   at desktop, so the fifth card sat alone on row two beside an empty cell —
+   and because the container painted var(--line) behind a 1px gap grid, that
+   empty cell showed as a solid lit block that read as a broken card.
+
+   Six columns, each card spanning two, gives three per row. The fourth card
+   starts at column 2, so the last two centre under the first three.
+
+   THE CONTAINER NO LONGER PAINTS THE HAIRLINES. It cannot: a centred final
+   row leaves real gaps at both ends of row two, and any background behind the
+   grid shows through them as the same false block. Each card carries its own
+   border instead, so an empty region is simply empty at every breakpoint. */
 .objections {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
-  gap: 1px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
   margin-top: 48px;
-  border: 1px solid var(--line);
-  background: var(--line);
 }
-.objections article { background: var(--void); padding: 28px 26px; }
+.objections article {
+  grid-column: span 2;
+  background: var(--void);
+  border: 1px solid var(--line);
+  padding: 28px 26px;
+}
+/* Row two, centred: skip one column before the fourth card. */
+.objections article:nth-child(4) { grid-column: 2 / span 2; }
+
+/* Tablet: two per row. The fifth would be orphaned, so it takes the full
+   width rather than sitting alone in half of one. */
+@media (max-width: 1023px) {
+  .objections { grid-template-columns: repeat(2, 1fr); }
+  .objections article,
+  .objections article:nth-child(4) { grid-column: auto; }
+  .objections article:last-child { grid-column: 1 / -1; }
+}
+
+/* Phone: one per row. Nothing can be orphaned. */
+@media (max-width: 639px) {
+  .objections { grid-template-columns: 1fr; }
+  .objections article,
+  .objections article:nth-child(4),
+  .objections article:last-child { grid-column: auto; }
+}
 .objections h3 {
   font-family: var(--fd);
   font-weight: 600;

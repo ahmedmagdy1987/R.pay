@@ -540,21 +540,29 @@ export default function LabPage() {
               </div>
             </div>
           )}
+          {/* ONE SENTENCE, ONE FLOW. The label used to be a block <p> and the
+              items a flex row beneath it, so in RTL the opener sat at one edge
+              and the words that complete it at the other — a sentence severed
+              from its object. This is now plain inline text: label, colon,
+              items, wrapping as a unit the way a line of prose does.
+
+              The items are NOT pills any more either. A pill is a control, and
+              these are categories with nothing behind them; styling that
+              promises a click that does not exist is a small lie. Text with a
+              separator, no border, no hit area. */}
           {sectorsMode !== "omit" && (
-            <>
-              <p className={`sectors-lead rv${sectorsMode === "publish" ? "" : " unverified"}`}>
-                <span className="ar-t">ويعمل النظام نفسه في</span>
-                <span className="en-t">The same system also runs</span>
-              </p>
-              <div className={`sectors${sectorsMode === "publish" ? "" : " unverified"}`}>
-                {SECTORS.map((sec) => (
-                  <span key={sec.en}>
-                    <span className="ar-t">{sec.ar}</span>
-                    <span className="en-t">{sec.en}</span>
-                  </span>
-                ))}
-              </div>
-            </>
+            <p className={`sectors rv${sectorsMode === "publish" ? "" : " unverified"}`}>
+              <span className="sectors-lead">
+                <span className="ar-t">ويعمل النظام نفسه في:</span>
+                <span className="en-t">The same system also runs:</span>
+              </span>
+              {SECTORS.map((sec) => (
+                <span className="sector" key={sec.en}>
+                  <span className="ar-t">{sec.ar}</span>
+                  <span className="en-t">{sec.en}</span>
+                </span>
+              ))}
+            </p>
           )}
         </section>
 
