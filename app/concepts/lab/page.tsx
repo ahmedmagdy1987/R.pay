@@ -32,43 +32,60 @@ const C = seg("c");
    changing fast. Delta measures change, which is what scroll should buy.  */
 
 /* Ranked by what the shot is worth, then given scroll distance to match.
-   Run `node scripts/pacing-table.mjs` to see these resolved into
-   scroll-pixels per second of footage — relative weights are impossible to
-   argue about, px/s is not. The last band of each segment is a deceleration
-   into the DOM act, so the film settles rather than being cut off. */
+   Run `node scripts/pacing-table.mjs` to see these resolved. It reads the
+   arrays below straight out of this file, so it cannot drift from them.
 
-/* Establishing. The orbit and the cloud are the two fastest passages on the
-   page — they are setting a place, not saying anything. */
+   TWO NUMBERS, AND THEY ARE DIFFERENT QUESTIONS. px/s says how much scroll a
+   second of footage costs. FRAMES PER NOTCH says how much film one flick of
+   the wheel spends — roughly 100px — and that is the one the hand feels. A
+   passage can have a long page and still escape the reader if a single notch
+   jumps five frames. At the touch the target is ~1.0: one notch, one frame.
+
+   The last band of each segment is a deceleration into the DOM act, so the
+   film settles rather than being cut off. */
+
+/* Establishing. The orbit and the cloud are the fastest passages in this
+   segment — they set a place rather than say anything. They are NOT the
+   fastest on the page: segment C's scripted pull-back is, and always was. */
 const PACING_A: PacingRange[] = [
-  { from: 0.0, to: 0.13, weight: 0.7 },    // orbit            146 px/s
-  { from: 0.13, to: 0.27, weight: 0.55 },  // cloud            110 px/s
-  { from: 0.27, to: 0.485, weight: 0.85 }, // aerial Riyadh    172 px/s
-  { from: 0.485, to: 0.75, weight: 1.0 },  // boulevard        208 px/s
-  { from: 0.75, to: 0.93, weight: 1.4 },   // the entrance     286 px/s
-  { from: 0.93, to: 1.0, weight: 1.75 },   // settle           342 px/s
+  { from: 0.0, to: 0.13, weight: 0.7 },    // orbit         213 px/s · 4.39 f/notch
+  { from: 0.13, to: 0.27, weight: 0.55 },  // cloud         160 px/s · 5.59 f/notch
+  { from: 0.27, to: 0.485, weight: 0.85 }, // aerial Riyadh 251 px/s · 3.62 f/notch
+  { from: 0.485, to: 0.75, weight: 1.0 },  // boulevard     303 px/s · 3.08 f/notch
+  { from: 0.75, to: 0.93, weight: 1.4 },   // the entrance  416 px/s · 2.20 f/notch
+  { from: 0.93, to: 1.0, weight: 1.75 },   // settle        498 px/s · 1.76 f/notch
 ];
 
-/* The film's peak. The crawl across the machine's face and the touch itself
-   are the slowest thing on the page by a wide margin — 577 px/s against the
-   cloud's 110, so the same second of footage costs five times the scroll. */
+/* The film's peak, and the only passage tuned to a target rather than to a
+   ranking. THE TOUCH IS SET TO ~1.0 FRAMES PER NOTCH: one flick of the wheel
+   advances one frame, so the passage resists the hand instead of escaping it.
+
+   Distance alone did not get there. At 640vh with the old weights the touch
+   sat at 1.10 f/notch; the approach and the touch were given a larger share
+   of the segment to close the last of it. 1061 px/s against the cloud's 160 —
+   the same second of footage costs six and a half times the scroll. */
 const PACING_B: PacingRange[] = [
-  { from: 0.0, to: 0.415, weight: 1.0 },   // corridor glide   206 px/s
-  { from: 0.415, to: 0.6, weight: 1.25 },  // machine, wide    254 px/s
-  { from: 0.6, to: 0.82, weight: 2.1 },    // crawl the panel  442 px/s
-  { from: 0.82, to: 0.95, weight: 2.7 },   // the touch        577 px/s
-  { from: 0.95, to: 1.0, weight: 3.2 },    // settle           588 px/s
+  { from: 0.0, to: 0.415, weight: 1.0 },   // corridor       302 px/s · 3.44 f/notch
+  { from: 0.415, to: 0.6, weight: 1.35 },  // machine, wide  405 px/s · 2.55 f/notch
+  { from: 0.6, to: 0.82, weight: 2.6 },    // crawl the panel 803 px/s · 1.32 f/notch
+  { from: 0.82, to: 0.95, weight: 3.4 },   // THE TOUCH     1061 px/s · 1.01 f/notch
+  { from: 0.95, to: 1.0, weight: 3.6 },    // settle         971 px/s · 0.96 f/notch
 ];
 
-/* The pulse is the second-slowest passage. It cannot go much further: segment
-   C carries 10.1s of footage in 1440px, so its average is 143 px/s against
-   segment B's 334, and every pixel the pulse takes comes off the pull-back.
-   At 260vh this is the ceiling — 340vh would buy the pulse ~300 px/s without
-   starving the close. */
+/* At 260vh this file predicted that 340vh would buy the pulse ~300 px/s.
+   At 330vh it buys 287, so the prediction held.
+
+   THE PULL-BACK IS STILL THE FASTEST PASSAGE ON THE PAGE, at 8.86 frames per
+   notch — one notch spends nearly a tenth of the segment. That is intended in
+   kind: it is the scripted pull-back to orbit, and it should move. It is not
+   necessarily intended in degree, and nothing here has tested that. Closing it
+   means taking scroll from the pulse or lengthening C again; it is left alone
+   because it was not asked for, not because it was measured and cleared. */
 const PACING_C: PacingRange[] = [
-  { from: 0.0, to: 0.5, weight: 2.3 },     // the pulse        200 px/s
-  { from: 0.5, to: 0.82, weight: 0.8 },    // pull back         69 px/s
-  { from: 0.82, to: 0.94, weight: 1.2 },   // constellation    109 px/s
-  { from: 0.94, to: 1.0, weight: 1.6 },    // settle           130 px/s
+  { from: 0.0, to: 0.5, weight: 2.3 },     // the pulse      287 px/s · 3.08 f/notch
+  { from: 0.5, to: 0.82, weight: 0.8 },    // pull back       99 px/s · 8.86 f/notch
+  { from: 0.82, to: 0.94, weight: 1.2 },   // constellation  156 px/s · 5.91 f/notch
+  { from: 0.94, to: 1.0, weight: 1.6 },    // settle         187 px/s · 4.43 f/notch
 ];
 
 /* NOTE: the "97" in this card is content/claims.json `fleet.machines`, which
@@ -314,7 +331,7 @@ export default function LabPage() {
         <ScrubSequence
           key={`a-${fmt}-${tier}`}
           {...A}
-          scrollVh={320}
+          scrollVh={420}
           damping={0.12}
           pacing={PACING_A}
           titleCard={TITLE_A}
@@ -363,7 +380,7 @@ export default function LabPage() {
         <ScrubSequence
           key={`b-${fmt}-${tier}`}
           {...B}
-          scrollVh={420}
+          scrollVh={640}
           damping={0.12}
           pacing={PACING_B}
           format={fmt}
@@ -719,7 +736,7 @@ export default function LabPage() {
         <ScrubSequence
           key={`c-${fmt}-${tier}`}
           {...C}
-          scrollVh={260}
+          scrollVh={330}
           damping={0.12}
           pacing={PACING_C}
           format={fmt}
