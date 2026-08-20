@@ -261,22 +261,19 @@
     },
     {
       "id": "sectors.served",
-      "label": "Which sectors R.Pay's system runs in",
+      "label": "The machine types the system runs, besides arcade",
       "value": [
-        { "ar": "ملاهي ومراكز ترفيه", "en": "Amusement parks and entertainment centres" },
-        { "ar": "صالات ألعاب أركيد", "en": "Arcade halls" },
-        { "ar": "أجهزة بيع ذاتي", "en": "Self-service machines" },
-        { "ar": "مطاعم ومقاهٍ", "en": "Restaurants and cafés" },
-        { "ar": "مراكز تجارية", "en": "Shopping centres" }
+        { "ar": "آلات البيع الذاتي", "en": "Vending machines" },
+        { "ar": "آلات القهوة", "en": "Coffee machines" }
       ],
       "verified": true,
-      "asOf": "2026-08-19",
-      "source": "Ahmed, 2026-08-19, ordered by R.Pay's own evidence: the entertainment names in the company profile, and the thirteen client marks published on rpay.sa.",
-      "location": "The sector row in DOM B, /concepts/lab",
-      "why": "The list this replaced — malls, residential compounds, corporate HQs, gyms — described places a LANDLORD has floor space in. With the reader settled as an operator, the sectors are the ones their machines already run in.",
+      "asOf": "2026-08-20",
+      "source": "R.Pay's own category names, verbatim from the machine sections of v1-original: «آلات البيع الذاتي / Vending Machines» and «آلات القهوة / Coffee Machines». Corroborated by the site meta on that branch — 'Smart payments and unified control for vending, arcade and coffee machines' — and by rpay.sa retrieved 2026-08-20.",
+      "location": "The breadth row beneath the arcade lead in DOM B, /concepts/lab",
+      "why": "REWRITTEN 2026-08-20, and this is its second rewrite. The original list — malls, residential compounds, corporate HQs, gyms — described places a LANDLORD has floor space in. The list that replaced it on 2026-08-19 fixed the reader but mixed two axes: «صالات ألعاب أركيد» and «أجهزة بيع ذاتي» are MACHINE types while «مراكز تجارية» and «مطاعم ومقاهٍ» are VENUE types, so one row asked to be read two ways at once. This row is machine types only. Arcade is lifted out of it into the lead above (sectors.arcadeDepth), because arcade is the proof rather than one of five equals. MIND THE COUNT: R.Pay publishes exactly THREE machine categories and arcade is one of them, so with arcade leading, this row is TWO items. A fourth, 'retail product machines', was proposed on 2026-08-20 and appears nowhere in R.Pay's material; it is left out until they confirm the category exists.",
       "blocksImplementation": false,
       "blocksLaunch": false,
-      "fallback": "The row is omitted. It is a qualifier, not an argument, and the section reads without it."
+      "fallback": "The row is omitted. It is breadth after the argument, and the arcade lead stands without it."
     },
     {
       "id": "commercial.tour",
@@ -343,6 +340,19 @@
       "blocksImplementation": false,
       "blocksLaunch": false,
       "fallback": "The tile is omitted. It qualifies the device count with breadth and is not load-bearing — the logo wall directly beneath makes the same point visually."
+    },
+    {
+      "id": "sectors.arcadeDepth",
+      "label": "Arcade is R.Pay's deepest vertical, and the hardest case the system meets",
+      "value": "Arcade is the deepest deployment and the hardest case. An arcade machine dispenses prizes, so inventory has to tie every prize to its device; it gets moved, so a GPS geofence has to catch it leaving its zone and shut it down; and it takes automatic refunds with no human intervention. A system carrying all three runs a vending or coffee machine comfortably.",
+      "verified": true,
+      "asOf": "2026-08-20",
+      "source": "Ahmed, 2026-08-20, relaying the owner: arcade is the deepest vertical — the most deployments and the most operational experience — alongside vending and coffee machines. The three capabilities are R.Pay's own words, from the comparison table and feature copy on v1-original: «إدارة المخزون والهدايا / Inventory and rewards»; «الرادار الجغرافي GPS / GPS geofencing», detailed as «تنبيه فوري وإغلاق تلقائي عند خروج الجهاز عن نطاقه المحدد»; and «استرداد تلقائي / Auto refund». Their profile separately claims «خبرة تشغيلية عميقة» in arcade.",
+      "location": "The lead block above the breadth row in DOM B, /concepts/lab",
+      "why": "The sector row read as five equals, which buried the strongest asset R.Pay has. Arcade is not scope, it is PROOF: it is the hardest case a payment and operations system meets, so vending follows FROM it instead of sitting beside it. TWO CAPABILITIES WERE PROPOSED FOR THIS STATEMENT AND ARE DELIBERATELY ABSENT. 'Game activation' appears NOWHERE in R.Pay's material — zero occurrences of تفعيل or activation across v1-original, the audit brief and rpay.sa — so it is not claimed here. And «استرداد تلقائي» is published with NO trigger stated anywhere, so the refund is stated without a cause: 'automatic refund when a game fails' is not something R.Pay says, and the gloss 'on failed payment' in docs/redesign-2026/00-BRIEF.md is this repo's own reading, not theirs. If R.Pay confirms either, this claim can carry it.",
+      "blocksImplementation": false,
+      "blocksLaunch": false,
+      "fallback": "The lead block is omitted and the breadth row stands alone, which returns the section to a flat list of machine types."
     }
   ]
 }

@@ -7,6 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lab:serve": "next start -p 3210",
+    "lab:fullpage": "node scripts/lab-fullpage.mjs",
+    "lab:measure": "node scripts/lab-measure.mjs",
+    "lab:viewport": "node scripts/lab-viewport.mjs",
+    "lab:resilience": "node scripts/lab-resilience.mjs",
     "shoot": "node scripts/shoot.mjs",
     "moments": "node scripts/moments.mjs",
     "ocr": "node scripts/frames-ocr.mjs"

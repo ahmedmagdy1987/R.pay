@@ -297,6 +297,60 @@ html:not(.en) .props .provenance { letter-spacing: 0.04em; }
   margin-bottom: 16px;
 }
 
+/* ── the deepest vertical ──────────────────────────────
+   Arcade leads the section as PROOF rather than as scope. The plate is the
+   only arcade image on the route: the film's single machine is a vending
+   machine, so without this the deepest vertical is never actually seen. */
+.deepest {
+  display: grid;
+  grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  margin-top: 44px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  background: var(--void);
+}
+.deepest.unverified { opacity: 0.5; }
+.deepest-plate { margin: 0; }
+.deepest-plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+}
+.deepest-body h3 {
+  font-family: var(--fd);
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.deepest-body p {
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--mute);
+}
+@media (max-width: 720px) {
+  .deepest {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .deepest-plate { max-width: 210px; }
+}
+
+/* Breadth, after the argument. Machine types only — the venue axis is a
+   different question and is deliberately not mixed back in here. */
+.sectors-lead {
+  margin-top: 36px;
+  font-size: 0.85rem;
+  color: var(--mute);
+}
+.sectors-lead.unverified { opacity: 0.5; }
+.sectors-lead + .sectors { margin-top: 14px; }
+
 /* sectors */
 .sectors {
   display: flex;

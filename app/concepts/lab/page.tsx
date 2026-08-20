@@ -177,6 +177,7 @@ export default function LabPage() {
      honesty layer entirely. */
   const railsMode = claimMode("rails.accepted");
   const RAILS = devValue<string[]>("rails.accepted") ?? [];
+  const arcadeMode = claimMode("sectors.arcadeDepth");
   const sectorsMode = claimMode("sectors.served");
   const SECTORS = devValue<{ ar: string; en: string }[]>("sectors.served") ?? [];
   /* "No operational load on you" allocates COST, which is the substance of
@@ -468,15 +469,75 @@ export default function LabPage() {
             </article>
           </div>
 
-          {sectorsMode !== "omit" && (
-            <div className={`sectors rv${sectorsMode === "publish" ? "" : " unverified"}`}>
-              {SECTORS.map((sec) => (
-                <span key={sec.en}>
-                  <span className="ar-t">{sec.ar}</span>
-                  <span className="en-t">{sec.en}</span>
-                </span>
-              ))}
+          {/* ── ARCADE LEADS, AS PROOF ─────────────────────
+              The row under this used to carry arcade as one of five equals,
+              which buried the strongest thing R.Pay has. Arcade is the hardest
+              case the system meets, so vending follows FROM it.
+
+              The plate is card-arcade.webp, already committed and until now
+              unused on this route. It earns its place because the film's only
+              machine is a VENDING machine, at the peak moment — without this,
+              the deepest vertical is asserted in copy and never once shown.
+
+              Three capabilities, all R.Pay's own words. "Game activation" is
+              not among them because it appears nowhere in their material, and
+              the refund is stated WITHOUT a cause because they publish
+              «استرداد تلقائي» with no trigger. See sectors.arcadeDepth. */}
+          {arcadeMode !== "omit" && (
+            <div className={`deepest rv${arcadeMode === "publish" ? "" : " unverified"}`}>
+              <figure className="deepest-plate">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/assets/concept-08/card-arcade.webp"
+                  alt={
+                    en
+                      ? "An arcade games machine with a contactless payment reader on its front panel."
+                      : "ماكينة ألعاب أركيد وعلى واجهتها قارئ دفع لاتلامسي."
+                  }
+                  width={1200}
+                  height={1607}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <div className="deepest-body">
+                <h3>
+                  <span className="ar-t">أعمق ما يعمل فيه النظام: ألعاب الأركيد</span>
+                  <span className="en-t">Where the system goes deepest: arcade games</span>
+                </h3>
+                <p>
+                  <span className="ar-t">
+                    الأركيد أصعب حالة تواجه نظام دفع وتشغيل. جهازٌ يصرف جوائز، فيحتاج مخزونًا يربط
+                    كل جائزة بجهازها. وجهازٌ يُنقل، فيحتاج رادارًا جغرافيًا يرصد خروجه عن نطاقه
+                    ويغلقه في حينه. واستردادٌ تلقائي دون تدخّل بشري. والنظام الذي يحمل هذا كله،
+                    تصبح آلة البيع الذاتي عنده حالة أهون.
+                  </span>
+                  <span className="en-t">
+                    Arcade is the hardest case a payment and operations system meets. A machine that
+                    dispenses prizes, so its inventory has to tie every prize to its device. A machine
+                    that gets moved, so a geographic radar has to catch it leaving its zone and shut it
+                    down there and then. And automatic refunds, with no human intervention. For a
+                    system carrying all of that, a vending machine is the easier case.
+                  </span>
+                </p>
+              </div>
             </div>
+          )}
+          {sectorsMode !== "omit" && (
+            <>
+              <p className={`sectors-lead rv${sectorsMode === "publish" ? "" : " unverified"}`}>
+                <span className="ar-t">ويعمل النظام نفسه في</span>
+                <span className="en-t">The same system also runs</span>
+              </p>
+              <div className={`sectors${sectorsMode === "publish" ? "" : " unverified"}`}>
+                {SECTORS.map((sec) => (
+                  <span key={sec.en}>
+                    <span className="ar-t">{sec.ar}</span>
+                    <span className="en-t">{sec.en}</span>
+                  </span>
+                ))}
+              </div>
+            </>
           )}
         </section>
 

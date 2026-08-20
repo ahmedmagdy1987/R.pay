@@ -14,7 +14,18 @@
  */
 import { chromium, webkit } from "playwright";
 
-const BASE = process.argv[2] ?? "http://127.0.0.1:3210";
+/* ONE PORT FOR THE WHOLE LAB HARNESS. These four scripts defaulted to four
+   different ports until 2026-08-20 — 3210, 3224, 3236, 3250 — and nothing
+   served any of them, so a no-argument run failed to connect rather than
+   measuring anything. It also treated a bare "--flag" as a baseUrl. Both fixed:
+   one port, and argv[2] is only a URL if it does not start with "--". */
+const LAB_PORT = 3210;
+const argUrl = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : null;
+const BASE = argUrl ?? `http://127.0.0.1:${LAB_PORT}`;
+if (!argUrl) {
+  console.log(`\n  no baseUrl given — expecting ${BASE}`);
+  console.log("  if nothing is serving it:  npm run build && npm run lab:serve\n");
+}
 const LITE = process.argv.includes("--lite");
 const URL = `${BASE}/concepts/lab${LITE ? "?lite=1" : ""}`;
 const SEG = "/assets/lab/seg/";
