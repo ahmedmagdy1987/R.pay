@@ -202,6 +202,15 @@ export default function LabPage() {
      work instead, and stand on their own; this line is additive and appears
      only once the claim clears. */
   const venueMode = claimMode("commercial.venueProposition");
+  /* Below 820px the objection cards become a snapping row. The dots report
+     which card is in frame — five cards behind a clipped edge with no marker
+     reads as a layout that failed to finish. The COUNT is read off the DOM
+     rather than hardcoded, so adding or removing a card cannot leave the
+     indicator lying about how many there are. */
+  const objRef = useRef<HTMLDivElement>(null);
+  const [objCount, setObjCount] = useState(0);
+  const [objIdx, setObjIdx] = useState(0);
+
   const machinesMode = claimMode("fleet.machines");
   /* NOT a locations count. See customers.brandCount: 13 counts the brand MARKS
      on rpay.sa's logo wall — the same thirteen rendered directly beneath this
@@ -211,6 +220,28 @@ export default function LabPage() {
   const TX = devValue<number>("totals.transactions");
   const MACHINES = devValue<number>("fleet.machines");
   const BRANDS = devValue<number>("customers.brandCount");
+
+  useEffect(() => {
+    if (objRef.current) setObjCount(objRef.current.children.length);
+  }, []);
+
+  const onObjScroll = () => {
+    const el = objRef.current;
+    if (!el || !el.children.length) return;
+    /* scroll-snap-align is 'start', and in RTL 'start' is the RIGHT edge.
+       Measure against whichever edge that is rather than assuming left, so
+       this keeps working when the reader flips the page to English. */
+    const rtl = getComputedStyle(el).direction === "rtl";
+    const box = el.getBoundingClientRect();
+    let best = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < el.children.length; i += 1) {
+      const r = el.children[i].getBoundingClientRect();
+      const d = Math.abs(rtl ? r.right - box.right : r.left - box.left);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    setObjIdx(best);
+  };
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("fmt");
@@ -656,7 +687,7 @@ export default function LabPage() {
             <span className="ar-t">أسئلة المشغّلين</span>
             <span className="en-t">What operators ask</span>
           </span>
-          <div className="objections">
+          <div className="objections rv" ref={objRef} onScroll={onObjScroll}>
             <article className="rv">
               <h3>
                 <span className="ar-t">ماذا لو تعطّل الجهاز؟</span>
@@ -739,6 +770,13 @@ export default function LabPage() {
               </p>
             </article>
           </div>
+          {objCount > 1 && (
+            <div className="objections-dots" aria-hidden="true">
+              {Array.from({ length: objCount }, (_, i) => (
+                <i key={i} className={i === objIdx ? "on" : undefined} />
+              ))}
+            </div>
+          )}
         </section>
 
         <ScrubSequence

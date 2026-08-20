@@ -103,13 +103,22 @@ for (const p of PROFILES) {
     };
   });
 
-  if (rv.pending > 0 || rv.transparent > 0) {
-    console.error(`\n  ✗ ${p.name}: ${rv.pending}/${rv.total} .rv never revealed, ${rv.transparent} still at opacity 0.`);
+  /* THE GATE IS INVISIBILITY, NOT THE CLASS. A card swiped out of the
+     horizontal objection row never intersects the viewport, so its own
+     observer never fires and it never gains .in — but it is fully visible,
+     because the ROW carries the reveal and its cards inherit it. Failing on a
+     missing class would refuse a perfectly good capture; failing on opacity 0
+     is the thing that actually makes an image lie. */
+  if (rv.transparent > 0) {
+    console.error(`\n  ✗ ${p.name}: ${rv.transparent} element(s) still at opacity 0 — content that is not blank would capture blank.`);
     for (const w of rv.worst) console.error(`      ${w}`);
-    console.error("    NOT writing an image — it would show blank sections that are not blank.");
+    console.error("    NOT writing an image.");
     failed += 1;
     await ctx.close();
     continue;
+  }
+  if (rv.pending > 0) {
+    console.log(`    note: ${rv.pending}/${rv.total} .rv never fired their own observer but render visible (clipped by a scroller).`);
   }
 
   await page.evaluate(() => document.fonts && document.fonts.ready);

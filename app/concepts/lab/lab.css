@@ -46,7 +46,11 @@
 
   --r: 18px;
   --padx: clamp(1.25rem, 5vw, 4rem);
-  --pad-block: clamp(4.5rem, 10vw, 9rem);
+  /* Was clamp(4.5rem, 10vw, 9rem) — 144px a side on desktop, 288px stacked
+     at every act boundary. Across seven acts that is most of a screen of
+     nothing, which on an 18000px page reads as unfinished rather than airy.
+     Cut 40% on both ends of the clamp so the ratio holds at every width. */
+  --pad-block: clamp(2.7rem, 6vw, 5.4rem);
   --w-content: 1240px;
   --w-text: 62ch;
 
@@ -191,15 +195,21 @@
   margin-inline: auto;
 }
 
+/* ARABIC DOES NOT TAKE TRACKING. It is a cursive script: letters join, and
+   letter-spacing prises those joins apart, so at 11px with 0.1em the word
+   shapes stopped being words and read as decoration. Tracking removed
+   entirely for Arabic, size up from 11px to 15px, contrast from 0.46 to 0.78.
+   Latin keeps tracking — caps genuinely want it — but less of it. */
 .kicker {
   display: inline-flex;
   align-items: center;
   gap: 12px;
   font-family: var(--fm);
-  font-size: 11px;
-  letter-spacing: 0.26em;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(198, 218, 240, 0.46);
+  color: rgba(214, 232, 252, 0.78);
   margin-bottom: 22px;
 }
 .kicker::before {
@@ -207,7 +217,12 @@
   width: 26px; height: 1px;
   background: linear-gradient(to left, var(--cyan), transparent);
 }
-html:not(.en) .kicker { letter-spacing: 0.1em; }
+html:not(.en) .kicker {
+  letter-spacing: 0;
+  font-size: 15px;
+  font-family: var(--fd);
+  text-transform: none;
+}
 
 .h-display {
   font-family: var(--fd);
@@ -519,6 +534,10 @@ html:not(.en) .counter-cap { letter-spacing: 0.08em; }
               transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .lab .rv.in { opacity: 1; transform: none; }
+/* A card swiped out of the horizontal row is clipped by the scroller, so its
+   own observer never fires and it would arrive blank. The ROW reveals, and
+   its cards come with it. */
+.lab .objections.in .rv { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .lab .rv { opacity: 1; transform: none; transition: none; }
 }
@@ -679,7 +698,7 @@ html:not(.en) .stats .provenance { letter-spacing: 0.04em; }
    states what happens, and is the only thing in its band of the page. */
 .cta-block {
   text-align: center;
-  padding: clamp(4rem, 9vw, 7.5rem) var(--padx);
+  padding: clamp(2.4rem, 5.4vw, 4.5rem) var(--padx);
   max-width: 760px;
   margin-inline: auto;
 }
@@ -894,26 +913,87 @@ html:not(.en) .plabel { letter-spacing: 0.04em; text-transform: none; font-size:
 /* Row two, centred: skip one column before the fourth card. */
 .objections article:nth-child(4) { grid-column: 2 / span 2; }
 
-/* Tablet: two per row. The fifth would be orphaned, so it takes the full
-   width rather than sitting alone in half of one. */
-@media (max-width: 1023px) {
+/* Tablet 820-1023: two per row. The fifth would be orphaned, so it takes the
+   full width rather than sitting alone in half of one. */
+@media (min-width: 820px) and (max-width: 1023px) {
   .objections { grid-template-columns: repeat(2, 1fr); }
   .objections article,
   .objections article:nth-child(4) { grid-column: auto; }
   .objections article:last-child { grid-column: 1 / -1; }
 }
 
-/* Phone: one per row. Nothing can be orphaned. */
-@media (max-width: 639px) {
-  .objections { grid-template-columns: 1fr; }
+/* ── BELOW 820px: A SWIPEABLE ROW, NOT FIVE SCREENS OF STACK ─────────
+   Five stacked cards is five phone screens of scrolling for content that is
+   a set of peers, not a sequence. A snapping row costs one screen.
+
+   THE NEXT CARD IS DELIBERATELY CLIPPED, NOT HIDDEN. A card sized to the full
+   width gives no signal that anything follows it and nobody swipes; at 78%
+   the edge of the next one is always in frame.
+
+   TOUCH-ACTION IS THE WHOLE BALLGAME. touch-action:pan-x is the usual way
+   these get built and it is exactly what makes them feel broken: it claims the
+   vertical gesture too, so a reader trying to scroll the PAGE while their
+   thumb happens to be over the row gets nothing. pan-x pan-y keeps the
+   horizontal for the row and hands the vertical back to the document. There is
+   a test for this in scripts/lab-objections.mjs; it is not left to inspection.
+
+   overflow-y is hidden rather than visible so the row can never grow its own
+   vertical scroll area — hidden is not scrollable, so vertical touch passes
+   straight through to the page. */
+@media (max-width: 819px) {
+  .objections {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+    gap: 12px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .objections::-webkit-scrollbar { display: none; }
   .objections article,
   .objections article:nth-child(4),
-  .objections article:last-child { grid-column: auto; }
+  .objections article:last-child {
+    grid-column: auto;
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
+}
+
+/* Position indicator. Five cards behind an edge with no marker reads as a
+   layout that failed to finish. Decorative: the row itself is the control. */
+.objections-dots {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  margin-top: 18px;
+}
+.objections-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background 0.25s, transform 0.25s;
+}
+.objections-dots i.on {
+  background: var(--cyan);
+  transform: scale(1.4);
+}
+
+/* Shown only where the row exists. This override has to come AFTER the base
+   rule above: same specificity, so source order decides, and declaring it
+   inside the earlier media block left it losing to display:none. */
+@media (max-width: 819px) {
+  .objections-dots { display: flex; }
 }
 .objections h3 {
   font-family: var(--fd);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 1.16rem;
   line-height: 1.45;
   margin-bottom: 14px;
   color: var(--ink);
@@ -926,7 +1006,8 @@ html:not(.en) .plabel { letter-spacing: 0.04em; text-transform: none; font-size:
   margin-bottom: 14px;
   background: linear-gradient(90deg, var(--cyan), var(--mint));
 }
-.objections p { color: var(--mute); font-size: 0.93rem; line-height: 1.85; }
+/* 14.9px was below comfortable Arabic reading size at arm's length. */
+.objections p { color: var(--mute); font-size: 1.06rem; line-height: 1.9; }
 
 /* ── payment marks ─────────────────────────────────────────────────────────
    Typographic, matching how concepts 01-07 render these (plain spans, no
