@@ -7,7 +7,6 @@ import ScrubSequence, {
   type SeqSet,
   type TitleCard,
 } from "@/components/ScrubSequence";
-import Pending from "@/components/Pending";
 import { claimMode, devValue } from "@/lib/content";
 import { LOGOS } from "@/lib/assets/logos";
 import { R_MARK } from "@/lib/assets/brand";
@@ -186,8 +185,14 @@ export default function LabPage() {
      only once the claim clears. */
   const venueMode = claimMode("commercial.venueProposition");
   const machinesMode = claimMode("fleet.machines");
+  /* NOT a locations count. See customers.brandCount: 13 counts the brand MARKS
+     on rpay.sa's logo wall — the same thirteen rendered directly beneath this
+     tile — and several of them are developers and chains holding many
+     properties, so the number of SITES is larger than 13, not equal to it. */
+  const brandsMode = claimMode("customers.brandCount");
   const TX = devValue<number>("totals.transactions");
   const MACHINES = devValue<number>("fleet.machines");
+  const BRANDS = devValue<number>("customers.brandCount");
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("fmt");
@@ -693,14 +698,20 @@ export default function LabPage() {
               )}
             </div>
 
-            <div>
-              <div className="fig">
-                <Pending id="LOCATIONS_COUNT" note="Ahmed to supply" />
-              </div>
+            <div className={brandsMode === "publish" ? undefined : "unverified"}>
+              {/* The caption is «علامة تجارية / Brands», not «موقع / Locations»,
+                  because 13 is what it counts: the marks in the wall below. */}
+              <div className="fig">{brandsMode === "omit" ? "—" : BRANDS}</div>
               <div className="cap">
-                <span className="ar-t">موقع</span>
-                <span className="en-t">Locations</span>
+                <span className="ar-t">علامة تجارية</span>
+                <span className="en-t">Brands</span>
               </div>
+              {brandsMode === "dev" && (
+                <div className="provenance">
+                  <span className="ar-t">غير مُتحقَّق منه — customers.brandCount</span>
+                  <span className="en-t">unverified — customers.brandCount</span>
+                </div>
+              )}
             </div>
           </div>
 

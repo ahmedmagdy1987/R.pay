@@ -215,7 +215,7 @@
       "asOf": "2026-08-19",
       "source": "The owner, via Ahmed, 2026-08-19.",
       "location": "Positioning throughout",
-      "why": "Earlier concepts contradicted each other. These are opposite companies: if R.Pay IS the operator, every competing operator is being asked to fund a competitor. Answered: it is not. See company.profileContradiction — their own profile PDF still says the opposite, and that is open.",
+      "why": "Earlier concepts contradicted each other. These are opposite companies: if R.Pay IS the operator, every competing operator is being asked to fund a competitor. Answered: it is not. Arcade is the deepest vertical — the sector with the most deployments and the most operational experience — alongside vending, drinks and retail product machines. See company.profileWording: the profile's «مشغّل» line was recorded here as a contradiction until 2026-08-20, and is not one.",
       "blocksImplementation": false,
       "blocksLaunch": false,
       "fallback": "n/a — resolved. The page addresses an operator, and never claims to be one."
@@ -234,17 +234,17 @@
       "fallback": "n/a — resolved."
     },
     {
-      "id": "company.profileContradiction",
-      "label": "The company profile says the opposite of what the owner says",
-      "value": null,
-      "verified": false,
-      "asOf": null,
-      "source": "R.Pay company profile PDF: «أكبر مشغّل لمكائن ألعاب الأركيد في المنطقة». Against it, the owner's answer of 2026-08-19: R.Pay is a system provider and does not operate venues.",
-      "location": "Nowhere on any page — this is a consistency question about R.Pay's own material",
-      "why": "The profile calls R.Pay the region's largest arcade OPERATOR. The owner says R.Pay is a system PROVIDER to operators. Those are opposite companies. An operator handed both documents sees a supplier claiming to be their biggest competitor, which is the exact objection this positioning exists to avoid. The site follows the owner. Reconciling the profile is R.Pay's, not this repo's.",
+      "id": "company.profileWording",
+      "label": "«مشغّل» in the company profile reads two ways, and one reading is wrong",
+      "value": "Recommended rephrase, R.Pay's to accept or refuse: «النظام الأكثر انتشارًا في تشغيل مكائن الأركيد بالمنطقة».",
+      "verified": true,
+      "asOf": "2026-08-20",
+      "source": "Ahmed, 2026-08-20, relaying the owner. RENAMED from company.profileContradiction on the same date, because the reading recorded here on 2026-08-19 was wrong. Supporting public evidence, rpay.sa retrieved 2026-08-20: «R.Pay نظام الدفع الذكي وإدارة العمليات الرائد في المملكة العربية السعودية لمشغلي الخدمة الذاتية» — R.Pay's own homepage calls it a SYSTEM FOR operators, in both languages.",
+      "location": "Nowhere on any page — this is a wording question about R.Pay's own marketing material",
+      "why": "IT IS NOT A CONTRADICTION, and recording it as one was this registry's error. «مشغّل» is ambiguous in Arabic: it reads as the owner-operator of the machines, or as the system that operates them. R.Pay means the second, and their own homepage says so plainly. «أكبر مشغّل لمكائن ألعاب الأركيد في المنطقة» is therefore true as intended and merely mis-readable — the English rendering on v1-original, 'The largest arcade-machine operator in the region', is what makes the wrong reading easy, because English 'operator' does not carry the second sense. The residual risk is only that an operator skims the line as a competitor claim. It is R.Pay's own marketing line, so this registry recommends a rephrase and does not make one.",
       "blocksImplementation": false,
       "blocksLaunch": false,
-      "fallback": "The site states the owner's answer and never repeats the profile sentence."
+      "fallback": "n/a — resolved. The page never repeats the profile sentence in either reading."
     },
     {
       "id": "company.registration",
@@ -329,6 +329,20 @@
       "blocksImplementation": false,
       "blocksLaunch": true,
       "fallback": "The form is disabled until a policy exists. It does not collect anything in development."
+    },
+    {
+      "id": "customers.brandCount",
+      "label": "How many client brand marks R.Pay publishes",
+      "value": 13,
+      "unit": "brands",
+      "verified": true,
+      "asOf": "2026-08-20",
+      "source": "Counted from the logo wall on rpay.sa, retrieved 2026-08-20: Al Nadej, Boulevard World, Rawshan, Deera, Khozama, Lulu, Sela, Boulevard City, Malahi, Dar Al Arkan, Hamat, Kinan, Shawarma House — thirteen distinct marks, which the page repeats to run its marquee. lib/assets/logos.ts carries the same thirteen. PUBLIC BUT NOT INDEPENDENT: rpay.sa is R.Pay's own site, so this evidences what R.Pay publishes about itself. No third party has confirmed any deployment.",
+      "location": "The stat row in DOM C, /concepts/lab — directly above the logo wall it counts",
+      "why": "This closes the [[LOCATIONS_COUNT]] placeholder, but NOT as a locations figure, because 13 is not one. It counts brand MARKS. Several of the thirteen are developers, mall operators or chains — Rawshan, Dar Al Arkan, Kinan, Hamat, Al Khozama, LuLu — and each holds many properties, so the number of physical sites is almost certainly LARGER than 13. A tile reading «موقع / Locations» above this number would be wrong twice over: wrong unit, and understated. The label was the defect, not the number. Counting marks also names nobody, so unlike customers.logos and customers.namedDeployments it needs no permission from the brands. ONE RESIDUAL RISK: the tile sits beside the machine count, and adjacency invites the reader to infer that these thirteen brands account for all 97 machines. Nothing evidences that, and no copy on the page asserts it.",
+      "blocksImplementation": false,
+      "blocksLaunch": false,
+      "fallback": "The tile is omitted. It qualifies the device count with breadth and is not load-bearing — the logo wall directly beneath makes the same point visually."
     }
   ]
 }
