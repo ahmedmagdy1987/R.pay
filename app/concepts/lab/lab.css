@@ -574,11 +574,18 @@ html:not(.en) .counter-cap { letter-spacing: 0.08em; }
 }
 /* The currency mark rides at a smaller size than the figure so the number
    still reads as the number. */
+/* NOT currentColor. `.stats .fig` paints its gradient with
+   `background-clip: text` and `color: transparent`, so currentColor here
+   resolves to TRANSPARENT and the mark occupies 28px of nothing — the figure
+   reads as a bare 465,255 with no currency at all. Invisible until a currency
+   claim reaches 'publish', which is why a demo build surfaced it and a
+   development build never did: 'dev' dims the tile and overrides the gradient.
+   An explicit colour, the same way `.stats .fig .pending` does it. */
 .stats .fig .riyal {
   font-size: 0.42em;
   letter-spacing: 0.06em;
   opacity: 0.75;
-  -webkit-text-fill-color: currentColor;
+  -webkit-text-fill-color: var(--mint);
 }
 
 .stats .cap {

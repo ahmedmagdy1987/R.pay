@@ -101,6 +101,33 @@ export const IS_PRODUCTION_CONTENT =
   process.env.NEXT_PUBLIC_RPAY_CONTENT === "production";
 
 /**
+ * DEMO ONLY — SHOWING THE WORK, NOT PUBLISHING IT.
+ *
+ * A development build renders every unverified figure behind a provenance chip
+ * naming the claim that backs it: «غير مُتحقَّق منه — FLEET.MACHINES». That is
+ * exactly right while building, and wrong in front of a client who has never
+ * seen the page. The chip prints an internal identifier in Latin monospace in
+ * the middle of an Arabic page, and the real values sit dimmed next to a
+ * verified one that is not — so it reads as an unfinished screen rather than
+ * as a designed hesitation.
+ *
+ * Demo mode renders those values plainly: no chips, no dimming.
+ *
+ * IT CHANGES NOTHING ABOUT WHAT MAY BE PUBLISHED. The figures are still
+ * unverified, `unresolvedLaunchBlockers()` still lists them, and
+ * `scripts/check-content.mjs --production` still refuses. This decides one
+ * thing only: whether a value the build already renders wears a chip.
+ *
+ * TWO RULES HOLD IT IN PLACE:
+ *   1. It is never the default. NEXT_PUBLIC_RPAY_CONTENT must be exactly
+ *      "demo". Unset means development, chips and all.
+ *   2. A production content build can never be a demo build. Both are values
+ *      of one variable, and production is tested first and wins.
+ */
+export const IS_DEMO_CONTENT =
+  process.env.NEXT_PUBLIC_RPAY_CONTENT === "demo" && !IS_PRODUCTION_CONTENT;
+
+/**
  * What a surface should do with a claim right now.
  *
  *   'publish'  — verified and dated. Render it as fact.
@@ -111,7 +138,11 @@ export const IS_PRODUCTION_CONTENT =
  */
 export function claimMode(id: ClaimId): "publish" | "omit" | "dev" {
   if (isPublishable(id)) return "publish";
-  return IS_PRODUCTION_CONTENT ? "omit" : "dev";
+  if (IS_PRODUCTION_CONTENT) return "omit";
+  // A demo build reports 'publish' for everything, which is why it may only
+  // ever be produced deliberately. See IS_DEMO_CONTENT.
+  if (IS_DEMO_CONTENT) return "publish";
+  return "dev";
 }
 
 /** Claims that must be resolved before the site may go live. */
