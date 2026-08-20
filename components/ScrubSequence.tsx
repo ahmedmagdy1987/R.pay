@@ -84,7 +84,12 @@ type Props = {
 
 const FETCH_POOL = 6;
 /** Concurrent DECODES. Low, so the window can never overshoot far. */
-const DECODE_POOL = 2;
+/* Raised from 2 on 2026-08-20. This is decode CONCURRENCY, not window size:
+   the sliding window still caps decoded bitmaps at behind+ahead+1, so peak
+   memory is unchanged. At 2 the refill could not keep up with the draw rate
+   and the scrub fell back on a neighbouring frame — measured 85 such misses
+   across a four-direction sweep of segment B. */
+const DECODE_POOL = 4;
 
 /* ------------------------------------------------------- format detection */
 
@@ -615,6 +620,10 @@ export default function ScrubSequence({
     const draw = (want: number, force = false): boolean => {
       const j = nearest(want);
       if (j < 0) return false;
+      if (j !== want) {
+        const w = window as unknown as { __scrubMiss?: number };
+        w.__scrubMiss = (w.__scrubMiss ?? 0) + 1;
+      }
       if (!force && j === drawn) return true;
       const f = bmps[j];
       if (!f || !f.width || !f.height || !cw || !ch) return false;
