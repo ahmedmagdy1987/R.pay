@@ -515,6 +515,7 @@ export default function ScrubSequence({
     let t0 = 0;
     let ext: SeqFormat = format === "auto" ? "webp" : format;
     let cur = 0;
+    let warnedSpan = false;
     let lastC = -1;
     let wasPrimary = false;
     let lastDir = 1;
@@ -939,12 +940,23 @@ export default function ScrubSequence({
         }
 
         if (mode === "static") {
-          winLo = N - 1;
-          winHi = N - 1;
-          await fetchOne(N - 1);
+          /* THE OPENING FRAME, NOT THE CLOSING ONE. This branch used to pin the
+             index at N - 1, which is the last frame of the segment: under
+             prefers-reduced-motion every segment rendered its ENDING, frozen,
+             from the moment it armed. It contradicted the poster three lines
+             above, which loads frameSrc(0) — the code painted the first frame
+             and then immediately replaced it with the last.
+
+             A still standing in for a film should be the frame the film opens
+             on. Reported from a real Mac on 2026-08-21 as "the canvas shows
+             the last frame, frozen"; reproduced on Chromium too, so it was
+             never an engine difference. */
+          winLo = 0;
+          winHi = 0;
+          await fetchOne(0);
           if (!alive || !armed) return;
-          cur = N - 1;
-          void decode(N - 1);
+          cur = 0;
+          void decode(0);
           return;
         }
 
@@ -1007,10 +1019,29 @@ export default function ScrubSequence({
     /* ---------------------------------------------------------- the scrub */
 
     const targetIndex = () => {
+      /* THE RECT, NOT SCROLL ARITHMETIC. A rect is what the engine actually
+         laid out; window.scrollY / documentElement.scrollTop / body.scrollTop
+         disagree across engines and across the moment you read them. */
       const r = root.getBoundingClientRect();
-      const span = r.height - stableVH();
-      const p = span > 0 ? clamp01(-r.top / span) : 0;
-      return frameAt(p);
+      const vh = stableVH();
+      const span = r.height - vh;
+      if (span <= 0) {
+        /* Legitimate for mode "static", where the pin is collapsed to 100vh
+           on purpose. Anywhere else it means the section is not taller than
+           the viewport and the film has no scroll to run on — silently
+           clamping is how that hides for a year. */
+        /* This path is unreachable for mode "static" — that branch returns
+           earlier — so reaching it at all means a real section is too short. */
+        if (!warnedSpan) {
+          warnedSpan = true;
+          console.warn(
+            `[scrubseq] ${label}: scrub denominator <= 0 (height ${Math.round(r.height)} - viewport ${Math.round(vh)} = ${Math.round(span)}). ` +
+              `Every frame will resolve to index 0. The section must be taller than the viewport.`,
+          );
+        }
+        return frameAt(0);
+      }
+      return frameAt(clamp01(-r.top / span));
     };
 
     const tick = (now: number = performance.now()) => {

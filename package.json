@@ -11,6 +11,7 @@
     "lab:serve": "node scripts/lab-serve.mjs",
     "lab:capture": "node scripts/lab-capture.mjs",
     "lab:objections": "node scripts/lab-objections.mjs",
+    "lab:reduced": "node scripts/lab-reduced.mjs",
     "lab:fullpage": "node scripts/lab-fullpage.mjs",
     "lab:measure": "node scripts/lab-measure.mjs",
     "lab:viewport": "node scripts/lab-viewport.mjs",
