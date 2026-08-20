@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lab:serve": "next start -p 3210",
+    "lab:serve": "node scripts/lab-serve.mjs",
     "lab:fullpage": "node scripts/lab-fullpage.mjs",
     "lab:measure": "node scripts/lab-measure.mjs",
     "lab:viewport": "node scripts/lab-viewport.mjs",

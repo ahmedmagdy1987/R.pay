@@ -13,6 +13,7 @@
  * Usage: node scripts/lab-measure.mjs [baseUrl]
  */
 import { chromium, webkit } from "playwright";
+import { assertServedBuild } from "./lab-build.mjs";
 
 /* ONE PORT FOR THE WHOLE LAB HARNESS. These four scripts defaulted to four
    different ports until 2026-08-20 — 3210, 3224, 3236, 3250 — and nothing
@@ -26,6 +27,11 @@ if (!argUrl) {
   console.log(`\n  no baseUrl given — expecting ${BASE}`);
   console.log("  if nothing is serving it:  npm run build && npm run lab:serve\n");
 }
+
+/* Refuse to measure a build that is not the build on disk. An orphaned
+   `next start` answers 200 from whatever it booted with, which makes a stale
+   run look exactly like a clean one. See scripts/lab-build.mjs. */
+await assertServedBuild(BASE);
 const LITE = process.argv.includes("--lite");
 const URL = `${BASE}/concepts/lab${LITE ? "?lite=1" : ""}`;
 const SEG = "/assets/lab/seg/";

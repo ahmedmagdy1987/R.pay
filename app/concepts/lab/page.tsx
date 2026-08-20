@@ -639,13 +639,32 @@ export default function LabPage() {
               </h3>
               <p>
                 <span className="ar-t">
-                  تنبيهات فورية عند انقطاع الاتصال، واسترجاع نقدي تلقائي دون تدخل بشري، وتسجيل
-                  الحالة في لوحة التحكم.
+                  الأركيد أوضح مثال: آلة تصرف جوائز يتعطّل عملها. تنبيه فوري للعطل، وتنبيه عند
+                  انقطاع الاتصال، وتسجيل الحالة في لوحة التحكم.
                 </span>
                 <span className="en-t">
-                  Instant alerts when a device goes offline, an automatic cash refund with no human
-                  intervention, and the incident logged in the dashboard.
+                  Arcade is the clearest case: a machine that dispenses prizes stops working. An
+                  instant fault alert, an alert when it goes offline, and the incident logged in the
+                  dashboard.
                 </span>
+              </p>
+            </article>
+            {/* SEPARATE CARD ON PURPOSE. This used to be a clause inside the
+                fault answer, which made the refund read as the consequence of a
+                fault. R.Pay publishes «استرداد تلقائي» with NO trigger stated
+                anywhere, so pairing the two asserted by adjacency what the lead
+                copy refuses to assert in words. Stated here as its own
+                capability, without a cause, until they answer question 18 in
+                blockers.md — at which point this and the lead take the trigger
+                together. */}
+            <article className="rv">
+              <h3>
+                <span className="ar-t">وإن لزم ردّ المبلغ؟</span>
+                <span className="en-t">And if an amount has to be returned?</span>
+              </h3>
+              <p>
+                <span className="ar-t">استرداد تلقائي دون تدخّل بشري.</span>
+                <span className="en-t">An automatic refund, with no human intervention.</span>
               </p>
             </article>
             <article className="rv">
@@ -682,12 +701,15 @@ export default function LabPage() {
               </h3>
               <p>
                 <span className="ar-t">
-                  الرادار الجغرافي: موقع ثابت لكل جهاز، تنبيه فوري وإيقاف تلقائي عند الخروج عن
-                  الحدود.
+                  الأركيد أوضح مثال: آلة في صالة ألعاب تُنقل من مكانها. الرادار الجغرافي يثبّت
+                  موقعًا لكل جهاز، وأي حركة خارج النطاق تُغلق الجهاز فورًا مع تنبيه في حينه — حماية
+                  من العبث أو النقل.
                 </span>
                 <span className="en-t">
-                  Geographic radar: a fixed location for every device, with an instant alert and
-                  automatic shutdown if it leaves its boundary.
+                  Arcade is the clearest case: a machine in a games hall moved out of position. The
+                  geographic radar fixes a location for every device, and any movement outside its
+                  zone shuts it down immediately, with an alert at the same moment — protection
+                  against tampering and relocation.
                 </span>
               </p>
             </article>
