@@ -104,17 +104,55 @@
 }
 .lab-top > * { pointer-events: auto; }
 
+/* A HEADING MUST NEVER INTERLEAVE WITH THE CHROME. The wordmark used to sit on
+   nothing but a text-shadow, so a section heading scrolling under it rendered
+   straight through the glyphs — «التحصيل المباشر إلى حساب المالك أو المشغّل»
+   came out struck through on a phone.
+
+   WHY A SURFACE AND NOT z-order, RESERVATION OR SCROLL PADDING. z-order cannot
+   help: whichever wins, the two texts still occupy the same pixels, and
+   raising the heading above the chrome only reverses which one is mangled.
+   Height reservation and scroll-padding both assume the collision happens at
+   rest — it happens mid-scroll, at every position, so there is no offset that
+   avoids it. The only thing that works for a fixed header is to stop the two
+   from sharing pixels at all: give the chrome its own opaque surface, so a
+   heading passing behind is OCCLUDED rather than blended.
+
+   The scrim is the same defect in the other direction: over a bright film
+   frame the chrome itself becomes unreadable. It fades to nothing by 108px,
+   so it never touches the DOM acts. */
+.lab-top::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: calc(clamp(12px, 3vw, 22px) + 38px + 48px);
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 7, 10, 0.92) 0%,
+    rgba(5, 7, 10, 0.72) 46%,
+    rgba(5, 7, 10, 0) 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
 .lab-mark {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(5, 7, 10, 0.82);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   font-family: var(--fd);
   font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
-  text-shadow: 0 2px 20px rgba(5, 7, 10, 0.8);
 }
 .lab-mark img { width: 26px; height: 26px; object-fit: contain; }
 
@@ -122,7 +160,7 @@
   width: 38px; height: 38px;
   border-radius: 50%;
   border: 1px solid var(--line);
-  background: rgba(5, 7, 10, 0.66);
+  background: rgba(5, 7, 10, 0.86);
   color: var(--ink);
   font-family: var(--fm);
   font-size: 11px;
