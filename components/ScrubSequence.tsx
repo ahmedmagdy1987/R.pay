@@ -1,3 +1,8 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   READ CONCEPT_08.md AT THE REPO ROOT BEFORE CHANGING THIS FILE.
+   This is the scrub engine. Its memory ceiling, its arm/release hysteresis and
+   the vh/dvh split are all load-bearing and were each paid for with a bug.
+   ───────────────────────────────────────────────────────────────────────────── */
 "use client";
 
 import { useEffect, useLayoutEffect, useRef } from "react";

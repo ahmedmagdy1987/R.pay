@@ -1,3 +1,8 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   READ CONCEPT_08.md AT THE REPO ROOT BEFORE CHANGING THIS FILE.
+   It carries the decisions, the bugs and their real causes, and the things that
+   look safe here and are not. This file has broken in ways no test caught.
+   ───────────────────────────────────────────────────────────────────────────── */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
