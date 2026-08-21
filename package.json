@@ -18,7 +18,8 @@
     "lab:resilience": "node scripts/lab-resilience.mjs",
     "shoot": "node scripts/shoot.mjs",
     "moments": "node scripts/moments.mjs",
-    "ocr": "node scripts/frames-ocr.mjs"
+    "ocr": "node scripts/frames-ocr.mjs",
+    "vercel:build": "node scripts/vercel-build.mjs"
   },
   "dependencies": {
     "next": "^14.2.35",
