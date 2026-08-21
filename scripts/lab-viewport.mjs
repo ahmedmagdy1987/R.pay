@@ -75,13 +75,35 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(2600);
 
+/* THE INDEX IS WHAT THE COMPONENT CLAIMS; THE PIXELS ARE WHAT THE READER GETS,
+   AND THEY CAN DISAGREE. data-frame is written by the tick from its own `cur`,
+   not from what draw() managed to put on the canvas. On 2026-08-21 a segment
+   was found reporting data-frame 56 while its canvas showed the POSTER, with
+   zero decoded bitmaps — the index honest about intent and silent about
+   outcome. A drift check reading only the index would call that film perfectly
+   stable while it sat frozen on the wrong picture. So sample both. */
 const read = () =>
   page.evaluate(() => {
     const el = document.querySelectorAll(".scrubseq")[1];
+    const c = el.querySelector("canvas");
+    let luma = -1;
+    if (c && c.width && c.height) {
+      const w = 64, h = 36;
+      const t = document.createElement("canvas");
+      t.width = w; t.height = h;
+      const x = t.getContext("2d");
+      x.drawImage(c, 0, 0, w, h);
+      const d = x.getImageData(0, 0, w, h).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+      luma = sum / (w * h);
+    }
     return {
       frame: Number(el.dataset.frame ?? -1),
       y: Math.round(window.scrollY),
       vh: window.innerHeight,
+      luma,
+      poster: el.dataset.poster === "1",
     };
   });
 
@@ -90,10 +112,12 @@ console.log(`
 ══ VIEWPORT STABILITY · ${VIEW} ══`);
 console.log(`  baseline         frame ${start.frame}  scrollY ${start.y}  innerHeight ${start.vh}
 `);
-console.log(`  ${"Δheight".padStart(8)} ${"innerH".padStart(7)} ${"scrollY".padStart(8)} ${"frame".padStart(6)}  drift`);
+console.log(`  ${"Δheight".padStart(8)} ${"innerH".padStart(7)} ${"scrollY".padStart(8)} ${"frame".padStart(6)}  drift  ${"luma".padStart(6)}  Δluma`);
 
 let worst = 0;
 let reversed = false;
+let worstLuma = 0;
+let posterSeen = false;
 let prevFrame = start.frame;
 const REAL_H = BASE_VP.height;
 
@@ -111,10 +135,13 @@ for (const d of STEPS) {
   if (Math.abs(drift) > Math.abs(worst)) worst = drift;
   if ((r.frame - prevFrame) * (drift || 1) < 0) reversed = true;
   prevFrame = r.frame;
+  const dLuma = Math.abs(r.luma - start.luma);
+  if (dLuma > worstLuma) worstLuma = dLuma;
+  if (r.poster) posterSeen = true;
   console.log(
     `  ${String(d).padStart(8)} ${String(r.vh).padStart(7)} ${String(r.y).padStart(8)} ${String(r.frame).padStart(6)}  ${
       drift === 0 ? "—" : (drift > 0 ? "+" : "") + drift
-    }`,
+    }  ${r.luma.toFixed(2).padStart(6)}  ${dLuma < 0.005 ? "—" : dLuma.toFixed(2)}${r.poster ? "  POSTER" : ""}`,
   );
 }
 
@@ -123,10 +150,18 @@ await browser.close();
 /* One frame of slack: the damping is asymptotic, so a single index of
    settling is not the toolbar dragging the film around. */
 const TOL = 1;
-const pass = Math.abs(worst) <= TOL;
+/* The same yardstick lab-reduced and lab-resilience use: two samples of one
+   frame land within ~2.2 luma of each other, the nearest different frame is
+   10+ away. 4.0 sits in that gap. */
+const LUMA_TOL = 4.0;
+const frameOk = Math.abs(worst) <= TOL;
+const pixelsOk = worstLuma <= LUMA_TOL;
+const posterOk = !posterSeen;
+const pass = frameOk && pixelsOk && posterOk;
 console.log(
-  `\n  worst drift ${worst} frame(s)${reversed ? ", direction reversed" : ""} — ${
-    pass ? "PASS: the toolbar does not move the film" : "FAIL: frame index is being retargeted by viewport height"
-  }\n`,
+  `\n  worst drift  ${worst} frame(s)${reversed ? ", direction reversed" : ""} ${frameOk ? "✓" : "✗"}` +
+    `\n  worst Δluma  ${worstLuma.toFixed(2)} ${pixelsOk ? "✓ the picture held still too" : "✗ THE PICTURE MOVED while the index did not"}` +
+    `\n  poster       ${posterSeen ? "shown at least once ✗ — a frozen poster is not stability" : "never shown ✓"}` +
+    `\n\n  ${pass ? "PASS: the toolbar does not move the film" : "FAIL: the toolbar is moving the film"}\n`,
 );
 process.exit(pass ? 0 : 1);

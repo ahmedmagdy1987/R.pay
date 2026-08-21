@@ -249,10 +249,12 @@ async function run(p) {
 }
 
 const out = [];
+let crashed = 0;
 for (const p of PROFILES) {
   try {
     out.push(await run(p));
   } catch (e) {
+    crashed += 1;
     console.log(`\n── ${p.name}: FAILED — ${String(e).split("\n")[0]}`);
   }
 }
@@ -292,3 +294,40 @@ for (const r of out) {
   }
 }
 console.log("\n" + JSON.stringify(out.map(({ scrub, ...r }) => r), null, 2));
+
+/* ── AN EXIT CODE, BECAUSE UNTIL 2026-08-21 THERE WAS NOT ONE ───────────────
+   Every ✗ printed above — wrong frame set, wrong codec, peak decoded memory
+   OVER BUDGET, a scrub that never reached the bottom, a <video> element on a
+   page whose whole reason for existing is that it has none — and the process
+   returned 0 regardless. A profile that threw outright printed FAILED, was
+   dropped from the results, and still exited 0. So every number this file
+   produced was advisory, and the only thing standing between a regression and
+   a green run was whether a human read the scrollback.
+
+   NOT ASSERTED, DELIBERATELY, AND SAID OUT LOUD RATHER THAN LEFT IMPLICIT:
+   fps and long-frame counts. They are the numbers most sensitive to what else
+   the machine is doing — this harness has recorded 39.5 and 45 fps on healthy
+   builds purely from running a sweep concurrently, and WebKit has ranged 28 to
+   51.5 fps across machines while nothing about the page changed. A threshold
+   there would cry wolf often enough to be ignored, which is worse than no
+   threshold. They are reported, and a human still reads them. */
+const problems = [];
+for (const r of out) {
+  if (!r.modeOk) problems.push(`${r.profile}: frame set ${r.mode}, expected another`);
+  if (!r.fmtOk) problems.push(`${r.profile}: codec ${r.fmt}, expected another`);
+  if (r.videoCount > 0) problems.push(`${r.profile}: ${r.videoCount} <video> element(s) — there must be none`);
+  if (r.peakMB >= 80) problems.push(`${r.profile}: peak decoded ${r.peakMB} MB, over the 80 MB budget`);
+  if (r.scrub && r.scrub.scrolled < r.scrub.pageHeight - 8) {
+    problems.push(`${r.profile}: scrub reached ${r.scrub.scrolled} of ${r.scrub.pageHeight}px`);
+  }
+}
+if (crashed) problems.push(`${crashed} profile(s) threw and produced no measurement at all`);
+
+if (problems.length) {
+  console.log(`\n  FAIL — ${problems.length} problem(s):`);
+  for (const p of problems) console.log(`    · ${p}`);
+  console.log("");
+} else {
+  console.log(`\n  PASS — ${out.length}/${PROFILES.length} profiles within budget\n`);
+}
+process.exit(problems.length ? 1 : 0);

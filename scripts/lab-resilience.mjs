@@ -85,6 +85,14 @@ const before = await page.$$eval(".scrubseq", (els, f) => {
   return els.map((e) => ({ luma: fn(e), live: Number(e.dataset.live ?? 0) }));
 }, LUMA);
 const seg = 1;
+
+/* WHAT COUNTS AS THE SAME PICTURE. lab-reduced measures the same segments
+   against the real frame files on disk: two samples of the SAME frame land
+   within 2.2 luma of each other, and the nearest DIFFERENT frame is 10.6 away.
+   4.0 sits in that gap with room on both sides. */
+const SAME = 4.0;
+let fails = 0;
+const check = (ok, label) => { if (!ok) fails += 1; return ok ? "✓" : "✗"; };
 console.log(`\n  ── TASK 1 · backgrounded tab ──`);
 console.log(`  painted before   luma ${before[seg].luma.toFixed(2)}  bitmaps ${before[seg].live}`);
 
@@ -114,8 +122,29 @@ const afterShow = await page.evaluate((f) => {
 }, LUMA);
 
 const shed = hidden.reduce((a, b) => a + b, 0);
-console.log(`  visibilitychange bitmaps while hidden ${shed} ${shed === 0 ? "✓ shed" : "✗ still held"}   (synthetic event, real listener)`);
-console.log(`                   luma immediately on return ${afterShow[seg].luma.toFixed(2)} ${afterShow[seg].luma > 1 ? "✓ never blank" : "✗ BLANK"}`);
+console.log(`  visibilitychange bitmaps while hidden ${shed} ${check(shed === 0, "shed")} shed   (synthetic event, real listener)`);
+console.log(
+  `                   luma immediately on return ${afterShow[seg].luma.toFixed(2)} ${check(afterShow[seg].luma > 1, "return-not-blank")} never blank`,
+);
+
+/* NOT BLANK IS NOT THE SAME AS RIGHT, AND THAT DISTINCTION IS THE WHOLE POINT.
+   Until 2026-08-21 this file stopped at "luma > 1" — and a segment that came
+   back showing its POSTER, frozen, with zero decoded bitmaps and no route back
+   short of scrolling, satisfied that perfectly. A poster is not black. The
+   check has to name the frame the reader was actually on and demand it back. */
+await page.waitForTimeout(700);
+const settled = await page.$$eval(".scrubseq", (els, f) => {
+  const fn = eval(f);
+  return els.map((e) => ({ luma: fn(e), live: Number(e.dataset.live ?? 0), poster: e.dataset.poster ?? "0" }));
+}, LUMA);
+const dReturn = Math.abs(settled[seg].luma - before[seg].luma);
+console.log(
+  `  settled +700ms   luma ${settled[seg].luma.toFixed(2)} vs ${before[seg].luma.toFixed(2)} before (Δ${dReturn.toFixed(2)}) ${check(dReturn <= SAME, "return-same-frame")} same frame`,
+);
+console.log(
+  `                   decoded ${settled[seg].live} ${check(settled[seg].live > 0, "return-window")} window rebuilt · poster ${settled[seg].poster === "1" ? "STILL UP ✗" : "cleared ✓"}`,
+);
+if (settled[seg].poster === "1") fails += 1;
 
 /* 1b. Simulated discard: same code path the visibility handler runs, then an
        immediate repaint check with no time for a decode to rescue it. */
@@ -133,15 +162,26 @@ const restored = await page.$$eval(".scrubseq", (els, f) => {
 }, LUMA);
 
 console.log(`  forced discard   bitmaps ${discarded[seg].live} ${discarded[seg].live === 0 ? "✓" : "✗"}  blobs kept ${discarded[seg].loaded} ${discarded[seg].loaded > 0 ? "✓" : "✗ refetch needed"}`);
-console.log(`  repaint +90ms    luma ${restored[seg].luma.toFixed(2)} ${restored[seg].luma > 1 ? "✓ never blank" : "✗ BLANK"}`);
-console.log(`  page reloads     ${reloads - 1} ${reloads === 1 ? "✓ recovered without reload" : "✗"}`);
+console.log(
+  `  repaint +90ms    luma ${restored[seg].luma.toFixed(2)} ${check(restored[seg].luma > 1, "restore-not-blank")} never blank (poster may legitimately carry this)`,
+);
+await page.waitForTimeout(700);
+const reSettled = await page.$$eval(".scrubseq", (els, f) => {
+  const fn = eval(f);
+  return els.map((e) => ({ luma: fn(e), live: Number(e.dataset.live ?? 0), poster: e.dataset.poster ?? "0" }));
+}, LUMA);
+const dRestore = Math.abs(reSettled[seg].luma - before[seg].luma);
+console.log(
+  `  settled +700ms   luma ${reSettled[seg].luma.toFixed(2)} vs ${before[seg].luma.toFixed(2)} before (Δ${dRestore.toFixed(2)}) ${check(dRestore <= SAME, "restore-same-frame")} same frame · decoded ${reSettled[seg].live} ${check(reSettled[seg].live > 0, "restore-window")}`,
+);
+console.log(`  page reloads     ${reloads - 1} ${check(reloads === 1, "no-reload")} recovered without reload`);
 
 /* Scroll persistence: save happens on hide, so read it back. */
 const persisted = await page.evaluate(
   () => Number(sessionStorage.getItem("rpay-scrub-y" + location.pathname) ?? 0),
 );
 const nowY = await page.evaluate(() => Math.round(window.scrollY));
-console.log(`  scroll persisted ${persisted}px (at ${nowY}px) ${Math.abs(persisted - nowY) < 400 ? "✓" : "✗"}`);
+console.log(`  scroll persisted ${persisted}px (at ${nowY}px) ${check(Math.abs(persisted - nowY) < 400, "scroll-persist")}`);
 
 /* ── TASK 2 · watchdog ───────────────────────────────────────────────────── */
 console.log(`\n  ── TASK 2 · canvas-loss watchdog ──`);
@@ -157,6 +197,7 @@ await page.evaluate(() => {
   g.clearRect(0, 0, c.width, c.height);
   g.restore();
 });
+const preWipe = before[seg].luma;
 const wiped = await page.$$eval(".scrubseq", (els, f) => eval(f)(els[1]), LUMA);
 /* Deliberately DO NOT scroll. Nudging the page was the first attempt and it
    proved nothing: moving changes the frame index, so the ordinary draw path
@@ -169,7 +210,13 @@ const healed = await page.$$eval(".scrubseq", (els, f) => ({
   recovered: Number(els[1].dataset.recovered ?? 0),
 }), LUMA);
 console.log(`  wiped canvas     luma ${wiped.toFixed(2)}`);
-console.log(`  after 900ms      luma ${healed.luma.toFixed(2)}  recoveries ${healed.recovered} ${healed.luma > 1 ? "✓ redrawn" : "✗ STILL BLANK"}`);
+const dHeal = Math.abs(healed.luma - preWipe);
+console.log(
+  `  after 900ms      luma ${healed.luma.toFixed(2)}  recoveries ${healed.recovered} ${check(healed.luma > 1, "heal-not-blank")} redrawn`,
+);
+console.log(
+  `                   vs ${preWipe.toFixed(2)} before the wipe (Δ${dHeal.toFixed(2)}) ${check(dHeal <= SAME, "heal-same-frame")} same frame · ${check(healed.recovered > 0, "heal-fired")} watchdog fired`,
+);
 
 const overhead = await page.evaluate(() => {
   const c = document.querySelectorAll(".scrubseq")[1].querySelector("canvas");
@@ -190,3 +237,13 @@ console.log(`  probe cost       ${overhead.toFixed(4)} ms per sample · every 40
 console.log(`                   ${(perSec / 1000 * 100).toFixed(4)}% of one core while scrolling`);
 
 await browser.close();
+
+/* THIS FILE USED TO ALWAYS EXIT 0. Every ✗ above printed and the process
+   returned success, so any script or person chaining on it read a failure as a
+   pass. A check that cannot fail the run is a comment. */
+console.log(
+  `
+  ${fails ? `FAIL — ${fails} check(s) failed` : "PASS — every check held, and each one names the frame it expected"}
+`,
+);
+process.exit(fails ? 1 : 0);
