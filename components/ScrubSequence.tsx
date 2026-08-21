@@ -808,6 +808,16 @@ export default function ScrubSequence({
         }
       }
       drawn = -1;
+      /* THE TWIN OF `drawn`, AND IT WAS MISSED. `drawn` tracks what is on the
+         canvas; `lastC` tracks the index the tick last asked maintain() to
+         build a window around. Evicting reset the first and not the second, so
+         a segment that shed its bitmaps and came back to the SAME scroll
+         position computed c === lastC, skipped maintain(), and never rebuilt
+         the window. draw() then fell back to the poster on every tick — the
+         reader returned to the tab and got the segment's opening frame,
+         frozen, with live=0 and no path back short of scrolling. Reported by
+         lab-resilience as "✓ never blank", because a poster is not black. */
+      lastC = -1;
     };
 
     const maintain = (c: number) => {
