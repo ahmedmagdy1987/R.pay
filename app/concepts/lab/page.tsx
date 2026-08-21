@@ -174,7 +174,6 @@ export default function LabPage() {
      segments are remounted once when that happens — refetches come straight
      out of the HTTP cache and the poster covers the gap. */
   const [tier, setTier] = useState<"std" | "lite">("std");
-  const progRef = useRef<HTMLDivElement>(null);
   const txAr = useRef<HTMLSpanElement>(null);
   const txEn = useRef<HTMLSpanElement>(null);
 
@@ -300,20 +299,6 @@ export default function LabPage() {
   }, [en]);
 
   useEffect(() => {
-    const bar = progRef.current;
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        if (bar) bar.style.width = `${max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0}%`;
-      });
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
     const io = new IntersectionObserver(
       (es, obs) =>
         es.forEach((e) => {
@@ -348,7 +333,6 @@ export default function LabPage() {
 
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
       io.disconnect();
       cIo.disconnect();
     };
@@ -363,8 +347,6 @@ export default function LabPage() {
           <span className="lab-intro-bar"><i style={{ width: introP + "%" }} /></span>
         </div>
       )}
-
-      <div className="lab-prog" ref={progRef} aria-hidden="true" />
 
       <header className="lab-top">
         <a className="lab-mark" href="#top" aria-label="R.Pay">

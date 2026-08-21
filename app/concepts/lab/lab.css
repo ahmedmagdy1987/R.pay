@@ -215,15 +215,6 @@
   .lab-intro-bar i { transition: none; }
 }
 
-/* thin progress hairline for the whole film */
-.lab-prog {
-  position: fixed;
-  top: 0; inset-inline-start: 0;
-  height: 2px; width: 0;
-  z-index: 70;
-  background: linear-gradient(90deg, var(--cyan), var(--mint));
-}
-
 /* ── DOM acts between the segments ──────────────────────────────────────── */
 
 .act {
@@ -593,8 +584,6 @@ html:not(.en) .counter-cap { letter-spacing: 0.08em; }
   color: rgba(198, 218, 240, 0.34);
   pointer-events: none;
 }
-
-/* dev readout — harness only */
 
 /* ── unresolved commercial copy ─────────────────────────────────────────────
    Deliberately ugly. A placeholder that blends in is a placeholder that
